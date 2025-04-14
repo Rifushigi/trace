@@ -3,7 +3,7 @@ export interface TUser extends Document {
     _id: mongoose.Types.ObjectId;
     firstName?: string;
     lastName?: string;
-    role?: 'admin' | 'lecturer' | 'student';
+    role: 'admin' | 'lecturer' | 'student';
     googleId?: string;
     avatar?: string;
     email: string;
