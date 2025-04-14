@@ -5,5 +5,5 @@ export interface TAttendanceSession extends Document {
     classId: ObjectId;
     startTime: Date;
     endTime: Date;
-    status: 'ongoing' | 'completed';
+    status: "ongoing" | "completed";
 }
