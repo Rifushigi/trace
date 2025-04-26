@@ -3,13 +3,13 @@ import cors from "cors";
 import session from "express-session";
 import bodyParser from 'body-parser';
 import allRoutes from "./routes/index.js";
-import { corsConfig, initDB, port, sessionConfig } from './config/index.js';
-import { globalErrorHandler } from './middlewares/index.js';
-import { isEnvDefined } from './common/type_check.js';
+import { corsConfig, initDB, port, sessionConfig } from './config';
+import { globalErrorHandler } from './middlewares';
+import { isEnvDefined } from './common';
 import morgan from 'morgan';
 
 isEnvDefined();
-initDB();
+initDB().then(r => console.log("DB is done initializing"));
 
 const app = express();
 
