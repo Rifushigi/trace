@@ -25,6 +25,7 @@ const refreshTokenSecret: string = process.env.REFRESH_TOKEN_SECRET!;
 const accessTokenExpiration: string = process.env.ACCESS_TOKEN_DURATION || "1h";
 const refreshTokenExpiration: string = process.env.REFRESH_TOKEN_DURATION || "7d";
 const sessionSecret: string = process.env.SESSION_SECRET!;
+const mlServiceUrl: string = process.env.ML_SERVICE_URL || "http://ml-service:5000";
 
 const requiredEnvVars = [
     'EMAIL_FROM',
@@ -45,7 +46,8 @@ const requiredEnvVars = [
     'ACCESS_TOKEN_SECRET',
     'REFRESH_TOKEN_SECRET',
     'ACCESS_TOKEN_EXPIRATION',
-    'REFRESH_TOKEN_EXPIRATION'
+    'REFRESH_TOKEN_EXPIRATION',
+    'ML_SERVICE_URL'
 ];
 
 export {
@@ -72,5 +74,6 @@ export {
     accessTokenSecret,
     refreshTokenSecret,
     requiredEnvVars,
-    tokenRotationDays
+    tokenRotationDays,
+    mlServiceUrl
 }
