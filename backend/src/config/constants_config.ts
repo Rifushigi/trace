@@ -15,7 +15,6 @@ const cldnCloudName: string = process.env.CLOUD_NAME!;
 const cldnApiKey: string = process.env.CLOUDINARY_API_KEY!;
 const cldnApiSecret: string = process.env.CLOUDINARY_API_SECRET!;
 const cldnDir: string = process.env.CLOUDINARY_DIRECTORY!;
-const tokenRotationDays: string = process.env.TOKEN_ROTATION_DAYS || '3';
 const port: string = process.env.PORT || '3000';
 const localDBUrl: string = process.env.LOCAL_DATABASE_URL!;
 const prdDBUrl: string = process.env.PRD_DATABASE_URL!;
@@ -74,6 +73,5 @@ export {
     accessTokenSecret,
     refreshTokenSecret,
     requiredEnvVars,
-    tokenRotationDays,
     mlServiceUrl
 }
