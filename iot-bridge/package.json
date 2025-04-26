@@ -1,0 +1,29 @@
+{
+  "name": "trace-iot-bridge",
+  "version": "1.0.0",
+  "description": "IoT bridge service for TRACE attendance system",
+  "main": "src/app.ts",
+  "scripts": {
+    "dev": "nodemon src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "socket.io": "^4.7.2",
+    "noble": "^1.9.1",
+    "nfc-pcsc": "^0.8.1",
+    "geolib": "^3.3.4",
+    "dotenv": "^16.5.0",
+    "axios": "^1.6.2",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^20.10.4",
+    "@types/noble": "^0.0.42",
+    "typescript": "^5.3.3",
+    "nodemon": "^3.0.2",
+    "ts-node": "^10.9.1"
+  }
+}
