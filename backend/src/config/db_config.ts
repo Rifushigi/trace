@@ -1,9 +1,9 @@
 import { connect } from 'mongoose';
 import { env, localDBUrl, prdDBUrl } from './constants_config.js';
-import { TDBConfig } from '../types/index.js';
-import { DatabaseError } from '../middlewares/index.js';
+import { DBConfig } from '../types';
+import { DatabaseError } from '../middlewares';
 
-export const getDBUrl = (): Pick<TDBConfig, 'url'> => {
+export const getDBUrl = (): Pick<DBConfig, 'url'> => {
     if (env != 'production') {
         return { url: localDBUrl! };
     }
