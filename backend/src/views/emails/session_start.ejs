@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Session Started</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .body {
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .details {
+            margin: 20px 0;
+        }
+
+        .details li {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">TRACE</div>
+            <h1>Attendance Session Started</h1>
+        </div>
+        <div class="body">
+            <p>Hello <%- lecturerName %>,</p>
+            <p>A new attendance session has started for your class.</p>
+
+            <div class="details">
+                <ul>
+                    <li><strong>Session ID:</strong> <%- session._id %></li>
+                    <li><strong>Start Time:</strong> <%- format(session.startTime, 'yyyy-MM-dd HH:mm:ss') %></li>
+                    <li><strong>Class:</strong> <%- className %></li>
+                </ul>
+            </div>
+
+            <p>You can monitor attendance in real-time through the dashboard.</p>
+
+            <div class="verification-container">
+                <a href="<%- dashboardUrl %>" class="button">View Dashboard</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>This is an automated message from TRACE.</p>
+            <p>If you have any questions, please contact support.</p>
+            <p>&copy; <%= new Date().getFullYear() %> TRACE. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+
+</html>

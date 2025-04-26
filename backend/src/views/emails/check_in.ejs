@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Check-in Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #2196F3;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .body {
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .details {
+            margin: 20px 0;
+        }
+
+        .details li {
+            margin: 10px 0;
+        }
+
+        .warning {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">TRACE</div>
+            <h1>Check-in Successful</h1>
+        </div>
+        <div class="body">
+            <p>Hello <%- studentName %>,</p>
+            <p>Your attendance has been recorded successfully.</p>
+
+            <div class="details">
+                <ul>
+                    <li><strong>Check-in Time:</strong> <%- format(log.checkedInAt, 'yyyy-MM-dd HH:mm:ss' ) %></li>
+                    <li><strong>Method:</strong> <%- log.method %></li>
+                    <li><strong>Confidence Score:</strong> <%- (log.confidenceScore * 100).toFixed(2) %>%</li>
+                    <li><strong>Class:</strong> <%- className %></li>
+                </ul>
+            </div>
+
+            <% if (log.isAnomaly) { %>
+                <p class="warning">Note: This check-in was flagged for review. Please contact your lecturer if you
+                    believe this is an error.</p>
+                <% } else { %>
+                    <p class="success">Your check-in was successful and verified.</p>
+                    <% } %>
+
+                        <div class="verification-container">
+                            <a href="<%- dashboardUrl %>" class="button">View Attendance History</a>
+                        </div>
+        </div>
+        <div class="footer">
+            <p>This is an automated message from TRACE.</p>
+            <p>If you have any questions, please contact support.</p>
+            <p>&copy; <%= new Date().getFullYear() %> TRACE. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+
+</html>
