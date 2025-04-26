@@ -1,0 +1,87 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/trace
+      - JWT_SECRET=${JWT_SECRET}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - ML_SERVICE_URL=http://ml-service:5000
+    depends_on:
+      - mongodb
+      - ml-service
+    networks:
+      - trace-network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - trace-network
+
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - MODEL_PATH=/app/models
+      - GPU_ENABLED=${GPU_ENABLED:-false}
+      - MONGODB_URI=mongodb://mongodb:27017/trace
+      - BACKEND_URL=http://backend:3000
+    volumes:
+      - ml_models:/app/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - trace-network
+
+  iot-bridge:
+    build:
+      context: ./iot-bridge
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - BACKEND_URL=http://backend:3000
+      - MONGODB_URI=mongodb://mongodb:27017/trace
+      - BLE_ENABLED=${BLE_ENABLED:-true}
+      - NFC_ENABLED=${NFC_ENABLED:-true}
+    devices:
+      - /dev/bus/usb:/dev/bus/usb # For USB devices (NFC readers)
+    privileged: true # Required for BLE and NFC access
+    depends_on:
+      - backend
+      - mongodb
+    networks:
+      - trace-network
+
+networks:
+  trace-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  ml_models:
