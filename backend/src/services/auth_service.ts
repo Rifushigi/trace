@@ -4,34 +4,52 @@ import { AuthenticationError, ConflictError, ValueError } from "../middlewares";
 import { AuthResult, AuthTokens, TUser, TUserDTO, TUserLoginDTO } from "../types";
 import { generateAuthTokens } from "./jwt_service.js";
 import { getUserByEmail } from "./user_service.js";
-import mongoose from "mongoose";
+import { invalidateExistingSessions, createNewSession } from "./session_service.js";
 
-export async function login(payload: TUserLoginDTO, req: Request): Promise<AuthResult> {
+export const login = async (payload: TUserLoginDTO, req: Request): Promise<AuthResult> => {
     const { email, password } = payload;
     const user: TUser | null = await getUserByEmail(email);
 
-    if (!user?.password) throw new ValueError("User password is not set");
+    if (!user) throw new ValueError("User not found");
+    if (!user.password) throw new ValueError("User password is not set");
+    if (!user.isVerified) throw new AuthenticationError("User email is not verified");
 
-    if (await comparePayload(password, user?.password)) {
-        const tokens: AuthTokens = generateAuthTokens({ userId: user.id });
-
-        req.session.userId = user.id;
-        req.session.refreshToken = { token: tokens.refreshToken, createdAt: new Date() };
-        const userDTO: TUserDTO = {
-            _id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            avatar: user.avatar,
-            email: user.email,
-        };
-        return {
-            user: userDTO,
-            accessToken: tokens.accessToken
-        }
+    const isPasswordValid = await comparePayload(password, user.password);
+    if (!isPasswordValid) {
+        throw new AuthenticationError("Invalid password");
     }
 
-    throw new AuthenticationError();
-}
+    // Invalidate existing sessions
+    await invalidateExistingSessions(req);
+
+    // Create new session
+    const sessionToken = await createNewSession(req, user._id.toString());
+
+    // Generate auth tokens
+    const { accessToken, refreshToken }: AuthTokens = generateAuthTokens({
+        userId: user._id.toString()
+    });
+
+    // Create user DTO with only necessary fields
+    const userDTO: TUserDTO = {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
+        email: user.email,
+        role: user.role,
+        isVerified: user.isVerified
+    };
+
+    // Set refresh token in session
+    req.session.refreshToken = { token: refreshToken, createdAt: new Date() };
+
+    return {
+        user: userDTO,
+        accessToken,
+        sessionToken
+    };
+};
 
 export async function logout(req: Request, res: Response): Promise<void> {
     if (!req.session.refreshToken?.token) throw new ConflictError("Invalid session");
@@ -39,24 +57,4 @@ export async function logout(req: Request, res: Response): Promise<void> {
     req.session.destroy((error) => { if (error) throw new Error("error destroying session") });
 
     res.clearCookie("accessToken");
-}
-
-export async function logoutAll(req: Request, res: Response): Promise<void> {
-
-    const userId = req.session.userId;
-
-    if (!userId) throw new AuthenticationError();
-
-    const sessionCollection = mongoose.connection.db?.collection("sessions");
-    if (sessionCollection) {
-        await sessionCollection.deleteMany({
-            session: { $regex: `"userId":"${userId}"` }
-        })
-    }
-
-    req.session.destroy((err) => {
-        if (err) throw new Error("Error destroying session")
-    });
-
-    res.clearCookie('accessToken');
 }
