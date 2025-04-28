@@ -14,6 +14,8 @@ export const initializeAttendanceService = (io: Server) => {
     notificationService = createNotificationService(io);
 };
 
+//TODO
+// Move to env var
 const LOW_ATTENDANCE_THRESHOLD = 0.7; // 70%
 
 export const createAttendanceSession = async (data: CreateSessionDTO): Promise<TAttendanceSession> => {
