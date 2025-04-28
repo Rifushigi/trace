@@ -5,6 +5,7 @@ import { Document } from "mongoose";
 export interface AuthResult {
     user: TUserDTO;
     accessToken: string;
+    sessionToken: string;
 }
 
 export interface TokenPayload {
@@ -43,4 +44,9 @@ export interface TVerification extends Document {
     verifiedAt?: Date;
     updatedAt: Date;
     createdAt: Date;
+}
+
+export interface TUserLoginDTO {
+    email: string;
+    password: string;
 }

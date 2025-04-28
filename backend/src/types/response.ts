@@ -1,5 +1,5 @@
-export interface ApiResponse {
-  status: 'success' | 'error';
+export interface TResponseDTO {
+  status: boolean;
   message: string;
   data?: any;
 }

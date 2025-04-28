@@ -4,26 +4,14 @@ export interface TUser extends Document {
     firstName?: string;
     lastName?: string;
     role: 'admin' | 'lecturer' | 'student';
+    isVerified: boolean;
     googleId?: string;
     avatar?: string;
     email: string;
     password?: string;
     createdAt: Date;
     updatedAt: Date;
-}
-
-export interface TUserLoginDTO {
-    email: string;
-    password: string;
-}
-
-export interface TUserCreateDTO {
-    firstName?: string;
-    lastName?: string;
-    avatar?: string;
-    googleId?: string;
-    email: string;
-    password: string;
+    deletedAt?: Date | null;
 }
 
 export interface TUserUpdateDTO {
@@ -32,6 +20,8 @@ export interface TUserUpdateDTO {
     avatar?: string;
     email?: string;
     password?: string;
+    role?: "admin" | "lecturer" | "student";
+    isVerified?: boolean;
     updatedAt: Date;
 }
 
@@ -41,4 +31,41 @@ export interface TUserDTO {
     lastName?: string;
     avatar?: string;
     email: string;
+    role: "admin" | "lecturer" | "student";
+    isVerified: boolean;
 }
+
+type TBaseUserCreateDTO = {
+    firstName?: string;
+    lastName?: string;
+    avatar?: string;
+    googleId?: string;
+    email: string;
+    password: string;
+    isVerified?: boolean;
+};
+
+export type TAdminCreateDTO = TBaseUserCreateDTO & {
+    role: "admin";
+};
+
+export type TStudentCreateDTO = TBaseUserCreateDTO & {
+    role: "student";
+    matricNo: string;
+    program: string;
+    level: string;
+    faceModelId: string;
+    nfcUid: string;
+    bleToken: string;
+};
+
+export type TLecturerCreateDTO = TBaseUserCreateDTO & {
+    role: "lecturer";
+    staffId: string;
+    department: string;
+};
+
+export type TUserCreateDTO =
+    | TAdminCreateDTO
+    | TStudentCreateDTO
+    | TLecturerCreateDTO;
