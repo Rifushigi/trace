@@ -88,7 +88,11 @@ export const globalErrorHandler: ErrorRequestHandler = (err: Error, req: Request
 
 }
 
-export const asyncErrorHandler = (func: (req: Request, res: Response, next: NextFunction) => Promise<any>) =>
+export const asyncErrorHandler = <T extends Request>(func: (req: T, res: Response) => Promise<any>) =>
+    (req: Request, res: Response, next: NextFunction) =>
+        Promise.resolve(func(req as T, res)).catch(next);
+
+export const middlewareErrorHandler = (func: (req: Request, res: Response, next: NextFunction) => Promise<any>) =>
     (req: Request, res: Response, next: NextFunction) =>
         Promise.resolve(func(req, res, next)).catch(next);
 
