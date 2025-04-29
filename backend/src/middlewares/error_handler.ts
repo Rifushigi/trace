@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import { env } from '../config';
 import { validationResult } from 'express-validator';
+import { AxiosError } from 'axios';
 
 export class AppError extends Error {
     constructor(
@@ -103,3 +104,29 @@ export function validationErrorHandler(req: Request, _res: Response, next: NextF
     }
     next();
 }
+
+// Error handling for ML service calls
+export const handleMLError = (error: unknown): never => {
+    if (error instanceof AxiosError) {
+        if (error.response) {
+            // Server responded with error
+            if (error.response.status === 401 || error.response.status === 403) {
+                throw new AuthenticationError("ML Service authentication failed");
+            }
+            if (error.response.status === 404) {
+                throw new NotFoundError("ML Service resource not found");
+            }
+            if (error.response.status === 400) {
+                throw new AppError(400, "Invalid biometric data");
+            }
+            throw new AppError(500, "ML Service error");
+        } else if (error.request) {
+            // No response received
+            throw new AppError(503, "ML Service is not responding");
+        } else {
+            // Request setup error
+            throw new AppError(500, "Failed to communicate with ML Service");
+        }
+    }
+    throw new AppError(500, "Unknown ML Service error");
+};
