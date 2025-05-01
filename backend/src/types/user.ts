@@ -14,7 +14,7 @@ export interface TUser extends Document {
     deletedAt?: Date | null;
 }
 
-export interface TUserUpdateDTO {
+export type TUserUpdateDTO = {
     firstName?: string;
     lastName?: string;
     avatar?: string;
@@ -23,7 +23,7 @@ export interface TUserUpdateDTO {
     role?: "admin" | "lecturer" | "student";
     isVerified?: boolean;
     updatedAt: Date;
-}
+} | Partial<TStudentCreateDTO> | Partial<TLecturerCreateDTO>
 
 export interface TUserDTO {
     _id: mongoose.Types.ObjectId;
