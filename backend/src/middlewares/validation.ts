@@ -16,7 +16,7 @@ export const biometricRegisterValidationRules = [
 
 export const attendanceSessionValidationRules = [
     body('classId').isMongoId().withMessage('Invalid class ID'),
-    body('startTime').optional().isISO8601().withMessage('Invalid start time format')
+    body('startTime').optional().isISO8601().withMessage('Invalid start time')
 ];
 
 export const checkInValidationRules = [
@@ -25,9 +25,15 @@ export const checkInValidationRules = [
     body('method').isIn(['face', 'nfc', 'ble', 'geofence']).withMessage('Invalid check-in method'),
     body('biometricData').optional().isString().withMessage('Invalid biometric data'),
     body('deviceId').optional().isString().withMessage('Invalid device ID'),
-    body('location').optional().isObject().withMessage('Invalid location format'),
-    body('location.latitude').optional().isFloat({ min: -90, max: 90 }).withMessage('Invalid latitude'),
-    body('location.longitude').optional().isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude')
+    body('location').optional().isObject().withMessage('Invalid location data')
+];
+
+export const automaticCheckInValidationRules = [
+    body('studentId').isMongoId().withMessage('Invalid student ID'),
+    body('sessionId').isMongoId().withMessage('Invalid session ID'),
+    body('location').isString().withMessage('Invalid location'),
+    body('confidence').isFloat({ min: 0, max: 1 }).withMessage('Invalid confidence score'),
+    body('timestamp').isISO8601().withMessage('Invalid timestamp')
 ];
 
 export const sessionIdValidationRules = [
@@ -37,7 +43,7 @@ export const sessionIdValidationRules = [
 export const studentClassValidationRules = [
     param('studentId').isMongoId().withMessage('Invalid student ID'),
     param('classId').isMongoId().withMessage('Invalid class ID')
-]; 
+];
 
 export const userSignUpValidationRules = [
     body('email').trim().notEmpty().escape().isEmail().withMessage('email is required'),
