@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Ended</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 400;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+
+        .body {
+            padding: 40px;
+            color: #333;
+        }
+
+        .summary-container {
+            background-color: #ecfdf5;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #d1fae5;
+        }
+
+        .summary-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to bottom right,
+                    rgba(5, 150, 105, 0.05),
+                    rgba(16, 185, 129, 0.05));
+            animation: rotate 20s linear infinite;
+            z-index: 1;
+        }
+
+        .details {
+            position: relative;
+            z-index: 2;
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .details li {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            min-width: 120px;
+            margin: 10px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #059669;
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #059669;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background: #047857;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #ecfdf5;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">TRACE</div>
+            <h1>Session Ended</h1>
+        </div>
+        <div class="body">
+            <p>Hello <%- lecturerName %>,</p>
+            <p>Your attendance session has ended. Here's a summary of the session:</p>
+
+            <div class="summary-container">
+                <div class="details">
+                    <ul>
+                        <li><strong>Class:</strong> <%- className %></li>
+                        <li><strong>Session ID:</strong> <%- session._id %></li>
+                        <li><strong>Start Time:</strong> <%- format(session.startTime, 'yyyy-MM-dd HH:mm:ss' ) %></li>
+                        <li><strong>End Time:</strong> <%- format(session.endTime, 'yyyy-MM-dd HH:mm:ss' ) %></li>
+                    </ul>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value"><%- totalStudents %></div>
+                        <div class="stat-label">Total Students</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value"><%- presentStudents %></div>
+                        <div class="stat-label">Present</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value"><%- (attendanceRate * 100).toFixed(1) %>%</div>
+                        <div class="stat-label">Attendance Rate</div>
+                    </div>
+                </div>
+
+                <a href="<%- dashboardUrl %>" class="button">View Full Report</a>
+            </div>
+
+            <p>You can view the complete attendance report and export the data through the dashboard.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; <%= new Date().getFullYear() %> TRACE. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+
+</html>

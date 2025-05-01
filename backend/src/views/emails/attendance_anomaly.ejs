@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Anomaly Alert</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 400;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+
+        .body {
+            padding: 40px;
+            color: #333;
+        }
+
+        .anomaly-container {
+            background-color: #fef2f2;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #fecaca;
+        }
+
+        .anomaly-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to bottom right,
+                    rgba(220, 38, 38, 0.05),
+                    rgba(239, 68, 68, 0.05));
+            animation: rotate 20s linear infinite;
+            z-index: 1;
+        }
+
+        .details {
+            position: relative;
+            z-index: 2;
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .details li {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #dc2626;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background: #b91c1c;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #fef2f2;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">TRACE</div>
+            <h1>Attendance Anomaly Detected</h1>
+        </div>
+        <div class="body">
+            <p>Hello <%- lecturerName %>,</p>
+            <p>An attendance anomaly has been detected in your class. Please review the details below:</p>
+
+            <div class="anomaly-container">
+                <div class="details">
+                    <ul>
+                        <li><strong>Student:</strong> <%- studentName %></li>
+                        <li><strong>Class:</strong> <%- className %></li>
+                        <li><strong>Check-in Time:</strong> <%- format(log.checkedInAt, 'yyyy-MM-dd HH:mm:ss' ) %></li>
+                        <li><strong>Method:</strong> <%- log.method %></li>
+                        <li><strong>Confidence Score:</strong> <%- (log.confidenceScore * 100).toFixed(2) %>%</li>
+                    </ul>
+                </div>
+                <a href="<%- dashboardUrl %>" class="button">Review Attendance</a>
+            </div>
+
+            <p>Please review this check-in through the dashboard. If you believe this is a false positive, you can mark
+                it as verified.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; <%= new Date().getFullYear() %> TRACE. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+
+</html>
