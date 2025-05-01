@@ -1,9 +1,9 @@
 import { AuthTokens, TokenPayload } from "../types";
 import jwt, { SignOptions } from "jsonwebtoken";
-import { accessTokenExpiration, accessTokenSecret, refreshTokenExpiration, refreshTokenSecret, tokenRotationDays } from "../config";
+import { accessTokenExpiration, accessTokenSecret, refreshTokenExpiration, refreshTokenSecret } from "../config";
 import { JWTError } from "../middlewares";
 import { Request } from "express";
-import { isWithinDays } from "../common";
+import crypto from "crypto";
 
 export function generateAccessToken(payload: TokenPayload): string {
     try {
@@ -21,15 +21,27 @@ export function generateRefreshToken(payload: TokenPayload): string {
     }
 }
 
+export function generateSessionToken(): string {
+    return crypto.randomUUID();
+}
+
+export function generateAuthTokens(user: TokenPayload): AuthTokens {
+    const accessToken: string = generateAccessToken({ userId: user.userId });
+    const refreshToken: string = generateRefreshToken({ userId: user.userId });
+    return {
+        accessToken,
+        refreshToken,
+    }
+}
+
 export async function refreshAccessToken(req: Request): Promise<string | void> {
     if (!req.session.refreshToken || !req.session.refreshToken.token) {
         throw new JWTError("Invalid refresh token");
     }
 
-    let payload: TokenPayload;
-
     try {
-        payload = jwt.verify(req.session.refreshToken.token, refreshTokenSecret) as TokenPayload;
+        const payload = jwt.verify(req.session.refreshToken.token, refreshTokenSecret) as TokenPayload;
+        return generateAccessToken({ userId: payload.userId });
     } catch (error) {
         if (error instanceof jwt.TokenExpiredError) {
             throw new JWTError("Refresh token expired");
@@ -38,16 +50,6 @@ export async function refreshAccessToken(req: Request): Promise<string | void> {
             throw new JWTError("Invalid refresh token");
         }
         throw new JWTError("Token verification failed");
-    }
-
-    const tokenCreationDate = new Date(req.session.refreshToken.createdAt);
-    const shouldRotateToken = !isWithinDays(tokenCreationDate, parseInt(tokenRotationDays));
-
-    if (shouldRotateToken) {
-        const newAuthTokens = generateAuthTokens({ userId: payload.userId });
-        req.session.refreshToken.token = newAuthTokens.refreshToken;
-        req.session.refreshToken.createdAt = new Date();
-        return generateAccessToken({ userId: payload.userId });
     }
 }
 
@@ -58,16 +60,6 @@ export function verifyAccessToken(token: string): TokenPayload {
         if (error instanceof jwt.TokenExpiredError) {
             throw new JWTError("Access token expired");
         }
-
         throw new JWTError("Invalid access token");
-    }
-}
-
-export function generateAuthTokens(user: TokenPayload): AuthTokens {
-    const accessToken: string = generateAccessToken({ userId: user.userId });
-    const refreshToken: string = generateRefreshToken({ userId: user.userId });
-    return {
-        accessToken,
-        refreshToken,
     }
 }
