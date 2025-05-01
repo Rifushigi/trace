@@ -90,8 +90,23 @@ export const endAttendanceSession = async (sessionId: string): Promise<TAttendan
     }
 };
 
-
-
+/** 
+ * Handles the automatic check-in process for a student.
+ * Validates the session, student, and rate limits before creating an attendance log.
+ * Sends notifications if the check-in is anomalous-ish or successful.
+ * 
+ * @param data - The data required for the check-in process.
+ * @param data.studentId - The ID of the student checking in.
+ * @param data.sessionId - The ID of the attendance session.
+ * @param data.location - The location of the student during check-in.
+ * @param data.confidence - The confidence score of the check-in (e.g., for facial recognition).
+ * @param data.timestamp - The timestamp of the check-in.
+ * @returns The created attendance log.
+ * @throws ValidationError - If required fields are missing or confidence score is invalid.
+ * @throws ConflictError - If the check-in is too soon or the student has already checked in.
+ * @throws NotFoundError - If the session or student is not found.
+ * @throws DatabaseError - If a database operation fails. 
+ * */ 
 export const handleAutomaticCheckIn = async (data: {
     studentId: string;
     sessionId: string;
@@ -173,6 +188,20 @@ export const handleAutomaticCheckIn = async (data: {
     }
 };
 
+/**
+ * Handles a manual check-in for a student.
+ * Validates the session and ensures the student has not already checked in.
+ * 
+ * @param data - The data required for the check-in process.
+ * @param data.sessionId - The ID of the attendance session.
+ * @param data.studentId - The ID of the student checking in.
+ * @param data.location - The location of the student during check-in.
+ * @param data.method - The method used for check-in (manual, QR code).
+ * @returns The created attendance log.
+ * @throws NotFoundError - If the session or student is not found.
+ * @throws ConflictError - If the student has already checked in.
+ * @throws DatabaseError - If a database operation fails.
+ */
 export const checkIn = async (data: CheckInDTO): Promise<TAttendanceLog> => {
     try {
         const session = await AttendanceSession.findOne({
@@ -213,6 +242,16 @@ export const checkIn = async (data: CheckInDTO): Promise<TAttendanceLog> => {
     }
 };
 
+/**
+ * Handles notifications related to a student's check-in.
+ * Sends notifications to the student and lecturer based on the check-in status.
+ * Also calculates the attendance rate and notifies the lecturer if it falls below the threshold.
+ * 
+ * @param log - The attendance log for the student's check-in.
+ * @param session - The attendance session associated with the check-in.
+ * @throws NotFoundError - If the student or lecturer is not found.
+ * @throws DatabaseError - If a database operation fails.
+ */
 async function handleCheckInNotifications(log: TAttendanceLog, session: TAttendanceSession): Promise<void> {
     const student = await User.findById(log.studentId);
     if (!student) {
