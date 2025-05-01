@@ -3,4 +3,5 @@ import { TUser } from "./user.js";
 
 export interface AuthenticatedRequest extends Request {
     user: TUser;
+    role?: string;
 } 
