@@ -61,7 +61,6 @@ export const deleteClass = async (classId: string): Promise<boolean> => {
     }
 };
 
-// Existing functions
 export const getClassById = async (classId: string): Promise<TClass> => {
     try {
         const classData = await Class.findById(classId);
@@ -195,6 +194,19 @@ export const getClassStatistics = async (classId: string): Promise<{
     }
 };
 
+/**
+ * Searches for classes based on various query parameters.
+ * Allows filtering by title, course code, semester, year, or lecturer ID.
+ * 
+ * @param query - The search criteria for filtering classes.
+ * @param query.title - (Optional) The title of the class (partial match, case-insensitive).
+ * @param query.courseCode - (Optional) The course code of the class (partial match, case-insensitive).
+ * @param query.semester - (Optional) The semester of the class ("Fall", "Spring").
+ * @param query.year - (Optional) The year of the class.
+ * @param query.lecturerId - (Optional) The ID of the lecturer teaching the class.
+ * @returns A list of classes matching the search criteria.
+ * @throws DatabaseError - If a database operation fails.
+ */
 export const searchClasses = async (query: {
     title?: string;
     courseCode?: string;
