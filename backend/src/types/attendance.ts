@@ -37,3 +37,9 @@ export interface StudentStats {
     anomalies: number;
     lastCheckIn?: Date;
 } 
+
+export interface PopulatedStudent {
+    firstName: string;
+    lastName: string;
+    email: string;
+}
