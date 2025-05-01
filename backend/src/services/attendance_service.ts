@@ -1,11 +1,9 @@
-import { AttendanceSession, AttendanceLog, User } from "../models/index.js";
-import { TAttendanceSession, TAttendanceLog } from "../types/index.js";
-import { CreateSessionDTO, CheckInDTO } from "../types/attendance.js";
-import { notifyAnomaly,notifyCheckIn,notifyLowAttendance, notifySessionStart,notifySessionEnd } from "./email_service.js";
+import { AttendanceSession, AttendanceLog, User } from "../models";
+import { TAttendanceSession, TAttendanceLog, CreateSessionDTO, CheckInDTO } from "../types";
+import { notifyAnomaly, notifyCheckIn, notifyLowAttendance, notifySessionStart, notifySessionEnd } from "./email_service.js";
 import { createNotificationService } from "./notification_service.js";
-import { NotFoundError, ConflictError, DatabaseError } from "../middlewares/error_handler.js";
+import { NotFoundError, ConflictError, DatabaseError, ValidationError } from "../middlewares/error_handler.js";
 import { Server } from "socket.io";
-import { mlService } from "./ml_service.js";
 import { validateClassExists } from "./class_service.js";
 
 let notificationService: ReturnType<typeof createNotificationService>;
@@ -17,6 +15,12 @@ export const initializeAttendanceService = (io: Server) => {
 //TODO
 // Move to env var
 const LOW_ATTENDANCE_THRESHOLD = 0.7; // 70%
+const MIN_CHECK_IN_INTERVAL = 60; // 60 seconds between check-ins
+const MAX_CONFIDENCE_SCORE = 1.0;
+const MIN_CONFIDENCE_SCORE = 0.0;
+
+// Rate limiting map
+const lastCheckInTimes: Map<string, Date> = new Map();
 
 export const createAttendanceSession = async (data: CreateSessionDTO): Promise<TAttendanceSession> => {
     try {
@@ -86,6 +90,89 @@ export const endAttendanceSession = async (sessionId: string): Promise<TAttendan
     }
 };
 
+
+
+export const handleAutomaticCheckIn = async (data: {
+    studentId: string;
+    sessionId: string;
+    location: string;
+    confidence: number;
+    timestamp: Date;
+}): Promise<TAttendanceLog> => {
+    try {
+        // Validate input data
+        if (!data.studentId || !data.sessionId || !data.location) {
+            throw new ValidationError("Missing required fields");
+        }
+
+        if (data.confidence < MIN_CONFIDENCE_SCORE || data.confidence > MAX_CONFIDENCE_SCORE) {
+            throw new ValidationError("Invalid confidence score");
+        }
+
+        // Check rate limiting
+        const lastCheckIn = lastCheckInTimes.get(data.studentId);
+        if (lastCheckIn) {
+            const timeSinceLastCheckIn = (new Date().getTime() - lastCheckIn.getTime()) / 1000;
+            if (timeSinceLastCheckIn < MIN_CHECK_IN_INTERVAL) {
+                throw new ConflictError("Check-in too soon after last check-in");
+            }
+        }
+
+        // Validate session
+        const session = await AttendanceSession.findOne({
+            _id: data.sessionId,
+            status: "ongoing"
+        });
+
+        if (!session) {
+            throw new NotFoundError("Invalid or completed attendance session");
+        }
+
+        // Check for existing check-in
+        const existingLog = await AttendanceLog.findOne({
+            sessionId: data.sessionId,
+            studentId: data.studentId
+        });
+
+        if (existingLog) {
+            throw new ConflictError("Student has already checked in");
+        }
+
+        // Validate student exists
+        const student = await User.findById(data.studentId);
+        if (!student) {
+            throw new NotFoundError("Student not found");
+        }
+
+        // Determine if check-in is anomalous
+        const isAnomaly = data.confidence < 0.8;
+
+        // Create attendance log
+        const log = await AttendanceLog.create({
+            sessionId: data.sessionId,
+            studentId: data.studentId,
+            checkedInAt: data.timestamp,
+            method: "face",
+            confidenceScore: data.confidence,
+            isAnomaly,
+            location: data.location
+        });
+
+        // Update rate limiting
+        lastCheckInTimes.set(data.studentId, new Date());
+
+        // Handle notifications
+        await handleCheckInNotifications(log, session);
+
+        return log;
+    } catch (error) {
+        if (error instanceof Error) {
+            throw new DatabaseError(`Failed to process automatic check-in: ${error.message}`);
+        }
+        throw error;
+    }
+};
+
 export const checkIn = async (data: CheckInDTO): Promise<TAttendanceLog> => {
     try {
         const session = await AttendanceSession.findOne({
@@ -106,58 +193,17 @@ export const checkIn = async (data: CheckInDTO): Promise<TAttendanceLog> => {
             throw new ConflictError("Student has already checked in");
         }
 
-        let confidenceScore = 1.0;
-        let isAnomaly = false;
-
-        if (data.method === "face" && data.biometricData) {
-            const verificationResult = await mlService.verifyFace(data.biometricData, data.studentId);
-            confidenceScore = verificationResult.confidence;
-            isAnomaly = confidenceScore < 0.8;
-        }
-
         const log = await AttendanceLog.create({
             sessionId: data.sessionId,
             studentId: data.studentId,
             checkedInAt: new Date(),
             method: data.method,
-            confidenceScore,
-            isAnomaly
+            confidenceScore: 1.0,
+            isAnomaly: false,
+            location: data.location
         });
 
-        const student = await User.findById(data.studentId);
-        if (!student) {
-            throw new NotFoundError("Student not found");
-        }
-
-        if (student.email) {
-            await notifyCheckIn(log, student.email);
-        }
-
-        notificationService.notifyCheckIn(log);
-
-        if (isAnomaly) {
-            const lecturer = await User.findOne({ role: 'lecturer' });
-            if (!lecturer) {
-                throw new NotFoundError("Lecturer not found");
-            }
-
-            if (lecturer.email) {
-                await notifyAnomaly(log, lecturer.email);
-            }
-            notificationService.notifyAnomaly(log);
-        }
-
-        const totalStudents = await User.countDocuments({ role: 'student' });
-        const checkedInCount = await AttendanceLog.countDocuments({ sessionId: data.sessionId });
-        const attendanceRate = checkedInCount / totalStudents;
-
-        if (attendanceRate < LOW_ATTENDANCE_THRESHOLD) {
-            const lecturer = await User.findOne({ role: 'lecturer' });
-            if (lecturer?.email) {
-                await notifyLowAttendance(session, lecturer.email, attendanceRate);
-            }
-        }
-
+        await handleCheckInNotifications(log, session);
         return log;
     } catch (error) {
         if (error instanceof Error) {
@@ -166,6 +212,42 @@ export const checkIn = async (data: CheckInDTO): Promise<TAttendanceLog> => {
         throw error;
     }
 };
+
+async function handleCheckInNotifications(log: TAttendanceLog, session: TAttendanceSession): Promise<void> {
+    const student = await User.findById(log.studentId);
+    if (!student) {
+        throw new NotFoundError("Student not found");
+    }
+
+    if (student.email) {
+        await notifyCheckIn(log, student.email);
+    }
+
+    notificationService.notifyCheckIn(log);
+
+    if (log.isAnomaly) {
+        const lecturer = await User.findOne({ role: 'lecturer' });
+        if (!lecturer) {
+            throw new NotFoundError("Lecturer not found");
+        }
+
+        if (lecturer.email) {
+            await notifyAnomaly(log, lecturer.email);
+        }
+        notificationService.notifyAnomaly(log);
+    }
+
+    const totalStudents = await User.countDocuments({ role: 'student' });
+    const checkedInCount = await AttendanceLog.countDocuments({ sessionId: session._id });
+    const attendanceRate = checkedInCount / totalStudents;
+
+    if (attendanceRate < LOW_ATTENDANCE_THRESHOLD) {
+        const lecturer = await User.findOne({ role: 'lecturer' });
+        if (lecturer?.email) {
+            await notifyLowAttendance(session, lecturer.email, attendanceRate);
+        }
+    }
+}
 
 export const getSessionAttendance = async (sessionId: string): Promise<{
     session: TAttendanceSession;
