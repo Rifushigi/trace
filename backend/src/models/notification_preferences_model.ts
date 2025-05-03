@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+//TODO
 const notificationPreferencesSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,

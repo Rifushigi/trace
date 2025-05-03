@@ -1,13 +1,14 @@
 import { Server } from 'socket.io';
-import { TAttendanceLog, TAttendanceSession } from '../types';
 import {
     NotificationService,
     SessionStartNotification,
     SessionEndNotification,
     CheckInNotification,
     CheckInConfirmationNotification,
-    AnomalyNotification
-} from '../types';
+    AnomalyNotification,
+    TAttendanceLog,
+    TAttendanceSession
+} from '../types/index.js';
 
 // Implementation of the NotificationService interface
 // Handles real-time notifications for attendance-related events

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { signUp, updateAvatar, softDelete, restore, getDeleted, getUserProfile, deleteUser } from '../../controllers/user_controller.js';
-import { requireAdmin, sessionMiddleware, userSignUpValidationRules, validationErrorHandler } from '../../middlewares';
-import { upload } from '../../config';
+import { requireAdmin, sessionMiddleware, userSignUpValidationRules, validationErrorHandler } from '../../middlewares/index.js';
+import { upload } from '../../config/index.js';
 
 const router = Router();
 

@@ -6,3 +6,4 @@ export * from "./lecturer_model.js";
 export * from "./student_model.js";
 export * from "./user_model.js";
 export * from "./verification_model.js";
+export * from "./notification_preferences_model.js";

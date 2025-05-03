@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sessionMiddleware, validationErrorHandler, userSignInValidationRules } from "../../middlewares";
+import { sessionMiddleware, validationErrorHandler, userSignInValidationRules } from "../../middlewares/index.js";
 import { refreshToken, sendEmail, sendOtp, signIn, signout, verifyEmail, verifyOtp } from "../../controllers/auth_controller.js";
 
 const router = Router();

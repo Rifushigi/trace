@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { asyncErrorHandler } from "../middlewares";
-import { TResponseDTO, AuthenticatedRequest } from "../types";
+import { asyncErrorHandler } from "../middlewares/index.js";
+import { TResponseDTO, AuthenticatedRequest } from "../types/index.js";
 import {
     createAttendanceSession,
     endAttendanceSession,
@@ -85,24 +85,24 @@ export const getStudentAttendanceHistory = asyncErrorHandler(async (req: Request
 
 // Automatic check-in endpoint (used by ML Service)
 export const automaticCheckIn = asyncErrorHandler(async (req: Request, res: Response) => {
-        const { studentId, sessionId, location, confidence, timestamp } = req.body;
+    const { studentId, sessionId, location, confidence, timestamp } = req.body;
 
-        const log = await handleAutomaticCheckIn({
-            studentId,
-            sessionId,
-            location,
-            confidence,
-            timestamp: new Date(timestamp)
-        });
+    const log = await handleAutomaticCheckIn({
+        studentId,
+        sessionId,
+        location,
+        confidence,
+        timestamp: new Date(timestamp)
+    });
 
-        const response: TResponseDTO = {
-            status: true,
-            data: {
-                log,
-                message: log.isAnomaly ? "Check-in recorded with anomaly flag" : "Check-in recorded successfully"
-            },
-            message: "Automatic check-in processed successfully"
-        };
+    const response: TResponseDTO = {
+        status: true,
+        data: {
+            log,
+            message: log.isAnomaly ? "Check-in recorded with anomaly flag" : "Check-in recorded successfully"
+        },
+        message: "Automatic check-in processed successfully"
+    };
 
-        return res.status(201).json({ response });
+    return res.status(201).json({ response });
 }); 

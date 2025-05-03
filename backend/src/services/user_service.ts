@@ -1,9 +1,28 @@
-import { Lecturer, Student, User } from "../models";
-import type { TLecturer, TStudent, TUser, TUserCreateDTO, TUserDTO, TUserUpdateDTO, TLecturerCreateDTO } from "../types"
-import { AppError, ConflictError, DatabaseError, NotFoundError, UnauthorizedError, ValidationError } from "../middlewares";
-import { comparePayload, hashPayload, getAvatarHostname, getAvatarPublicId } from "../common";
+import { Lecturer, Student, User } from "../models/index.js";
+import {
+    TLecturer,
+    TStudent,
+    TUser,
+    TUserCreateDTO,
+    TUserDTO,
+    TUserUpdateDTO
+} from "../types/index.js"
+import {
+    AppError,
+    ConflictError,
+    DatabaseError,
+    NotFoundError,
+    UnauthorizedError,
+    ValidationError
+} from "../middlewares/index.js";
+import {
+    comparePayload,
+    hashPayload,
+    getAvatarHostname,
+    getAvatarPublicId
+} from "../common/index.js";
 import { Model } from "mongoose";
-import { cldnDir, cloudinary } from '../config';
+import { cldnDir, cloudinary } from '../config/index.js';
 import { Readable } from "stream";
 import { sendVerificationEmail } from "./email_service";
 

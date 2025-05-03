@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
-import { env } from '../config';
+import { env } from '../config/index.js';
 import { validationResult } from 'express-validator';
 import { AxiosError } from 'axios';
 
@@ -102,7 +102,7 @@ export const middlewareErrorHandler = (func: (req: Request, res: Response, next:
 export function validationErrorHandler(req: Request, _res: Response, next: NextFunction): void {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        const errorMessages  = errors.array().map(error => error.msg);
+        const errorMessages = errors.array().map(error => error.msg);
         throw new ValidationError("validation failed", errorMessages);
     }
     next();

@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
-import { asyncErrorHandler, NotFoundError } from "../middlewares"
+import { asyncErrorHandler, NotFoundError } from "../middlewares/index.js"
 import { create, uploadAvatar, softDeleteUser, restoreUser, getDeletedUsers, getProfile, hardDeleteUser } from "../services/user_service.js"
-import { TResponseDTO, TUserProfileResponseDTO } from "../types";
+import { TResponseDTO, TUserProfileResponseDTO } from "../types/index.js";
 
 export const signUp = asyncErrorHandler(async (req: Request, res: Response) => {
     await create(req.body);

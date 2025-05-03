@@ -1,4 +1,4 @@
-import { DatabaseError } from "../middlewares/error_handler.js";
+import { DatabaseError } from "../middlewares/index.js";
 import { generateSessionToken } from "./jwt_service.js";
 import { Request } from "express";
 

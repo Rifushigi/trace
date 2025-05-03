@@ -3,9 +3,9 @@ import cors from "cors";
 import session from "express-session";
 import bodyParser from 'body-parser';
 import allRoutes from "./routes/index.js";
-import { corsConfig, initDB, port, sessionConfig } from './config';
-import { globalErrorHandler } from './middlewares';
-import { isEnvDefined } from './common';
+import { corsConfig, initDB, port, sessionConfig } from './config/index.js';
+import { globalErrorHandler } from './middlewares/index.js';
+import { isEnvDefined } from './common/index.js';
 import morgan from 'morgan';
 
 isEnvDefined();

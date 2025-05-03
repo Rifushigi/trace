@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { asyncErrorHandler } from "../middlewares";
-import { TResponseDTO } from "../types";
+import { asyncErrorHandler } from "../middlewares/index.js";
+import { TResponseDTO } from "../types/index.js";
 import {
     generateClassAttendanceReport,
     generateStudentAttendanceReport,

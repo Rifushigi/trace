@@ -1,8 +1,7 @@
-import { Class, Enrollment, AttendanceSession, AttendanceLog } from "../models";
-import { TClass, TUser, TAttendanceSession } from "../types";
-import { DatabaseError, NotFoundError, ConflictError, ValidationError } from "../middlewares/error_handler.js";
+import { Class, Enrollment, AttendanceSession, AttendanceLog } from "../models/index.js";
+import { TClass, TUser, TAttendanceSession, ClassUpdateDTO } from "../types/index.js";
+import { DatabaseError, NotFoundError, ConflictError, ValidationError } from "../middlewares/index.js";
 import mongoose, { Schema } from "mongoose";
-import { ClassUpdateDTO } from "../types/class.js";
 
 // Basic CRUD Operations
 export const createClass = async (classData: {

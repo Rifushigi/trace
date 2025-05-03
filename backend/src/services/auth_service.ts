@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { comparePayload } from "../common";
-import { AuthenticationError, ConflictError, ValueError } from "../middlewares";
-import { AuthResult, AuthTokens, TUser, TUserDTO, TUserLoginDTO } from "../types";
+import { comparePayload } from "../common/index.js";
+import { AuthenticationError, ConflictError, ValueError } from "../middlewares/index.js";
+import { AuthResult, AuthTokens, TUser, TUserDTO, TUserLoginDTO } from "../types/index.js";
 import { generateAuthTokens } from "./jwt_service.js";
 import { getUserByEmail } from "./user_service.js";
 import { invalidateExistingSessions, createNewSession } from "./session_service.js";

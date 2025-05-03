@@ -1,5 +1,5 @@
-import { AttendanceSession, AttendanceLog, User } from "../models";
-import { TAttendanceSession, TAttendanceLog, CreateSessionDTO, CheckInDTO } from "../types";
+import { AttendanceSession, AttendanceLog, User } from "../models/index.js";
+import { TAttendanceSession, TAttendanceLog, CreateSessionDTO, CheckInDTO } from "../types/index.js";
 import { notifyAnomaly, notifyCheckIn, notifyLowAttendance, notifySessionStart, notifySessionEnd } from "./email_service.js";
 import { createNotificationService } from "./notification_service.js";
 import { NotFoundError, ConflictError, DatabaseError, ValidationError } from "../middlewares/error_handler.js";
@@ -106,7 +106,7 @@ export const endAttendanceSession = async (sessionId: string): Promise<TAttendan
  * @throws ConflictError - If the check-in is too soon or the student has already checked in.
  * @throws NotFoundError - If the session or student is not found.
  * @throws DatabaseError - If a database operation fails. 
- * */ 
+ * */
 export const handleAutomaticCheckIn = async (data: {
     studentId: string;
     sessionId: string;

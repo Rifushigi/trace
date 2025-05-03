@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sessionMiddleware } from "../../middlewares";
+import { sessionMiddleware } from "../../middlewares/index.js";
 import {
     getPreferences,
     updatePreferences,

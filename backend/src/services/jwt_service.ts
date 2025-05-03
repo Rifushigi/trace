@@ -1,7 +1,12 @@
-import { AuthTokens, TokenPayload } from "../types";
+import { AuthTokens, TokenPayload } from "../types/index.js";
 import jwt, { SignOptions } from "jsonwebtoken";
-import { accessTokenExpiration, accessTokenSecret, refreshTokenExpiration, refreshTokenSecret } from "../config";
-import { JWTError } from "../middlewares";
+import {
+    accessTokenExpiration,
+    accessTokenSecret,
+    refreshTokenExpiration,
+    refreshTokenSecret
+} from "../config/index.js";
+import { JWTError } from "../middlewares/index.js";
 import { Request } from "express";
 import crypto from "crypto";
 

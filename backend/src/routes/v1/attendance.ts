@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { 
-    sessionMiddleware, 
-    requireLecturer, 
+import {
+    sessionMiddleware,
+    requireLecturer,
     requireStudent,
     attendanceSessionValidationRules,
     checkInValidationRules,
@@ -9,7 +9,7 @@ import {
     studentClassValidationRules,
     automaticCheckInValidationRules,
     validationErrorHandler
-} from "../../middlewares";
+} from "../../middlewares/index.js";
 import {
     startSession,
     endSession,

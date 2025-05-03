@@ -1,9 +1,9 @@
-import { AttendanceSession, AttendanceLog, User } from "../models";
+import { AttendanceSession, AttendanceLog, User } from "../models/index.js";
 import { createObjectCsvWriter } from 'csv-writer';
 import { format } from 'date-fns';
-import { AttendanceStats, StudentStats, PopulatedStudent } from "../types";
+import { AttendanceStats, StudentStats, PopulatedStudent } from "../types/index.js";
 import { validateClassExists } from "./class_service.js";
-import { NotFoundError, DatabaseError } from "../middlewares/error_handler.js";
+import { NotFoundError, DatabaseError } from "../middlewares/index.js";
 
 /**
  * Generates a statistical attendance report for a specific class.
@@ -28,7 +28,7 @@ export const generateClassAttendanceReport = async (classId: string, startDate?:
         if (startDate || endDate) {
             query.startTime = {};
             if (startDate) query.startTime.$gte = startDate;
-            if (endDate) query.startTime.$lte = endDate; 
+            if (endDate) query.startTime.$lte = endDate;
         }
 
         const sessions = await AttendanceSession.find(query);
@@ -128,7 +128,7 @@ export const exportAttendanceToCSV = async (classId: string, startDate?: Date, e
         const query: any = { classId };
         if (startDate || endDate) {
             query.startTime = {};
-            if (startDate) query.startTime.$gte = startDate; 
+            if (startDate) query.startTime.$gte = startDate;
             if (endDate) query.startTime.$lte = endDate;
         }
 

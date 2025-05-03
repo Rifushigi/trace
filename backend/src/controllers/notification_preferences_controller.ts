@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { asyncErrorHandler } from "../middlewares";
-import { TResponseDTO } from "../types";
-import { NotificationPreferences } from "../models/notification_preferences_model.js";
+import { asyncErrorHandler } from "../middlewares/index.js";
+import { TResponseDTO } from "../types/index.js";
+import { NotificationPreferences } from "../models/index.js";
 
 export const getPreferences = asyncErrorHandler(async (req: Request, res: Response) => {
     const { userId } = req.params;

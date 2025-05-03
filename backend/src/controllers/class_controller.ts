@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import { asyncErrorHandler } from "../middlewares";
+import { asyncErrorHandler } from "../middlewares/index.js";
 import {
     TResponseDTO,
     AuthenticatedRequest,
     ClassCreateDTO,
     ClassUpdateDTO,
     ClassSearchDTO
-} from "../types";
+} from "../types/index.js";
 import {
     createClass,
     updateClass,

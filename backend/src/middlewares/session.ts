@@ -1,5 +1,5 @@
 import { verifyAccessToken } from "../services/jwt_service.js";
-import { AccessToken } from "../types";
+import { AccessToken } from "../types/index.js";
 import { middlewareErrorHandler, ForbiddenError, UnauthorizedError } from "./error_handler.js";
 import { NextFunction, Response, Request } from "express";
 import { validateSession } from "../services/session_service.js";

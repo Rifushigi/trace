@@ -8,7 +8,7 @@ import {
     classIdValidationRules,
     studentIdValidationRules,
     searchValidationRules
-} from "../../middlewares";
+} from "../../middlewares/index.js";
 import {
     createNewClass,
     updateExistingClass,

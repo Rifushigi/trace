@@ -1,7 +1,7 @@
-import { asyncErrorHandler } from "../middlewares";
+import { asyncErrorHandler } from "../middlewares/index.js";
 import { Response, Request } from "express";
 import { login, logout } from "../services/auth_service.js"
-import { TUserDTO, TResponseDTO } from "../types";
+import { TUserDTO, TResponseDTO } from "../types/index.js";
 import { refreshAccessToken } from "../services/jwt_service.js";
 import { sendOtpEmail, sendVerificationEmail, validateVerificationEmail, verifyOtpEmail } from "../services/email_service.js";
 
