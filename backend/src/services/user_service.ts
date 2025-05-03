@@ -1,6 +1,6 @@
 import { Lecturer, Student, User } from "../models";
 import type { TLecturer, TStudent, TStudentCreateDTO, TUser, TUserCreateDTO, TUserDTO, TUserUpdateDTO, TLecturerCreateDTO } from "../types"
-import { AppError, ConflictError, DatabaseError, NotFoundError, UnauthorizedError } from "../middlewares";
+import { AppError, ConflictError, DatabaseError, NotFoundError, UnauthorizedError, ValidationError } from "../middlewares";
 import { comparePayload, hashPayload } from "../common";
 import { Model } from "mongoose";
 import { cldnDir, cloudinary } from '../config';
@@ -25,12 +25,12 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
     userDTO.isVerified = userDTO.isVerified ?? false;
     userDTO.password = await hashPayload(userDTO.password);
 
-    const newUser = new userModel(userDTO);
-    const savedUser = await newUser.save();
-    if (!savedUser) throw new Error("Failed to save user");
-
     // Handle role-specific logic
-    if (userDTO.role === "student") {
+    if (userDTO.role === "student" && "matricNo" in userDTO && "program" in userDTO && "level" in userDTO) {
+        const newUser = new userModel(userDTO);
+        const savedUser = await newUser.save();
+        if (!savedUser) throw new Error("Failed to save user");
+
         const studentData = {
             userId: savedUser._id,
             matricNo: userDTO.matricNo,
@@ -42,7 +42,11 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
         };
         const student = new studentModel(studentData);
         await student.save();
-    } else if (userDTO.role === "lecturer") {
+    } else if (userDTO.role === "lecturer" && "department" in userDTO && "staffId") {
+        const newUser = new userModel(userDTO);
+        const savedUser = await newUser.save();
+        if (!savedUser) throw new Error("Failed to save user");
+
         const lecturerData = {
             userId: savedUser._id,
             staffId: userDTO.staffId,
@@ -50,6 +54,8 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
         };
         const lecturer = new lecturerModel(lecturerData);
         await lecturer.save();
+    } else {
+        throw new ValidationError(`Missing required field(s) for selected role: ${userDTO.role}`);
     }
 
     return true;
@@ -114,10 +120,10 @@ export async function update(id: string, updateDTO: TUserUpdateDTO): Promise<TUs
 
         // Handle role-specific updates
         if (updateDTO.role === "student") {
-            const studentData = {...updateDTO};
+            const studentData = { ...updateDTO };
             await studentModel.findOneAndUpdate({ userId: id }, studentData, { new: true });
         } else if (updateDTO.role === "lecturer") {
-            const lecturerData = {...updateDTO};
+            const lecturerData = { ...updateDTO };
             await lecturerModel.findOneAndUpdate({ userId: id }, lecturerData, { new: true });
         }
 
