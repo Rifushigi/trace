@@ -3,6 +3,5 @@
   "ext": "ts",
   "execMap": {
     "ts": "tsc --noEmit && tsx"
-  },
-  "delay": "2500"
+  }
 }
