@@ -32,8 +32,74 @@ export const studentClassValidationRules = [
 ];
 
 export const userSignUpValidationRules = [
-    body('email').trim().notEmpty().escape().isEmail().withMessage('email is required'),
-    body('password').trim().notEmpty().escape().isLength({ min: 6 }).withMessage('password is required'),
+    body('email')
+        .trim()
+        .notEmpty()
+        .escape()
+        .isEmail()
+        .withMessage('Valid email is required'),
+    body('password')
+        .trim()
+        .notEmpty()
+        .escape()
+        .isLength({ min: 6 })
+        .withMessage('Password must be at least 6 characters long'),
+    body('role')
+        .trim()
+        .notEmpty()
+        .escape()
+        .isIn(['admin', 'lecturer', 'student'])
+        .withMessage('Role must be one of: admin, lecturer, student'),
+    body('isVerified')
+        .optional()
+        .isBoolean()
+        .withMessage('isVerified must be a boolean'),
+    body('matricNo')
+        .optional()
+        .trim()
+        .escape()
+        .isString()
+        .withMessage('matricNo must be a string'),
+    body('program')
+        .optional()
+        .trim()
+        .escape()
+        .isString()
+        .withMessage('program must be a string'),
+    body('level')
+        .optional()
+        .isInt({ min: 1 })
+        .withMessage('level must be a positive integer'),
+    body('faceModelId')
+        .optional()
+        .trim()
+        .escape()
+        .isString()
+        .withMessage('faceModelId must be a string'),
+    body('nfcUid')
+        .optional()
+        .trim()
+        .escape()
+        .isString()
+        .withMessage('nfcUid must be a string'),
+    body('bleToken')
+        .optional()
+        .trim()
+        .escape()
+        .isString()
+        .withMessage('bleToken must be a string'),
+    body('staffId')
+        .optional()
+        .trim()
+        .escape()
+        .isString()
+        .withMessage('staffId must be a string'),
+    body('department')
+        .optional()
+        .trim()
+        .escape()
+        .isString()
+        .withMessage('department must be a string'),
 ];
 
 export const userSignInValidationRules = [
