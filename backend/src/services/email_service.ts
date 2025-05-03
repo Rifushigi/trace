@@ -81,7 +81,6 @@ export async function sendVerificationEmail(email: string): Promise<void> {
 }
 
 export async function validateVerificationEmail(token: string): Promise<boolean | void> {
-    console.log(token);
     const verificationRecord = await dbModel.findOne({ "verificationToken.token": token });
     console.log({ verificationRecord });
     if (!verificationRecord) {
