@@ -62,7 +62,6 @@ export async function sendVerificationEmail(email: string): Promise<void> {
     }
 
     const templatePath = path.join(__dirname, "/src/views/emails/verification_email.ejs");
-    console.log(templatePath);
     const htmlContent = await ejs.renderFile(templatePath, {
         title: "Email Verification",
         userName: user?.firstName || "User",
