@@ -98,11 +98,13 @@ export async function validateVerificationEmail(token: string): Promise<boolean 
         throw new AuthenticationError("Token has expired, request a new verification email");
     }
 
-    console.log(storedToken);
-    console.log(token);
     if (storedToken && storedToken === token) {
         if (verificationRecord.userId) {
             const user = await getUserById(verificationRecord.userId.toString());
+            if (user) {
+                user.isVerified = true;
+                await user.save();
+            }
             verificationRecord.isVerified = true;
             verificationRecord.verifiedAt = new Date();
             verificationRecord.updatedAt = new Date();
