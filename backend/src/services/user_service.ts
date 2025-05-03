@@ -133,6 +133,9 @@ export async function update(id: string, updateDTO: TUserUpdateDTO): Promise<TUs
     }
 }
 
+// avatar upload logic
+
+// prevent multiple uploads by keeping track of the upload state
 const uploadLocks: { [userId: string]: boolean } = {}
 
 export const uploadAvatar = async (file: Express.Multer.File, userId: string): Promise<void> => {
@@ -151,12 +154,10 @@ export const uploadAvatar = async (file: Express.Multer.File, userId: string): P
             asset_folder: cldnDir
         };
 
-
         const uploadStream = cloudinary.uploader.upload_stream(
             transformations,
             async (_err, result) => {
                 if (result) {
-
                     const optimisedUrl = cloudinary.url(
                         result.public_id,
                         { fetch_format: "auto", quality: "auto", radius: "max", aspect_ratio: "1:1", crop: "auto" }
