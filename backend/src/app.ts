@@ -19,13 +19,13 @@ app.use(session(sessionConfig));
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(morgan("combined"));
-app.use('/v1', allRoutes);
+app.use('/api/v1', allRoutes);
+app.use(globalErrorHandler);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Welcome to Trace!');
 });
 
-app.use(globalErrorHandler);
 
 app.listen(port, () => {
     console.log(`Server running at 0.0.0.0:${port}`);
