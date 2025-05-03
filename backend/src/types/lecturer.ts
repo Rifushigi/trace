@@ -5,5 +5,5 @@ export interface TLecturer extends Document {
     userId: ObjectId;
     staffId: string;
     //TODO need to review this due to the fact that different lecuturers take courses between different departments
-    department: string;
+    college: string;
 }
