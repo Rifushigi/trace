@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/app.ts || exit 1",
     "start": "tsx src/app.ts",
-    "build": "pnpm approve-builds --yes && tsc && cp -R src/views dist/views",
+    "build": "tsc && cp -R src/views dist/views",
     "serve": "node dist/app.js"
   },
   "author": "Rifushigi",
