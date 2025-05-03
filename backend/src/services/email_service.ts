@@ -80,8 +80,8 @@ export async function sendVerificationEmail(email: string): Promise<void> {
     (await transporter()).sendMail(mailOptions);
 }
 
-export async function validateVerificationEmail(email: string, token: string): Promise<boolean | void> {
-    const verificationRecord = await dbModel.findOne({ email });
+export async function validateVerificationEmail(token: string): Promise<boolean | void> {
+    const verificationRecord = await dbModel.findOne({ token });
     if (!verificationRecord) {
         throw new NotFoundError("Request for a new verfication email");
     }
