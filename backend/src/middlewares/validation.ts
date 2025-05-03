@@ -94,12 +94,12 @@ export const userSignUpValidationRules = [
         .escape()
         .isString()
         .withMessage('staffId must be a string'),
-    body('department')
+    body('college')
         .optional()
         .trim()
         .escape()
         .isString()
-        .withMessage('department must be a string'),
+        .withMessage('college must be a string'),
 ];
 
 export const userSignInValidationRules = [
