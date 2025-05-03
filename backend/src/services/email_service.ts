@@ -61,7 +61,7 @@ export async function sendVerificationEmail(email: string): Promise<void> {
         verificationLink = `${baseUrl}/auth/verify-email?token=${verificationRecord.verificationToken.token}`;
     }
 
-    const templatePath = path.join(__dirname, "../views/emailTemplates/verificationEmail.ejs");
+    const templatePath = path.join(__dirname, "../views/emailTemplates/verification_email.ejs");
     const htmlContent = await ejs.renderFile(templatePath, {
         title: "Email Verification",
         userName: user?.firstName || "User",
@@ -135,7 +135,7 @@ export async function sendOtpEmail(email: string) {
         code = verificationRecord.otp.code;
     }
 
-    const templatePath = path.join(__dirname, "../views/emailTemplates/otpEmail.ejs");
+    const templatePath = path.join(__dirname, "../views/emailTemplates/otp_email.ejs");
     const htmlContent = await ejs.renderFile(templatePath, {
         title: "Password Reset (OTP)",
         userName: user?.firstName || "User",
