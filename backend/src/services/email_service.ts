@@ -1,16 +1,14 @@
-import { TAttendanceLog, TAttendanceSession } from '../types';
 import { Model } from "mongoose";
-import { Verification } from "../models/index.js";
-import { Otp, TVerification, VerificationToken } from "../types/index.js";
+import { Verification, User, AttendanceSession, AttendanceLog } from "../models/index.js";
+import { Otp, TVerification, VerificationToken, TAttendanceLog, TAttendanceSession } from "../types/index.js";
 import { randomBytes } from "crypto";
 import { baseUrl, emailExp, emailFrom, otpExp, transporter } from "../config/index.js";
 import path from "path";
 import ejs from "ejs";
 import { getUserByEmail } from "./user_service.js";
 import { AuthenticationError, ConflictError, NotFoundError, DatabaseError } from "../middlewares/index.js";
-import { hashPayload, generateOtp } from "../common";
+import { hashPayload, generateOtp } from "../common/index.js";
 import { getUserFullName, getClassName, sendEmailWithTemplate } from "../common/email_helpers.js";
-import { User, AttendanceSession, AttendanceLog } from "../models/index.js";
 import { format as dateFormat } from "date-fns";
 
 const dbModel: Model<TVerification> = Verification;
