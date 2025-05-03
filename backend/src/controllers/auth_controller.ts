@@ -3,12 +3,13 @@ import { Response, Request } from "express";
 import { login, logout } from "../services/auth_service.js"
 import { TUserDTO, TResponseDTO } from "../types";
 import { refreshAccessToken } from "../services/jwt_service.js";
-import { sendOtpEmail, sendVerificationEmail, validateVerificationEmail, verifyOtpEmail } from "../services/verification_services.js";
+import { sendOtpEmail, sendVerificationEmail, validateVerificationEmail, verifyOtpEmail } from "../services/email_service.js";
 
 
 export const signIn = asyncErrorHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const { user, accessToken } = await login({ email, password }, req);
+
     const userDTO: TUserDTO = {
         _id: user._id,
         firstName: user.firstName,
