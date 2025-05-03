@@ -1,7 +1,7 @@
 import { connect } from 'mongoose';
 import { env, localDBUrl, prdDBUrl } from './constants_config.js';
-import { DBConfig } from '../types';
-import { DatabaseError } from '../middlewares';
+import { DBConfig } from '../types/index.js';
+import { DatabaseError } from '../middlewares/index.js';
 
 export const getDBUrl = (): Pick<DBConfig, 'url'> => {
     if (env != 'production') {
