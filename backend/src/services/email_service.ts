@@ -61,7 +61,8 @@ export async function sendVerificationEmail(email: string): Promise<void> {
         verificationLink = `${baseUrl}/auth/verify-email?token=${verificationRecord.verificationToken.token}`;
     }
 
-    const templatePath = path.join(__dirname, "../views/emails/verification_email.ejs");
+    const templatePath = path.join(__dirname, "/src/views/emails/verification_email.ejs");
+    console.log(templatePath);
     const htmlContent = await ejs.renderFile(templatePath, {
         title: "Email Verification",
         userName: user?.firstName || "User",
