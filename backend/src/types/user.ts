@@ -54,9 +54,9 @@ export type TStudentCreateDTO = TBaseUserCreateDTO & {
     matricNo: string;
     program: string;
     level: string;
-    faceModelId: string;
-    nfcUid: string;
-    bleToken: string;
+    faceModelId?: string;
+    nfcUid?: string;
+    bleToken?: string;
 };
 
 export type TLecturerCreateDTO = TBaseUserCreateDTO & {
