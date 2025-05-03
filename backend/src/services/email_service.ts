@@ -1,11 +1,11 @@
 import { Model } from "mongoose";
 import { Verification, User, AttendanceSession, AttendanceLog } from "../models/index.js";
-import { Otp, TVerification, VerificationToken, TAttendanceLog, TAttendanceSession } from "../types/index.js";
+import { Otp, TVerification, VerificationToken, TAttendanceLog, TAttendanceSession, TUser, TUserDTO } from "../types/index.js";
 import { randomBytes } from "crypto";
 import { baseUrl, emailExp, emailFrom, otpExp, transporter } from "../config/index.js";
 import path from "path";
 import ejs from "ejs";
-import { getUserByEmail } from "./user_service.js";
+import { getUserByEmail, getUserById } from "./user_service.js";
 import { AuthenticationError, ConflictError, NotFoundError, DatabaseError } from "../middlewares/index.js";
 import {
     getUserFullName,
@@ -81,7 +81,9 @@ export async function sendVerificationEmail(email: string): Promise<void> {
 }
 
 export async function validateVerificationEmail(token: string): Promise<boolean | void> {
-    const verificationRecord = await dbModel.findOne({ token });
+    console.log(token);
+    const verificationRecord = await dbModel.findOne({ "verificationToken.token": token });
+    console.log({ verificationRecord });
     if (!verificationRecord) {
         throw new NotFoundError("Request for a new verfication email");
     }
@@ -91,12 +93,39 @@ export async function validateVerificationEmail(token: string): Promise<boolean 
     }
 
     const storedToken = verificationRecord.verificationToken.token;
+    const expiresAt = verificationRecord.verificationToken.expiresAt;
+    // Check if the token has expired
+    if (new Date() > expiresAt) {
+        throw new AuthenticationError("Token has expired, request a new verification email");
+    }
+
+    console.log(storedToken);
+    console.log(token);
     if (storedToken && storedToken === token) {
-        verificationRecord.isVerified = true;
-        verificationRecord.verifiedAt = new Date();
-        verificationRecord.updatedAt = new Date();
-        await verificationRecord.save();
-        return true;
+        if (verificationRecord.userId) {
+            const user = await getUserById(verificationRecord.userId.toString());
+            verificationRecord.isVerified = true;
+            verificationRecord.verifiedAt = new Date();
+            verificationRecord.updatedAt = new Date();
+            await verificationRecord.save();
+
+            // Send email notification
+            const templatePath = path.join(__dirname, "src/views/emails/email_verified.ejs");
+            const htmlContent = await ejs.renderFile(templatePath, {
+                title: "Email Verified",
+                firstName: user?.firstName,
+            });
+
+            const mailOptions = {
+                from: emailFrom,
+                to: verificationRecord.email,
+                subject: "Email Verified Successfully",
+                html: htmlContent,
+            };
+
+            await (await transporter()).sendMail(mailOptions);
+            return true;
+        }
     }
     throw new AuthenticationError("Invalid token, request for a new verification email");
 }
