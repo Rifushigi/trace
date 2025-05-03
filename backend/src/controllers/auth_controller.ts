@@ -96,8 +96,8 @@ export const sendEmail = asyncErrorHandler(async (req: Request, res: Response) =
 });
 
 export const verifyEmail = asyncErrorHandler(async (req: Request, res: Response) => {
-    const { token } = req.params;
-    await validateVerificationEmail(token);
+    const { token } = req.query;
+    await validateVerificationEmail(token as string);
 
     const response: TResponseDTO = {
         status: true,
