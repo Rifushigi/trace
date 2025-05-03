@@ -1,19 +1,5 @@
 import { body, param, query } from "express-validator";
 
-export const biometricSignInValidationRules = [
-    body('userId').isMongoId().withMessage('Invalid user ID'),
-    body('biometricData').isString().notEmpty().withMessage('Biometric data is required'),
-    body('deviceId').optional().isString().withMessage('Invalid device ID'),
-    body('location').optional().isObject().withMessage('Invalid location format'),
-    body('location.latitude').optional().isFloat({ min: -90, max: 90 }).withMessage('Invalid latitude'),
-    body('location.longitude').optional().isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude')
-];
-
-export const biometricRegisterValidationRules = [
-    body('userId').isMongoId().withMessage('Invalid user ID'),
-    body('biometricData').isString().notEmpty().withMessage('Biometric data is required')
-];
-
 export const attendanceSessionValidationRules = [
     body('classId').isMongoId().withMessage('Invalid class ID'),
     body('startTime').optional().isISO8601().withMessage('Invalid start time')
