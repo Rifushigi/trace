@@ -42,7 +42,8 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
         };
         const student = new studentModel(studentData);
         await student.save();
-    } else if (userDTO.role === "lecturer" && "department" in userDTO && "staffId") {
+    } else if (userDTO.role === "lecturer" && "college" in userDTO && "staffId") {
+        const ifStaffIdExists = await lecturerModel.findOne({ staffId: userDTO.staffId })
         const newUser = new userModel(userDTO);
         const savedUser = await newUser.save();
         if (!savedUser) throw new Error("Failed to save user");
@@ -50,7 +51,7 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
         const lecturerData = {
             userId: savedUser._id,
             staffId: userDTO.staffId,
-            department: userDTO.department,
+            college: userDTO.college,
         };
         const lecturer = new lecturerModel(lecturerData);
         await lecturer.save();
@@ -71,22 +72,35 @@ export async function getUserByEmail(email: string): Promise<TUser | null> {
     return userModel.findOne({ email, deletedAt: null });
 }
 
-export async function deleteUser(id: string, password: string): Promise<boolean> {
+export async function hardDeleteUser(id: string): Promise<boolean> {
     const user = await getUserById(id);
-    if (!user?.password) throw new ConflictError("User has not created a password");
-    if (await comparePayload(password, user.password)) {
-        const result = await userModel.findByIdAndDelete(id);
-        return !!result;
+
+    if (user!.role === "student") {
+        const isUserDeleted = await userModel.findByIdAndDelete(id);
+        const isStudentDeleted = await studentModel.findOneAndDelete({ userId: id })
+        return !!isUserDeleted && !!isStudentDeleted;
     }
-    throw new UnauthorizedError("Failed to delete user");
+
+    if (user!.role === "lecturer") {
+        const isUserDeleted = await userModel.findByIdAndDelete(id);
+        const isLecturerDeleted = await lecturerModel.findOneAndDelete({ userId: id })
+        return !!isUserDeleted && !!isLecturerDeleted;
+    }
+
+    throw new UnauthorizedError("Failed to hard-delete user");
 }
 
-export async function softDeleteUser(id: string): Promise<boolean> {
+export async function softDeleteUser(id: string, password: string): Promise<boolean> {
     const user = await getUserById(id);
+    if (!user?.password) throw new ConflictError("User has not created a password");
     if (!user) throw new NotFoundError("User not found");
 
-    const result = await userModel.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
-    return !!result;
+    if (await comparePayload(password, user.password)) {
+        const result = await userModel.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+        return !!result;
+    }
+
+    throw new UnauthorizedError("Failed to soft delete user");
 }
 
 export async function restoreUser(id: string): Promise<boolean> {

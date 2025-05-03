@@ -62,7 +62,7 @@ export type TStudentCreateDTO = TBaseUserCreateDTO & {
 export type TLecturerCreateDTO = TBaseUserCreateDTO & {
     role: "lecturer";
     staffId: string;
-    department: string;
+    college: string;
 };
 
 export type TUserCreateDTO =
