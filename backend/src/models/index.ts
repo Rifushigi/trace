@@ -1,5 +1,5 @@
-export * from "./attendance_log_model";
-export * from "./attendance_session_model";
+export * from "./attendance_log_model.js";
+export * from "./attendance_session_model.js";
 export * from "./class_model.js";
 export * from "./enrollment_model.js";
 export * from "./lecturer_model.js";

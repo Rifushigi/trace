@@ -24,7 +24,7 @@ import {
 import { Model } from "mongoose";
 import { cldnDir, cloudinary } from '../config/index.js';
 import { Readable } from "stream";
-import { sendVerificationEmail } from "./email_service";
+import { sendVerificationEmail } from "./email_service.js";
 
 const userModel: Model<TUser> = User;
 const studentModel: Model<TStudent> = Student;
