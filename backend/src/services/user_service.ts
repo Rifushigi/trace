@@ -1,11 +1,11 @@
 import { Lecturer, Student, User } from "../models";
-import type { TLecturer, TStudent, TStudentCreateDTO, TUser, TUserCreateDTO, TUserDTO, TUserUpdateDTO, TLecturerCreateDTO } from "../types"
+import type { TLecturer, TStudent, TUser, TUserCreateDTO, TUserDTO, TUserUpdateDTO, TLecturerCreateDTO } from "../types"
 import { AppError, ConflictError, DatabaseError, NotFoundError, UnauthorizedError, ValidationError } from "../middlewares";
-import { comparePayload, hashPayload } from "../common";
+import { comparePayload, hashPayload, getAvatarHostname, getAvatarPublicId } from "../common";
 import { Model } from "mongoose";
 import { cldnDir, cloudinary } from '../config';
-import { getAvatarHostname, getAvatarPublicId } from "../common";
 import { Readable } from "stream";
+import { sendVerificationEmail } from "./email_service";
 
 const userModel: Model<TUser> = User;
 const studentModel: Model<TStudent> = Student;
@@ -21,12 +21,13 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
         throw new ConflictError("Invalid role");
     }
 
-    // Set default values
     userDTO.isVerified = userDTO.isVerified ?? false;
     userDTO.password = await hashPayload(userDTO.password);
 
     // Handle role-specific logic
     if (userDTO.role === "student" && "matricNo" in userDTO && "program" in userDTO && "level" in userDTO) {
+        const matricNoExists = await studentModel.findOne({ matricNo: userDTO.matricNo });
+        if (matricNoExists) throw new ValidationError("Matric number is already in use")
         const newUser = new userModel(userDTO);
         const savedUser = await newUser.save();
         if (!savedUser) throw new Error("Failed to save user");
@@ -42,8 +43,11 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
         };
         const student = new studentModel(studentData);
         await student.save();
+        sendVerificationEmail(userDTO.email);
+
     } else if (userDTO.role === "lecturer" && "college" in userDTO && "staffId") {
-        const ifStaffIdExists = await lecturerModel.findOne({ staffId: userDTO.staffId })
+        const staffIdExists = await lecturerModel.findOne({ staffId: userDTO.staffId });
+        if (staffIdExists) throw new ValidationError("StaffId is already in use");
         const newUser = new userModel(userDTO);
         const savedUser = await newUser.save();
         if (!savedUser) throw new Error("Failed to save user");
@@ -55,6 +59,7 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
         };
         const lecturer = new lecturerModel(lecturerData);
         await lecturer.save();
+        sendVerificationEmail(userDTO.email);
     } else {
         throw new ValidationError(`Missing required field(s) for selected role: ${userDTO.role}`);
     }
