@@ -168,7 +168,7 @@ export async function sendOtpEmail(email: string) {
         code = verificationRecord.otp.code;
     }
 
-    const templatePath = path.join(__dirname, "../views/emails/otp_email.ejs");
+    const templatePath = path.join(__dirname, "/src/views/emails/otp_email.ejs");
     const htmlContent = await ejs.renderFile(templatePath, {
         title: "Password Reset (OTP)",
         userName: user?.firstName || "User",
@@ -214,7 +214,7 @@ export async function verifyOtpEmail(email: string, otp: string, password: strin
 
 export async function notifySessionStart(session: TAttendanceSession, lecturerEmail: string) {
     try {
-        const templatePath = path.join(__dirname, "../views/emails/session_start.ejs");
+        const templatePath = path.join(__dirname, "/src/views/emails/session_start.ejs");
         const lecturerName = await getUserFullName(session._id);
         const className = await getClassName(session.classId);
 
@@ -238,7 +238,7 @@ export async function notifySessionStart(session: TAttendanceSession, lecturerEm
 
 export async function notifySessionEnd(session: TAttendanceSession, lecturerEmail: string) {
     try {
-        const templatePath = path.join(__dirname, "../views/emails/session_end.ejs");
+        const templatePath = path.join(__dirname, "/src/views/emails/session_end.ejs");
 
         // Get attendance statistics
         const totalStudents = await User.countDocuments({ role: 'student' });
@@ -270,7 +270,7 @@ export async function notifySessionEnd(session: TAttendanceSession, lecturerEmai
 
 export async function notifyCheckIn(log: TAttendanceLog, studentEmail: string) {
     try {
-        const templatePath = path.join(__dirname, "../views/emails/check_in.ejs");
+        const templatePath = path.join(__dirname, "/src/views/emails/check_in.ejs");
 
         // Get session and class details
         const session = await AttendanceSession.findById(log.sessionId);
@@ -300,7 +300,7 @@ export async function notifyCheckIn(log: TAttendanceLog, studentEmail: string) {
 
 export async function notifyAnomaly(log: TAttendanceLog, lecturerEmail: string) {
     try {
-        const templatePath = path.join(__dirname, "../views/emails/attendance_anomaly.ejs");
+        const templatePath = path.join(__dirname, "/src/views/emails/attendance_anomaly.ejs");
 
         // Get session and student details
         const session = await AttendanceSession.findById(log.sessionId);
@@ -332,7 +332,7 @@ export async function notifyAnomaly(log: TAttendanceLog, lecturerEmail: string) 
 
 export async function notifyLowAttendance(session: TAttendanceSession, lecturerEmail: string, attendanceRate: number) {
     try {
-        const templatePath = path.join(__dirname, "../views/emails/low_attendance.ejs");
+        const templatePath = path.join(__dirname, "/src/views/emails/low_attendance.ejs");
 
         // Get attendance statistics
         const totalStudents = await User.countDocuments({ role: 'student' });
