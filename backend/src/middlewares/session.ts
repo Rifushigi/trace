@@ -1,25 +1,28 @@
 import { verifyAccessToken } from "../services/jwt_service.js";
-import { AccessToken } from "../types/index.js";
-import { middlewareErrorHandler, ForbiddenError, UnauthorizedError } from "./error_handler.js";
+import { AccessToken, AuthenticatedRequest } from "../types/index.js";
+import { middlewareErrorHandler, UnauthorizedError } from "./error_handler.js";
 import { NextFunction, Response, Request } from "express";
 import { validateSession } from "../services/session_service.js";
+import { Types } from "mongoose";
 
 export const sessionMiddleware = middlewareErrorHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    const sessionToken = req.headers['x-session-token'];
-
+    const token = req.cookies.accessToken || req.headers.authorization?.replace('Bearer ', '');
     if (!token) throw new UnauthorizedError("Missing JWT token");
-    if (!sessionToken) throw new UnauthorizedError("Missing session token");
 
     const decoded: AccessToken = verifyAccessToken(token);
     const userId: string = decoded.userId;
+    const deviceId = req.cookies.deviceId;
 
-    // Validate session token
-    const isValidSession = await validateSession(req, sessionToken);
-    if (!isValidSession) {
-        throw new ForbiddenError("Session invalid or expired");
+    if (!deviceId) {
+        throw new UnauthorizedError("Missing device ID");
     }
 
-    req.session.userId = userId;
+    // Validate the session
+    const isValidSession = await validateSession(new Types.ObjectId(userId), deviceId);
+    if (!isValidSession) {
+        throw new UnauthorizedError("Invalid or expired session");
+    }
+
+    (req as unknown as AuthenticatedRequest).user = { _id: userId } as any;
     next();
 });

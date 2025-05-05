@@ -1,41 +1,66 @@
-import { DatabaseError } from "../middlewares/index.js";
-import { generateSessionToken } from "./jwt_service.js";
-import { Request } from "express";
+import { Session } from '../models/session_model.js';
+import { Types } from 'mongoose';
+import crypto from 'crypto';
+import { SessionError } from '../middlewares/index.js';
 
-export const invalidateExistingSessions = async (req: Request): Promise<void> => {
-    try {
-        req.session.destroy((error) => {
-            if (error) throw new DatabaseError("Failed to destroy session");
-        });
-    } catch (error) {
-        if (error instanceof Error) {
-            throw new DatabaseError(`Failed to invalidate sessions: ${error.message}`);
-        }
-        throw error;
+export async function createSession(userId: Types.ObjectId, accessToken: string, refreshToken: string): Promise<string> {
+    if (!userId || !accessToken || !refreshToken) {
+        throw new SessionError("Invalid session parameters");
     }
-};
 
-export const validateSession = async (req: Request, sessionToken: string | string[]): Promise<boolean> => {
-    try {
-        return Boolean(req.session.userId && req.session.sessionToken === sessionToken);
-    } catch (error) {
-        if (error instanceof Error) {
-            throw new DatabaseError(`Failed to validate session: ${error.message}`);
-        }
-        throw error;
-    }
-};
+    //TODO
+    // Validate the userId that is passed
+    // Generate a unique device ID
+    const deviceId = crypto.randomUUID();
 
-export const createNewSession = async (req: Request, userId: string): Promise<string> => {
-    try {
-        const sessionToken = generateSessionToken();
-        req.session.userId = userId;
-        req.session.sessionToken = sessionToken;
-        return sessionToken;
-    } catch (error) {
-        if (error instanceof Error) {
-            throw new DatabaseError(`Failed to create session: ${error.message}`);
-        }
-        throw error;
+    // Deactivate any existing sessions for this user
+    await Session.updateMany(
+        { userId, isActive: true },
+        { isActive: false }
+    );
+
+    // Create new session
+    const session = new Session({
+        userId,
+        deviceId,
+        accessToken,
+        refreshToken,
+        isActive: true
+    });
+
+    await session.save();
+    return deviceId;
+}
+
+export async function validateSession(userId: Types.ObjectId, deviceId: string): Promise<boolean> {
+    if (!userId || !deviceId) {
+        throw new SessionError("Invalid session parameters");
     }
-}; 
+
+    const session = await Session.findOne({
+        userId,
+        deviceId,
+        isActive: true
+    });
+
+    if (!session) {
+        return false;
+    }
+
+    // Update last activity
+    session.lastActivity = new Date();
+    await session.save();
+
+    return true;
+}
+
+export async function invalidateSession(userId: Types.ObjectId, deviceId: string): Promise<void> {
+    if (!userId || !deviceId) {
+        throw new SessionError("Invalid session parameters");
+    }
+
+    await Session.updateOne(
+        { userId, deviceId },
+        { isActive: false }
+    );
+} 
