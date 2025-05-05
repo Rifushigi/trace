@@ -15,7 +15,7 @@ export const initializeAttendanceService = (io: Server) => {
 //TODO
 // Move to env var
 const LOW_ATTENDANCE_THRESHOLD = 0.7; // 70%
-const MIN_CHECK_IN_INTERVAL = 60; // 60 seconds between check-ins
+const MIN_CHECK_IN_INTERVAL = 60; // 60 seconds interval between check-ins
 const MAX_CONFIDENCE_SCORE = 1.0;
 const MIN_CONFIDENCE_SCORE = 0.0;
 
