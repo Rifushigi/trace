@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
 import { asyncErrorHandler, NotFoundError } from "../middlewares/index.js"
 import { create, uploadAvatar, softDeleteUser, restoreUser, getDeletedUsers, getProfile, hardDeleteUser } from "../services/user_service.js"
-import { TResponseDTO, TUserProfileResponseDTO } from "../types/index.js";
+import { AuthenticatedRequest, TResponseDTO, TUserProfileResponseDTO } from "../types/index.js";
 
 export const signUp = asyncErrorHandler(async (req: Request, res: Response) => {
     await create(req.body);
@@ -14,14 +14,14 @@ export const signUp = asyncErrorHandler(async (req: Request, res: Response) => {
     return res.status(201).json({ response });
 })
 
-export const updateAvatar = asyncErrorHandler(async (req: Request, res: Response) => {
+export const updateAvatar = asyncErrorHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { file } = req;
 
     if (!file) {
         throw new NotFoundError("Avatar image is absent");
     }
 
-    await uploadAvatar(file, req.session.userId!);
+    await uploadAvatar(file, req.user._id.toString());
 
     const response: TResponseDTO = {
         status: true,

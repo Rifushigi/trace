@@ -20,7 +20,7 @@ import {
     hashPayload,
     getAvatarHostname,
     getAvatarPublicId
-} from "../common/index.js";
+} from "../utils/index.js";
 import { Model } from "mongoose";
 import { cldnDir, cloudinary } from '../config/index.js';
 import { Readable } from "stream";
