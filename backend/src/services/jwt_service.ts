@@ -9,6 +9,8 @@ import {
 import { JWTError } from "../middlewares/index.js";
 import { Request } from "express";
 import crypto from "crypto";
+import { Types } from "mongoose";
+import { validateSession } from "./session_service.js";
 
 export function generateAccessToken(payload: TokenPayload): string {
     try {
@@ -32,20 +34,38 @@ export function generateSessionToken(): string {
 
 export function generateAuthTokens(user: TokenPayload): AuthTokens {
     const accessToken: string = generateAccessToken({ userId: user.userId });
+    if (!accessToken) throw new JWTError("Failed to generate access token");
     const refreshToken: string = generateRefreshToken({ userId: user.userId });
+    if (!refreshToken) throw new JWTError("Failed to generate refresh token");
     return {
         accessToken,
         refreshToken,
     }
 }
 
-export async function refreshAccessToken(req: Request): Promise<string | void> {
-    if (!req.session.refreshToken || !req.session.refreshToken.token) {
-        throw new JWTError("Invalid refresh token");
+export async function refreshAccessToken(req: Request): Promise<string> {
+    const refreshToken = req.cookies.refreshToken;
+    const deviceId = req.cookies.deviceId;
+
+    if (!refreshToken) {
+        throw new JWTError("No refresh token provided");
+    }
+    if (!deviceId) {
+        throw new JWTError("No device ID provided");
     }
 
     try {
-        const payload = jwt.verify(req.session.refreshToken.token, refreshTokenSecret) as TokenPayload;
+        const payload = jwt.verify(refreshToken, refreshTokenSecret) as TokenPayload;
+        if (!payload || !payload.userId) {
+            throw new JWTError("Invalid refresh token payload");
+        }
+
+        // Validate the session
+        const isValidSession = await validateSession(new Types.ObjectId(payload.userId), deviceId);
+        if (!isValidSession) {
+            throw new JWTError("Invalid or expired session");
+        }
+
         return generateAccessToken({ userId: payload.userId });
     } catch (error) {
         if (error instanceof jwt.TokenExpiredError) {
@@ -60,11 +80,18 @@ export async function refreshAccessToken(req: Request): Promise<string | void> {
 
 export function verifyAccessToken(token: string): TokenPayload {
     try {
-        return jwt.verify(token, accessTokenSecret) as TokenPayload;
+        const payload = jwt.verify(token, accessTokenSecret) as TokenPayload;
+        if (!payload || !payload.userId) {
+            throw new JWTError("Invalid access token payload");
+        }
+        return payload;
     } catch (error) {
         if (error instanceof jwt.TokenExpiredError) {
             throw new JWTError("Access token expired");
         }
-        throw new JWTError("Invalid access token");
+        if (error instanceof jwt.JsonWebTokenError) {
+            throw new JWTError("Invalid access token");
+        }
+        throw new JWTError("Token verification failed");
     }
 }
