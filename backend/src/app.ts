@@ -1,11 +1,11 @@
 import express, { Request, Response } from 'express';
 import cors from "cors";
-import session from "express-session";
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import allRoutes from "./routes/index.js";
-import { corsConfig, initDB, port, sessionConfig } from './config/index.js';
+import { corsConfig, initDB, port } from './config/index.js';
 import { globalErrorHandler } from './middlewares/index.js';
-import { isEnvDefined } from './common/index.js';
+import { isEnvDefined } from './utils/index.js';
 import morgan from 'morgan';
 
 isEnvDefined();
@@ -15,9 +15,10 @@ const app = express();
 
 app.use(cors(corsConfig));
 
-app.use(session(sessionConfig));
-app.use(express.json())
-app.use(bodyParser.urlencoded({ extended: false }))
+// Parse JSON and URL-encoded bodies
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
 app.use(morgan("combined"));
 app.use('/api/v1', allRoutes);
 app.use(globalErrorHandler);
