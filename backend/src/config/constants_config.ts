@@ -23,7 +23,6 @@ const accessTokenSecret: string = process.env.ACCESS_TOKEN_SECRET!;
 const refreshTokenSecret: string = process.env.REFRESH_TOKEN_SECRET!;
 const accessTokenExpiration: string = process.env.ACCESS_TOKEN_DURATION || "1h";
 const refreshTokenExpiration: string = process.env.REFRESH_TOKEN_DURATION || "7d";
-const sessionSecret: string = process.env.SESSION_SECRET!;
 
 const requiredEnvVars = [
     'EMAIL_FROM',
@@ -36,7 +35,6 @@ const requiredEnvVars = [
     'CLOUDINARY_API_KEY',
     'CLOUDINARY_DIRECTORY',
     'CLOUDINARY_API_SECRET',
-    'SESSION_SECRET',
     'BASE_URL',
     'PORT',
     'PRD_DATABASE_URL',
@@ -61,7 +59,6 @@ export {
     cldnCloudName,
     cldnApiKey,
     cldnApiSecret,
-    sessionSecret,
     port,
     localDBUrl,
     prdDBUrl,
