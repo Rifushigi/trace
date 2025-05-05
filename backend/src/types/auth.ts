@@ -2,50 +2,50 @@ import mongoose from "mongoose";
 import { TUserDTO } from "./user.js";
 import { Document } from "mongoose";
 
-export interface AuthResult {
+export interface IAuthResult {
     user: TUserDTO;
     accessToken: string;
 }
 
-export interface TokenPayload {
+export interface ITokenPayload {
     userId: string;
 }
 
-export interface AuthTokens {
+export interface IAuthTokens {
     accessToken: string;
     refreshToken: string;
 }
 
-export interface AccessToken {
+export interface IAccessToken {
     userId: string;
 }
 
-export interface VerificationToken {
+export interface IVerificationToken {
     token: string;
     createdAt?: Date;
     expiresAt: Date;
 }
 
-export interface Otp {
+export interface IOtp {
     code: string;
     createdAt?: Date;
     usedAt?: Date;
     expiresAt: Date;
 }
 
-export interface TVerification extends Document {
+export interface IVerification extends Document {
     _id: mongoose.Types.ObjectId;
     userId?: mongoose.Types.ObjectId;
     email: string;
-    verificationToken: VerificationToken;
-    otp: Otp;
+    verificationToken: IVerificationToken;
+    otp: IOtp;
     isVerified: boolean;
     verifiedAt?: Date;
     updatedAt: Date;
     createdAt: Date;
 }
 
-export interface TUserLoginDTO {
+export interface IUserLoginDTO {
     email: string;
     password: string;
 }

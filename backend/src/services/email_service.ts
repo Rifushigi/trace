@@ -1,6 +1,6 @@
 import { Model } from "mongoose";
 import { Verification, User, AttendanceSession, AttendanceLog } from "../models/index.js";
-import { Otp, TVerification, VerificationToken, TAttendanceLog, TAttendanceSession, TUser, TUserDTO } from "../types/index.js";
+import { IOtp, IVerification, IVerificationToken, TAttendanceLog, TAttendanceSession, TUser, TUserDTO } from "../types/index.js";
 import { randomBytes } from "crypto";
 import { baseUrl, emailExp, emailFrom, otpExp, transporter } from "../config/index.js";
 import path from "path";
@@ -16,7 +16,7 @@ import {
 } from "../utils/index.js";
 import { format as dateFormat } from "date-fns";
 
-const dbModel: Model<TVerification> = Verification;
+const dbModel: Model<IVerification> = Verification;
 const __dirname = path.resolve();
 
 export async function sendVerificationEmail(email: string): Promise<void> {
@@ -35,7 +35,7 @@ export async function sendVerificationEmail(email: string): Promise<void> {
 
     if (!verificationRecord) {
         const token = randomBytes(32).toString('hex');
-        const verificationToken: VerificationToken = {
+        const verificationToken: IVerificationToken = {
             token,
             createdAt: new Date(),
             expiresAt: new Date(Date.now() + emailExp)
@@ -50,7 +50,7 @@ export async function sendVerificationEmail(email: string): Promise<void> {
         verificationLink = `${baseUrl}/auth/verify-email?token=${token}`;
     } else if (new Date() > verificationRecord.verificationToken.expiresAt) {
         const token = randomBytes(32).toString('hex');
-        const verificationToken: VerificationToken = {
+        const verificationToken: IVerificationToken = {
             token,
             createdAt: new Date(),
             expiresAt: new Date(Date.now() + emailExp)
@@ -142,7 +142,7 @@ export async function sendOtpEmail(email: string) {
 
     if (!verificationRecord) {
         code = generateOtp();
-        const otp: Otp = {
+        const otp: IOtp = {
             code,
             createdAt: new Date(),
             expiresAt: new Date(Date.now() + otpExp)
@@ -156,7 +156,7 @@ export async function sendOtpEmail(email: string) {
         await verification.save();
     } else if (new Date() > verificationRecord.otp.expiresAt) {
         code = generateOtp();
-        const otp: Otp = {
+        const otp: IOtp = {
             code,
             createdAt: new Date(),
             expiresAt: new Date(Date.now() + otpExp)
