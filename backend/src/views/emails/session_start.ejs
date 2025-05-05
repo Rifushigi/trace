@@ -64,7 +64,7 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <div class="logo">TRACE</div>
+            <div class="logo">Trace</div>
             <h1>Attendance Session Started</h1>
         </div>
         <div class="body">
@@ -74,7 +74,7 @@
             <div class="details">
                 <ul>
                     <li><strong>Session ID:</strong> <%- session._id %></li>
-                    <li><strong>Start Time:</strong> <%- format(session.startTime, 'yyyy-MM-dd HH:mm:ss') %></li>
+                    <li><strong>Start Time:</strong> <%- format(session.startTime, 'yyyy-MM-dd HH:mm:ss' ) %></li>
                     <li><strong>Class:</strong> <%- className %></li>
                 </ul>
             </div>
@@ -86,9 +86,9 @@
             </div>
         </div>
         <div class="footer">
-            <p>This is an automated message from TRACE.</p>
+            <p>This is an automated message from Trace.</p>
             <p>If you have any questions, please contact support.</p>
-            <p>&copy; <%= new Date().getFullYear() %> TRACE. All rights reserved.</p>
+            <p>&copy; <%= new Date().getFullYear() %> Trace. All rights reserved.</p>
         </div>
     </div>
 </body>
