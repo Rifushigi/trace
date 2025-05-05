@@ -1,12 +1,21 @@
-import { Request, Response } from "express";
-import { comparePayload } from "../common/index.js";
-import { AuthenticationError, ConflictError, ValueError } from "../middlewares/index.js";
-import { AuthResult, AuthTokens, TUser, TUserDTO, TUserLoginDTO } from "../types/index.js";
+import { Response } from "express";
+import { comparePayload } from "../utils/index.js";
+import { AuthenticationError, ValueError, JWTError, SessionError } from "../middlewares/index.js";
+import {
+    AuthResult,
+    AuthTokens,
+    TUser,
+    TUserDTO,
+    TUserLoginDTO,
+    AuthenticatedRequest
+} from "../types/index.js";
 import { generateAuthTokens } from "./jwt_service.js";
 import { getUserByEmail } from "./user_service.js";
-import { invalidateExistingSessions, createNewSession } from "./session_service.js";
+import { accessTokenExpiration, refreshTokenExpiration } from "../config/index.js";
+import { createSession, validateSession, invalidateSession } from "./session_service.js";
+import { Types } from "mongoose";
 
-export const login = async (payload: TUserLoginDTO, req: Request): Promise<AuthResult> => {
+export const login = async (payload: TUserLoginDTO, req: AuthenticatedRequest, res: Response): Promise<AuthResult> => {
     const { email, password } = payload;
     const user: TUser | null = await getUserByEmail(email);
 
@@ -19,15 +28,38 @@ export const login = async (payload: TUserLoginDTO, req: Request): Promise<AuthR
         throw new AuthenticationError("Invalid password");
     }
 
-    // Invalidate existing sessions
-    await invalidateExistingSessions(req);
-
-    // Create new session
-    const sessionToken = await createNewSession(req, user._id.toString());
-
     // Generate auth tokens
     const { accessToken, refreshToken }: AuthTokens = generateAuthTokens({
-        userId: user._id.toString()
+        userId: user._id.toString(),
+    });
+
+    // Create new session and get device ID
+    const deviceId = await createSession(
+        new Types.ObjectId(user._id),
+        accessToken,
+        refreshToken
+    );
+
+    // Set cookies
+    res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: parseInt(accessTokenExpiration) * 1000 // Convert to milliseconds
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: parseInt(refreshTokenExpiration) * 1000 // Convert to milliseconds
+    });
+
+    res.cookie('deviceId', deviceId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: parseInt(refreshTokenExpiration) * 1000 // Convert to milliseconds
     });
 
     // Create user DTO with only necessary fields
@@ -41,20 +73,48 @@ export const login = async (payload: TUserLoginDTO, req: Request): Promise<AuthR
         isVerified: user.isVerified
     };
 
-    // Set refresh token in session
-    req.session.refreshToken = { token: refreshToken, createdAt: new Date() };
-
     return {
         user: userDTO,
         accessToken,
-        sessionToken
     };
 };
 
-export async function logout(req: Request, res: Response): Promise<void> {
-    if (!req.session.refreshToken?.token) throw new ConflictError("Invalid session");
+export const logout = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    // Clear all authentication cookies
+    res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    });
 
-    req.session.destroy((error) => { if (error) throw new Error("error destroying session") });
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    });
 
-    res.clearCookie("accessToken");
+    res.clearCookie('deviceId', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    });
+
+    // Clear any authorization headers
+    delete req.headers.authorization;
+};
+
+export async function refreshToken(userId: Types.ObjectId, deviceId: string, refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+    if (!userId || !deviceId || !refreshToken) {
+        throw new SessionError("Invalid session parameters");
+    }
+
+    const isValidSession = await validateSession(userId, deviceId);
+    if (!isValidSession) {
+        throw new SessionError("Invalid session");
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } = generateAuthTokens({ userId: userId.toString() });
+    await createSession(userId, accessToken, newRefreshToken);
+
+    return { accessToken, refreshToken: newRefreshToken };
 }
