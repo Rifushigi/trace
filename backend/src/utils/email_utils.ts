@@ -4,6 +4,9 @@ import { emailFrom, transporter } from "../config/index.js";
 import { DatabaseError } from "../middlewares/index.js";
 import ejs from "ejs";
 
+//TODO
+// Evaluate the usefulness of the functions 
+
 // Helper function to get user's full name
 export async function getUserFullName(userId: Schema.Types.ObjectId): Promise<string> {
     const user = await User.findById(userId.toString());
