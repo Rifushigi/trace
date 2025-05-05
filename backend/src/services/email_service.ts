@@ -13,7 +13,7 @@ import {
     sendEmailWithTemplate,
     hashPayload,
     generateOtp
-} from "../common/index.js";
+} from "../utils/index.js";
 import { format as dateFormat } from "date-fns";
 
 const dbModel: Model<TVerification> = Verification;
