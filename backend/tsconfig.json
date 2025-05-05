@@ -14,8 +14,7 @@
     "esm": true
   },
   "include": [
-    "src/**/*.ts",
-    "src/app.ts"
+    "src/types/*",
   ],
   "exclude": [
     "node_modules"
