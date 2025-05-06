@@ -3,6 +3,7 @@ import { TClass } from "../types/index.js";
 
 const classSchema = new Schema<TClass>({
     title: { type: String, required: true },
+    className: { type: String, required: true },
     courseCode: { type: String, required: true },
     lecturerId: { type: mongoose.Types.ObjectId, required: true },
     semester: { type: String, required: true },
