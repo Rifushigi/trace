@@ -15,7 +15,6 @@ import '../../../../common/shared_widgets/skeleton_loading.dart';
 import '../../../../common/shared_widgets/refresh_wrapper.dart';
 import '../../../../common/providers/connectivity_service_provider.dart';
 
-// Add this enum at the top of the file
 enum AttendanceHistorySortOption {
   dateDesc,
   dateAsc,
@@ -23,7 +22,6 @@ enum AttendanceHistorySortOption {
   presentCountAsc,
 }
 
-// Add these enums at the top of the file
 enum AttendanceHistoryFilter {
   all,
   active,
