@@ -5,6 +5,7 @@ export interface TClass extends Document {
     _id: ObjectId;
     title: string;
     courseCode: string;
+    className: string;
     lecturerId: ObjectId;
     semester: string;
     year: number;
@@ -12,6 +13,7 @@ export interface TClass extends Document {
 
 export interface ClassCreateDTO {
     title: string;
+    className: string;
     courseCode: string;
     lecturerId: string;
     semester: string;
@@ -23,6 +25,7 @@ export interface ClassUpdateDTO extends Partial<ClassCreateDTO> { }
 export interface ClassSearchDTO {
     title?: string;
     courseCode?: string;
+    className?: string;
     semester?: string;
     year?: number;
     lecturerId?: string;

@@ -7,6 +7,7 @@ export interface TUser extends Document {
     isVerified: boolean;
     googleId?: string;
     avatar?: string;
+    fcmToken?: string;
     email: string;
     password?: string;
     createdAt: Date;
