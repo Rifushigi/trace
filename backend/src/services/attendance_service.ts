@@ -2,7 +2,7 @@ import { AttendanceSession, AttendanceLog, User } from "../models/index.js";
 import { TAttendanceSession, TAttendanceLog, CreateSessionDTO, CheckInDTO } from "../types/index.js";
 import { notifyAnomaly, notifyCheckIn, notifyLowAttendance, notifySessionStart, notifySessionEnd } from "./email_service.js";
 import { createNotificationService } from "./notification_service.js";
-import { NotFoundError, ConflictError, DatabaseError, ValidationError } from "../middlewares/error_handler.js";
+import { NotFoundError, ConflictError, DatabaseError, ValidationError } from "../middlewares/index.js";
 import { Server } from "socket.io";
 import { validateClassExists } from "./class_service.js";
 
