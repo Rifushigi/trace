@@ -1,16 +1,16 @@
 import { asyncErrorHandler, JWTError } from "../middlewares/index.js";
 import { Response, Request } from "express";
 import { login, logout } from "../services/auth_service.js"
-import { TUserDTO, TResponseDTO, AuthenticatedRequest } from "../types/index.js";
+import { IUserDTO, IResponseDTO, IAuthenticatedRequest } from "../types/index.js";
 import { refreshAccessToken } from "../services/jwt_service.js";
 import { sendOtpEmail, sendVerificationEmail, validateVerificationEmail, verifyOtpEmail } from "../services/email_service.js";
 
 
 export const signIn = asyncErrorHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    const { user, accessToken } = await login({ email, password }, req as AuthenticatedRequest, res);
+    const { user, accessToken } = await login({ email, password }, req as IAuthenticatedRequest, res);
 
-    const userDTO: TUserDTO = {
+    const userDTO: IUserDTO = {
         _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -20,7 +20,7 @@ export const signIn = asyncErrorHandler(async (req: Request, res: Response) => {
         isVerified: user.isVerified
     };
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: { user: userDTO, accessToken },
         message: "Successfully logged in"
@@ -50,7 +50,7 @@ export const refreshToken = asyncErrorHandler(async (req: Request, res: Response
         maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRATION || '3600') * 1000
     });
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         message: "Successfully refreshed token"
     };
@@ -60,9 +60,9 @@ export const refreshToken = asyncErrorHandler(async (req: Request, res: Response
 
 export const signout = asyncErrorHandler(async (req: Request, res: Response) => {
 
-    await logout(req as AuthenticatedRequest, res);
+    await logout(req as IAuthenticatedRequest, res);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         message: "Successfully logged out"
     };
@@ -74,7 +74,7 @@ export const sendOtp = asyncErrorHandler(async (req: Request, res: Response) => 
     const { email } = req.body;
     await sendOtpEmail(email);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         message: "Successfully sent OTP"
     };
@@ -86,7 +86,7 @@ export const verifyOtp = asyncErrorHandler(async (req: Request, res: Response) =
     const { email, otp, password } = req.body;
     await verifyOtpEmail(email, otp, password);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         message: "Successfully changed password"
     };
@@ -97,7 +97,7 @@ export const sendEmail = asyncErrorHandler(async (req: Request, res: Response) =
     const { email } = req.body;
     await sendVerificationEmail(email);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         message: "Successfully sent verification email"
     };
@@ -108,7 +108,7 @@ export const verifyEmail = asyncErrorHandler(async (req: Request, res: Response)
     const { token } = req.query;
     await validateVerificationEmail(token as string);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         message: "Successfully verified email"
     };

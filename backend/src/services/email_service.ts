@@ -1,12 +1,28 @@
 import { Model } from "mongoose";
-import { Verification, User, AttendanceSession, AttendanceLog } from "../models/index.js";
-import { IOtp, IVerification, IVerificationToken, TAttendanceLog, TAttendanceSession, TUser, TUserDTO } from "../types/index.js";
+import {
+    Verification,
+    User,
+    AttendanceSession,
+    AttendanceLog
+} from "../models/index.js";
+import {
+    IOtp,
+    IVerification,
+    IVerificationToken,
+    IAttendanceLog,
+    IAttendanceSession
+} from "../types/index.js";
 import { randomBytes } from "crypto";
 import { baseUrl, emailExp, emailFrom, otpExp, transporter } from "../config/index.js";
 import path from "path";
 import ejs from "ejs";
 import { getUserByEmail, getUserById } from "./user_service.js";
-import { AuthenticationError, ConflictError, NotFoundError, DatabaseError } from "../middlewares/index.js";
+import {
+    AuthenticationError,
+    ConflictError,
+    NotFoundError,
+    DatabaseError
+} from "../middlewares/index.js";
 import {
     getUserFullName,
     getClassName,
@@ -212,7 +228,7 @@ export async function verifyOtpEmail(email: string, otp: string, password: strin
     throw new AuthenticationError("Invalid otp, request for a new otp");
 }
 
-export async function notifySessionStart(session: TAttendanceSession, lecturerEmail: string) {
+export async function notifySessionStart(session: IAttendanceSession, lecturerEmail: string) {
     try {
         const templatePath = path.join(__dirname, "/src/views/emails/session_start.ejs");
         const lecturerName = await getUserFullName(session._id);
@@ -236,7 +252,7 @@ export async function notifySessionStart(session: TAttendanceSession, lecturerEm
     }
 }
 
-export async function notifySessionEnd(session: TAttendanceSession, lecturerEmail: string) {
+export async function notifySessionEnd(session: IAttendanceSession, lecturerEmail: string) {
     try {
         const templatePath = path.join(__dirname, "/src/views/emails/session_end.ejs");
 
@@ -268,7 +284,7 @@ export async function notifySessionEnd(session: TAttendanceSession, lecturerEmai
     }
 }
 
-export async function notifyCheckIn(log: TAttendanceLog, studentEmail: string) {
+export async function notifyCheckIn(log: IAttendanceLog, studentEmail: string) {
     try {
         const templatePath = path.join(__dirname, "/src/views/emails/check_in.ejs");
 
@@ -298,7 +314,7 @@ export async function notifyCheckIn(log: TAttendanceLog, studentEmail: string) {
     }
 }
 
-export async function notifyAnomaly(log: TAttendanceLog, lecturerEmail: string) {
+export async function notifyAnomaly(log: IAttendanceLog, lecturerEmail: string) {
     try {
         const templatePath = path.join(__dirname, "/src/views/emails/attendance_anomaly.ejs");
 
@@ -330,7 +346,7 @@ export async function notifyAnomaly(log: TAttendanceLog, lecturerEmail: string) 
     }
 }
 
-export async function notifyLowAttendance(session: TAttendanceSession, lecturerEmail: string, attendanceRate: number) {
+export async function notifyLowAttendance(session: IAttendanceSession, lecturerEmail: string, attendanceRate: number) {
     try {
         const templatePath = path.join(__dirname, "/src/views/emails/low_attendance.ejs");
 

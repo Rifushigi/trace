@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import { asyncErrorHandler } from "../middlewares/index.js";
-import { TResponseDTO } from "../types/index.js";
+import { IResponseDTO } from "../types/index.js";
 import { NotificationPreferences } from "../models/index.js";
 
 export const getPreferences = asyncErrorHandler(async (req: Request, res: Response) => {
     const { userId } = req.params;
     const preferences = await NotificationPreferences.findOne({ userId });
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: preferences || {
             email: {
@@ -45,7 +45,7 @@ export const updatePreferences = asyncErrorHandler(async (req: Request, res: Res
         { new: true, upsert: true }
     );
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: preferences,
         message: "Notification preferences updated successfully"
@@ -79,7 +79,7 @@ export const resetPreferences = asyncErrorHandler(async (req: Request, res: Resp
         { new: true, upsert: true }
     );
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: preferences,
         message: "Notification preferences reset to default"

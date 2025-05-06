@@ -2,7 +2,7 @@ import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import { env } from '../config/index.js';
 import { validationResult } from 'express-validator';
 import { AxiosError } from 'axios';
-import { AuthenticatedRequest } from '../types/index.js';
+import { IAuthenticatedRequest } from '../types/index.js';
 
 export class AppError extends Error {
     constructor(
@@ -77,8 +77,7 @@ export class SessionError extends AppError {
     }
 }
 
-export const globalErrorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
-
+export const globalErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof AppError) {
         res.status(err.statusCode).json({
             status: false,
@@ -102,7 +101,7 @@ export const asyncErrorHandler = <T extends Request>(func: (req: T, res: Respons
     (req: Request, res: Response, next: NextFunction) =>
         Promise.resolve(func(req as T, res)).catch(next);
 
-export const middlewareErrorHandler = <T extends Request | AuthenticatedRequest>(func: (req: T, res: Response, next: NextFunction) => Promise<any>) =>
+export const middlewareErrorHandler = <T extends Request | IAuthenticatedRequest>(func: (req: T, res: Response, next: NextFunction) => Promise<any>) =>
     (req: T, res: Response, next: NextFunction) =>
         Promise.resolve(func(req, res, next)).catch(next);
 

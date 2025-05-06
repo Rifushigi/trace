@@ -1,7 +1,7 @@
 import { AttendanceSession, AttendanceLog, User } from "../models/index.js";
 import { createObjectCsvWriter } from 'csv-writer';
 import { format } from 'date-fns';
-import { AttendanceStats, StudentStats, PopulatedStudent } from "../types/index.js";
+import { IAttendanceStats, IStudentStats, IPopulatedStudent } from "../types/index.js";
 import { validateClassExists } from "./class_service.js";
 import { NotFoundError, DatabaseError } from "../middlewares/index.js";
 
@@ -15,7 +15,7 @@ import { NotFoundError, DatabaseError } from "../middlewares/index.js";
  * @throws NotFoundError - If the class does not exist.
  * @throws DatabaseError - If a database operation fails.
  */
-export const generateClassAttendanceReport = async (classId: string, startDate?: Date, endDate?: Date): Promise<AttendanceStats> => {
+export const generateClassAttendanceReport = async (classId: string, startDate?: Date, endDate?: Date): Promise<IAttendanceStats> => {
     try {
         // Validate that the class exists
         const classExists = await validateClassExists(classId);
@@ -73,7 +73,7 @@ export const generateClassAttendanceReport = async (classId: string, startDate?:
  * @throws NotFoundError - If the class does not exist.
  * @throws DatabaseError - If a database operation fails.
  */
-export const generateStudentAttendanceReport = async (studentId: string, classId: string): Promise<StudentStats> => {
+export const generateStudentAttendanceReport = async (studentId: string, classId: string): Promise<IStudentStats> => {
     try {
         // Validate that the class exists
         const classExists = await validateClassExists(classId);
@@ -138,7 +138,7 @@ export const exportAttendanceToCSV = async (classId: string, startDate?: Date, e
 
         const logs = await AttendanceLog.find({
             sessionId: { $in: sessionIds }
-        }).populate<{ studentId: PopulatedStudent }>('studentId', 'firstName lastName email');
+        }).populate<{ studentId: IPopulatedStudent }>('studentId', 'firstName lastName email');
 
         // Define the file path for the CSV
         const filePath = `attendance_report_${classId}_${format(new Date(), 'yyyy-MM-dd')}.csv`;

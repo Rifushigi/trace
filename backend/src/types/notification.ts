@@ -1,4 +1,4 @@
-import { TAttendanceLog, TAttendanceSession } from "./index.js";
+import { IAttendanceLog, IAttendanceSession } from "./index.js";
 
 export interface SessionStartNotification {
     sessionId: string;
@@ -32,9 +32,9 @@ export interface AnomalyNotification {
 }
 
 export interface NotificationService {
-    notifySessionStart(session: TAttendanceSession): void;
-    notifySessionEnd(session: TAttendanceSession): void;
-    notifyCheckIn(log: TAttendanceLog): void;
-    notifyAnomaly(log: TAttendanceLog): void;
+    notifySessionStart(session: IAttendanceSession): void;
+    notifySessionEnd(session: IAttendanceSession): void;
+    notifyCheckIn(log: IAttendanceLog): void;
+    notifyAnomaly(log: IAttendanceLog): void;
     handleConnection(socket: any): void;
-} 
+}

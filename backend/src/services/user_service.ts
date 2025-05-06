@@ -1,10 +1,10 @@
 import { Lecturer, Student, User } from "../models/index.js";
 import {
-    TLecturer,
-    TStudent,
-    TUser,
+    ILecturer,
+    IStudent,
+    IUser,
     TUserCreateDTO,
-    TUserDTO,
+    IUserDTO,
     TUserUpdateDTO
 } from "../types/index.js"
 import {
@@ -26,9 +26,9 @@ import { cldnDir, cloudinary } from '../config/index.js';
 import { Readable } from "stream";
 import { sendVerificationEmail } from "./email_service.js";
 
-const userModel: Model<TUser> = User;
-const studentModel: Model<TStudent> = Student;
-const lecturerModel: Model<TLecturer> = Lecturer;
+const userModel: Model<IUser> = User;
+const studentModel: Model<IStudent> = Student;
+const lecturerModel: Model<ILecturer> = Lecturer;
 
 export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
     const emailExists = await getUserByEmail(userDTO.email);
@@ -86,13 +86,13 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
     return true;
 }
 
-export async function getUserById(id: string): Promise<TUser | null> {
+export async function getUserById(id: string): Promise<IUser | null> {
     const user = await userModel.findOne({ _id: id, deletedAt: null });
     if (!user) throw new NotFoundError("User not found");
     return user;
 }
 
-export async function getUserByEmail(email: string): Promise<TUser | null> {
+export async function getUserByEmail(email: string): Promise<IUser | null> {
     return userModel.findOne({ email, deletedAt: null });
 }
 
@@ -135,11 +135,11 @@ export async function restoreUser(id: string): Promise<boolean> {
     return !!result;
 }
 
-export async function getDeletedUsers(): Promise<TUser[]> {
+export async function getDeletedUsers(): Promise<IUser[]> {
     return userModel.find({ deletedAt: { $ne: null } });
 }
 
-export async function getProfile(id: string): Promise<TUserDTO | null> {
+export async function getProfile(id: string): Promise<IUserDTO | null> {
     return await getUserById(id);
 }
 

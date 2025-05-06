@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// TODO
+// add the firebase env variables
 const baseUrl: string = process.env.BASE_URL!;
 const emailFrom: string = process.env.EMAIL_FROM!;
 const emailExp: number = parseInt(process.env.EMAIL_EXP || "86400000");//time-ms

@@ -1,7 +1,7 @@
-import type { TUser } from "../types/index.js";
+import type { IUser } from "../types/index.js";
 import { model, Schema } from "mongoose";
 
-const userSchema = new Schema<TUser>({
+const userSchema = new Schema<IUser>({
     avatar: { type: String },
     email: { type: String, required: true, unique: true },
     firstName: { type: String },
@@ -16,4 +16,4 @@ const userSchema = new Schema<TUser>({
     googleId: { type: String },
 })
 
-export const User = model<TUser>("User", userSchema)
+export const User = model<IUser>("User", userSchema)

@@ -1,5 +1,5 @@
 import { Class, Enrollment, AttendanceSession, AttendanceLog } from "../models/index.js";
-import { TClass, TUser, TAttendanceSession, ClassUpdateDTO } from "../types/index.js";
+import { IClass, IUser, IAttendanceSession, IClassUpdateDTO } from "../types/index.js";
 import { DatabaseError, NotFoundError, ConflictError, ValidationError } from "../middlewares/index.js";
 import mongoose, { Schema } from "mongoose";
 
@@ -10,7 +10,7 @@ export const createClass = async (classData: {
     lecturerId: string;
     semester: string;
     year: number;
-}): Promise<TClass> => {
+}): Promise<IClass> => {
     try {
         const newClass = await Class.create(classData);
         return newClass;
@@ -25,9 +25,9 @@ export const createClass = async (classData: {
     }
 };
 
-export const updateClass = async (classId: string, updateData: ClassUpdateDTO): Promise<TClass> => {
+export const updateClass = async (classId: string, updateData: IClassUpdateDTO): Promise<IClass> => {
     try {
-        const updateObj: Partial<TClass> = {
+        const updateObj: Partial<IClass> = {
             ...updateData,
             lecturerId: updateData.lecturerId ? new Schema.Types.ObjectId(updateData.lecturerId) : undefined
         };
@@ -60,7 +60,7 @@ export const deleteClass = async (classId: string): Promise<boolean> => {
     }
 };
 
-export const getClassById = async (classId: string): Promise<TClass> => {
+export const getClassById = async (classId: string): Promise<IClass> => {
     try {
         const classData = await Class.findById(classId);
         if (!classData) {
@@ -75,7 +75,7 @@ export const getClassById = async (classId: string): Promise<TClass> => {
     }
 };
 
-export const getClassesByLecturer = async (lecturerId: string): Promise<TClass[]> => {
+export const getClassesByLecturer = async (lecturerId: string): Promise<IClass[]> => {
     try {
         return await Class.find({ lecturerId });
     } catch (error) {
@@ -99,10 +99,10 @@ export const validateClassExists = async (classId: string): Promise<boolean> => 
 };
 
 // Student-Class Integration
-export const getStudentsInClass = async (classId: string): Promise<TUser[]> => {
+export const getStudentsInClass = async (classId: string): Promise<IUser[]> => {
     try {
         const enrollments = await Enrollment.find({ classId })
-            .populate<{ studentId: TUser }>('studentId');
+            .populate<{ studentId: IUser }>('studentId');
         return enrollments.map(e => e.studentId);
     } catch (error) {
         if (error instanceof Error) {
@@ -129,8 +129,8 @@ export const enrollStudentInClass = async (studentId: string, classId: string): 
 
 // Class Schedule
 export const getClassSchedule = async (classId: string): Promise<{
-    sessions: TAttendanceSession[];
-    nextSession?: TAttendanceSession;
+    sessions: IAttendanceSession[];
+    nextSession?: IAttendanceSession;
 }> => {
     try {
         const sessions = await AttendanceSession.find({ classId })
@@ -212,7 +212,7 @@ export const searchClasses = async (query: {
     semester?: string;
     year?: number;
     lecturerId?: string;
-}): Promise<TClass[]> => {
+}): Promise<IClass[]> => {
     try {
         const filter: any = {};
         if (query.title) filter.title = new RegExp(query.title, 'i');

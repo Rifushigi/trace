@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import { asyncErrorHandler } from "../middlewares/index.js";
 import {
-    TResponseDTO,
-    AuthenticatedRequest,
-    ClassCreateDTO,
-    ClassUpdateDTO,
-    ClassSearchDTO
+    IResponseDTO,
+    IAuthenticatedRequest,
+    IClassCreateDTO,
+    IClassUpdateDTO,
+    IClassSearchDTO
 } from "../types/index.js";
 import {
     createClass,
@@ -20,14 +20,14 @@ import {
     searchClasses
 } from "../services/class_service.js";
 
-export const createNewClass = asyncErrorHandler(async (req: AuthenticatedRequest, res: Response) => {
-    const classData: ClassCreateDTO = {
+export const createNewClass = asyncErrorHandler(async (req: IAuthenticatedRequest, res: Response) => {
+    const classData: IClassCreateDTO = {
         ...req.body,
         lecturerId: req.user.id
     };
     const newClass = await createClass(classData);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: newClass,
         message: "Class created successfully"
@@ -38,10 +38,10 @@ export const createNewClass = asyncErrorHandler(async (req: AuthenticatedRequest
 
 export const updateExistingClass = asyncErrorHandler(async (req: Request, res: Response) => {
     const { classId } = req.params;
-    const updateData: ClassUpdateDTO = req.body;
+    const updateData: IClassUpdateDTO = req.body;
     const updatedClass = await updateClass(classId, updateData);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: updatedClass,
         message: "Class updated successfully"
@@ -54,7 +54,7 @@ export const removeClass = asyncErrorHandler(async (req: Request, res: Response)
     const { classId } = req.params;
     await deleteClass(classId);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         message: "Class deleted successfully"
     };
@@ -66,7 +66,7 @@ export const getClass = asyncErrorHandler(async (req: Request, res: Response) =>
     const { classId } = req.params;
     const classData = await getClassById(classId);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: classData,
         message: "Class retrieved successfully"
@@ -75,10 +75,10 @@ export const getClass = asyncErrorHandler(async (req: Request, res: Response) =>
     return res.status(200).json({ response });
 });
 
-export const getLecturerClasses = asyncErrorHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const getLecturerClasses = asyncErrorHandler(async (req: IAuthenticatedRequest, res: Response) => {
     const classes = await getClassesByLecturer(req.user.id);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: classes,
         message: "Lecturer's classes retrieved successfully"
@@ -91,7 +91,7 @@ export const getClassStudents = asyncErrorHandler(async (req: Request, res: Resp
     const { classId } = req.params;
     const students = await getStudentsInClass(classId);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: students,
         message: "Class students retrieved successfully"
@@ -104,7 +104,7 @@ export const enrollStudent = asyncErrorHandler(async (req: Request, res: Respons
     const { classId, studentId } = req.params;
     await enrollStudentInClass(studentId, classId);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         message: "Student enrolled successfully"
     };
@@ -116,7 +116,7 @@ export const getSchedule = asyncErrorHandler(async (req: Request, res: Response)
     const { classId } = req.params;
     const schedule = await getClassSchedule(classId);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: schedule,
         message: "Class schedule retrieved successfully"
@@ -129,7 +129,7 @@ export const getStatistics = asyncErrorHandler(async (req: Request, res: Respons
     const { classId } = req.params;
     const statistics = await getClassStatistics(classId);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: statistics,
         message: "Class statistics retrieved successfully"
@@ -139,10 +139,10 @@ export const getStatistics = asyncErrorHandler(async (req: Request, res: Respons
 });
 
 export const search = asyncErrorHandler(async (req: Request, res: Response) => {
-    const searchParams: ClassSearchDTO = req.query;
+    const searchParams: IClassSearchDTO = req.query;
     const classes = await searchClasses(searchParams);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: classes,
         message: "Classes retrieved successfully"

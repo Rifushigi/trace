@@ -1,6 +1,6 @@
 import { ObjectId } from "mongoose";
 
-export interface TAttendanceLog extends Document{
+export interface IAttendanceLog extends Document {
     _id: ObjectId;
     sessionId: ObjectId;
     studentId: ObjectId;

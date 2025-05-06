@@ -1,7 +1,7 @@
 import { Request } from "express";
-import { TUser } from "./user.js";
+import { IUser } from "./user.js";
 
-export interface AuthenticatedRequest extends Request {
-    user: TUser;
+export interface IAuthenticatedRequest extends Request {
+    user: IUser;
     role?: string;
 } 

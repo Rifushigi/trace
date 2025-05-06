@@ -1,7 +1,7 @@
 import mongoose, { model, Schema } from "mongoose";
-import { TStudent } from "../types/index.js";
+import { IStudent } from "../types/index.js";
 
-const studentSchema = new Schema<TStudent>({
+const studentSchema = new Schema<IStudent>({
     userId: { type: mongoose.Types.ObjectId, required: true },
     matricNo: { type: String, required: true, unique: true },
     program: { type: String, required: true },
@@ -11,4 +11,4 @@ const studentSchema = new Schema<TStudent>({
     bleToken: { type: String }
 });
 
-export const Student = model<TStudent>("Students", studentSchema);
+export const Student = model<IStudent>("Students", studentSchema);

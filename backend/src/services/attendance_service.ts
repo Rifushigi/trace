@@ -1,5 +1,5 @@
 import { AttendanceSession, AttendanceLog, User } from "../models/index.js";
-import { TAttendanceSession, TAttendanceLog, CreateSessionDTO, CheckInDTO } from "../types/index.js";
+import { IAttendanceSession, IAttendanceLog, ICreateSessionDTO, ICheckInDTO } from "../types/index.js";
 import { notifyAnomaly, notifyCheckIn, notifyLowAttendance, notifySessionStart, notifySessionEnd } from "./email_service.js";
 import { createNotificationService } from "./notification_service.js";
 import { NotFoundError, ConflictError, DatabaseError, ValidationError } from "../middlewares/index.js";
@@ -22,7 +22,7 @@ const MIN_CONFIDENCE_SCORE = 0.0;
 // Rate limiting map
 const lastCheckInTimes: Map<string, Date> = new Map();
 
-export const createAttendanceSession = async (data: CreateSessionDTO): Promise<TAttendanceSession> => {
+export const createAttendanceSession = async (data: ICreateSessionDTO): Promise<IAttendanceSession> => {
     try {
         // Validate class exists
         const classExists = await validateClassExists(data.classId);
@@ -56,7 +56,7 @@ export const createAttendanceSession = async (data: CreateSessionDTO): Promise<T
     }
 };
 
-export const endAttendanceSession = async (sessionId: string): Promise<TAttendanceSession> => {
+export const endAttendanceSession = async (sessionId: string): Promise<IAttendanceSession> => {
     try {
         const session = await AttendanceSession.findByIdAndUpdate(
             sessionId,
@@ -113,7 +113,7 @@ export const handleAutomaticCheckIn = async (data: {
     location: string;
     confidence: number;
     timestamp: Date;
-}): Promise<TAttendanceLog> => {
+}): Promise<IAttendanceLog> => {
     try {
         // Validate input data
         if (!data.studentId || !data.sessionId || !data.location) {
@@ -202,7 +202,7 @@ export const handleAutomaticCheckIn = async (data: {
  * @throws ConflictError - If the student has already checked in.
  * @throws DatabaseError - If a database operation fails.
  */
-export const checkIn = async (data: CheckInDTO): Promise<TAttendanceLog> => {
+export const checkIn = async (data: ICheckInDTO): Promise<IAttendanceLog> => {
     try {
         const session = await AttendanceSession.findOne({
             _id: data.sessionId,
@@ -252,7 +252,7 @@ export const checkIn = async (data: CheckInDTO): Promise<TAttendanceLog> => {
  * @throws NotFoundError - If the student or lecturer is not found.
  * @throws DatabaseError - If a database operation fails.
  */
-async function handleCheckInNotifications(log: TAttendanceLog, session: TAttendanceSession): Promise<void> {
+async function handleCheckInNotifications(log: IAttendanceLog, session: IAttendanceSession): Promise<void> {
     const student = await User.findById(log.studentId);
     if (!student) {
         throw new NotFoundError("Student not found");
@@ -289,8 +289,8 @@ async function handleCheckInNotifications(log: TAttendanceLog, session: TAttenda
 }
 
 export const getSessionAttendance = async (sessionId: string): Promise<{
-    session: TAttendanceSession;
-    logs: TAttendanceLog[];
+    session: IAttendanceSession;
+    logs: IAttendanceLog[];
 }> => {
     try {
         const session = await AttendanceSession.findById(sessionId);
@@ -311,8 +311,8 @@ export const getSessionAttendance = async (sessionId: string): Promise<{
 };
 
 export const getStudentAttendance = async (studentId: string, classId: string): Promise<{
-    sessions: TAttendanceSession[];
-    logs: TAttendanceLog[];
+    sessions: IAttendanceSession[];
+    logs: IAttendanceLog[];
 }> => {
     try {
         const sessions = await AttendanceSession.find({ classId });

@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import { TUserDTO } from "./user.js";
+import { IUserDTO } from "./user.js";
 import { Document } from "mongoose";
 
 export interface IAuthResult {
-    user: TUserDTO;
+    user: IUserDTO;
     accessToken: string;
 }
 

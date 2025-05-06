@@ -3,7 +3,6 @@ import { User } from "../models/index.js"
 
 class FCMService {
     private static instance: FCMService;
-    private initialized = false;
 
     private constructor() {
         // Initialize Firebase Admin SDK
@@ -16,7 +15,6 @@ class FCMService {
                 }),
             });
         }
-        this.initialized = true;
     }
 
     public static getInstance(): FCMService {

@@ -1,5 +1,5 @@
 import { verifyAccessToken } from "../services/jwt_service.js";
-import { IAccessToken, AuthenticatedRequest } from "../types/index.js";
+import { IAccessToken, IAuthenticatedRequest } from "../types/index.js";
 import { middlewareErrorHandler, UnauthorizedError } from "./error_handler.js";
 import { NextFunction, Response, Request } from "express";
 import { validateSession } from "../services/session_service.js";
@@ -23,6 +23,6 @@ export const sessionMiddleware = middlewareErrorHandler(async (req: Request, res
         throw new UnauthorizedError("Invalid or expired session");
     }
 
-    (req as unknown as AuthenticatedRequest).user = { _id: userId } as any;
+    (req as unknown as IAuthenticatedRequest).user = { _id: userId } as any;
     next();
 });

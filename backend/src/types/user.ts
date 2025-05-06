@@ -1,5 +1,5 @@
 import mongoose, { Document } from "mongoose";
-export interface TUser extends Document {
+export interface IUser extends Document {
     _id: mongoose.Types.ObjectId;
     firstName?: string;
     lastName?: string;
@@ -26,7 +26,7 @@ export type TUserUpdateDTO = {
     updatedAt: Date;
 } | Partial<TStudentCreateDTO> | Partial<TLecturerCreateDTO>
 
-export interface TUserDTO {
+export interface IUserDTO {
     _id: mongoose.Types.ObjectId;
     firstName?: string;
     lastName?: string;

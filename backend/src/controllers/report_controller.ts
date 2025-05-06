@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { asyncErrorHandler } from "../middlewares/index.js";
-import { TResponseDTO } from "../types/index.js";
+import { IResponseDTO } from "../types/index.js";
 import {
     generateClassAttendanceReport,
     generateStudentAttendanceReport,
@@ -17,7 +17,7 @@ export const getClassAttendanceReport = asyncErrorHandler(async (req: Request, r
         endDate ? new Date(endDate as string) : undefined
     );
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: report,
         message: "Class attendance report generated successfully"
@@ -30,7 +30,7 @@ export const getStudentAttendanceReport = asyncErrorHandler(async (req: Request,
     const { studentId, classId } = req.params;
     const report = await generateStudentAttendanceReport(studentId, classId);
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: report,
         message: "Student attendance report generated successfully"
@@ -49,7 +49,7 @@ export const exportAttendanceReport = asyncErrorHandler(async (req: Request, res
         endDate ? new Date(endDate as string) : undefined
     );
 
-    const response: TResponseDTO = {
+    const response: IResponseDTO = {
         status: true,
         data: { filePath },
         message: "Attendance report exported successfully"

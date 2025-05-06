@@ -1,4 +1,4 @@
-import { AuthTokens, TokenPayload } from "../types/index.js";
+import { IAuthTokens, ITokenPayload } from "../types/index.js";
 import jwt, { SignOptions } from "jsonwebtoken";
 import {
     accessTokenExpiration,
@@ -12,7 +12,7 @@ import crypto from "crypto";
 import { Types } from "mongoose";
 import { validateSession } from "./session_service.js";
 
-export function generateAccessToken(payload: TokenPayload): string {
+export function generateAccessToken(payload: ITokenPayload): string {
     try {
         return jwt.sign(payload, accessTokenSecret, { expiresIn: accessTokenExpiration } as SignOptions);
     } catch (error) {
@@ -20,7 +20,7 @@ export function generateAccessToken(payload: TokenPayload): string {
     }
 }
 
-export function generateRefreshToken(payload: TokenPayload): string {
+export function generateRefreshToken(payload: ITokenPayload): string {
     try {
         return jwt.sign(payload, refreshTokenSecret, { expiresIn: refreshTokenExpiration } as SignOptions);
     } catch (error) {
@@ -32,7 +32,7 @@ export function generateSessionToken(): string {
     return crypto.randomUUID();
 }
 
-export function generateAuthTokens(user: TokenPayload): AuthTokens {
+export function generateAuthTokens(user: ITokenPayload): IAuthTokens {
     const accessToken: string = generateAccessToken({ userId: user.userId });
     if (!accessToken) throw new JWTError("Failed to generate access token");
     const refreshToken: string = generateRefreshToken({ userId: user.userId });
@@ -55,7 +55,7 @@ export async function refreshAccessToken(req: Request): Promise<string> {
     }
 
     try {
-        const payload = jwt.verify(refreshToken, refreshTokenSecret) as TokenPayload;
+        const payload = jwt.verify(refreshToken, refreshTokenSecret) as ITokenPayload;
         if (!payload || !payload.userId) {
             throw new JWTError("Invalid refresh token payload");
         }
@@ -78,9 +78,9 @@ export async function refreshAccessToken(req: Request): Promise<string> {
     }
 }
 
-export function verifyAccessToken(token: string): TokenPayload {
+export function verifyAccessToken(token: string): ITokenPayload {
     try {
-        const payload = jwt.verify(token, accessTokenSecret) as TokenPayload;
+        const payload = jwt.verify(token, accessTokenSecret) as ITokenPayload;
         if (!payload || !payload.userId) {
             throw new JWTError("Invalid access token payload");
         }

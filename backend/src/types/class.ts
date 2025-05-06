@@ -1,7 +1,7 @@
 import { Document, ObjectId } from "mongoose";
-import { TAttendanceSession } from "./attendance_session.js";
+import { IAttendanceSession } from "./attendance_session.js";
 
-export interface TClass extends Document {
+export interface IClass extends Document {
     _id: ObjectId;
     title: string;
     courseCode: string;
@@ -11,7 +11,7 @@ export interface TClass extends Document {
     year: number;
 }
 
-export interface ClassCreateDTO {
+export interface IClassCreateDTO {
     title: string;
     className: string;
     courseCode: string;
@@ -20,9 +20,9 @@ export interface ClassCreateDTO {
     year: number;
 }
 
-export interface ClassUpdateDTO extends Partial<ClassCreateDTO> { }
+export interface IClassUpdateDTO extends Partial<IClassCreateDTO> { }
 
-export interface ClassSearchDTO {
+export interface IClassSearchDTO {
     title?: string;
     courseCode?: string;
     className?: string;
@@ -31,12 +31,12 @@ export interface ClassSearchDTO {
     lecturerId?: string;
 }
 
-export interface ClassScheduleDTO {
-    sessions: TAttendanceSession[];
-    nextSession?: TAttendanceSession;
+export interface IClassScheduleDTO {
+    sessions: IAttendanceSession[];
+    nextSession?: IAttendanceSession;
 }
 
-export interface ClassStatisticsDTO {
+export interface IClassStatisticsDTO {
     totalStudents: number;
     totalSessions: number;
     averageAttendance: number;

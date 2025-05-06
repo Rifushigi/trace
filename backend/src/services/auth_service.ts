@@ -2,12 +2,12 @@ import { Response } from "express";
 import { comparePayload } from "../utils/index.js";
 import { AuthenticationError, ValueError, JWTError, SessionError } from "../middlewares/index.js";
 import {
-    AuthResult,
-    AuthTokens,
-    TUser,
-    TUserDTO,
-    TUserLoginDTO,
-    AuthenticatedRequest
+    IAuthResult,
+    IAuthTokens,
+    IUser,
+    IUserDTO,
+    IUserLoginDTO,
+    IAuthenticatedRequest
 } from "../types/index.js";
 import { generateAuthTokens } from "./jwt_service.js";
 import { getUserByEmail } from "./user_service.js";
@@ -15,9 +15,9 @@ import { accessTokenExpiration, refreshTokenExpiration } from "../config/index.j
 import { createSession, validateSession, invalidateSession } from "./session_service.js";
 import { Types } from "mongoose";
 
-export const login = async (payload: TUserLoginDTO, req: AuthenticatedRequest, res: Response): Promise<AuthResult> => {
+export const login = async (payload: IUserLoginDTO, req: IAuthenticatedRequest, res: Response): Promise<IAuthResult> => {
     const { email, password } = payload;
-    const user: TUser | null = await getUserByEmail(email);
+    const user: IUser | null = await getUserByEmail(email);
 
     if (!user) throw new ValueError("User not found");
     if (!user.password) throw new ValueError("User password is not set");
@@ -29,7 +29,7 @@ export const login = async (payload: TUserLoginDTO, req: AuthenticatedRequest, r
     }
 
     // Generate auth tokens
-    const { accessToken, refreshToken }: AuthTokens = generateAuthTokens({
+    const { accessToken, refreshToken }: IAuthTokens = generateAuthTokens({
         userId: user._id.toString(),
     });
 
@@ -63,7 +63,7 @@ export const login = async (payload: TUserLoginDTO, req: AuthenticatedRequest, r
     });
 
     // Create user DTO with only necessary fields
-    const userDTO: TUserDTO = {
+    const userDTO: IUserDTO = {
         _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -79,7 +79,7 @@ export const login = async (payload: TUserLoginDTO, req: AuthenticatedRequest, r
     };
 };
 
-export const logout = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const logout = async (req: IAuthenticatedRequest, res: Response): Promise<void> => {
     // Clear all authentication cookies
     res.clearCookie('accessToken', {
         httpOnly: true,

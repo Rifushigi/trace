@@ -1,10 +1,10 @@
-export interface TResponseDTO {
+export interface IResponseDTO {
   status: boolean;
   message: string;
   data?: any;
 }
 
-export interface TUserProfileResponseDTO {
+export interface IUserProfileResponseDTO {
   id: string;
   firstName?: string;
   lastName?: string;

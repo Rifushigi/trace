@@ -1,7 +1,7 @@
 import mongoose, { model, Schema } from "mongoose";
-import { TVerification } from "../types/index.js";
+import { IVerification } from "../types/index.js";
 
-const verificationSchema = new Schema<TVerification>({
+const verificationSchema = new Schema<IVerification>({
     userId: { type: mongoose.Types.ObjectId, required: true },
     email: { type: String, required: true },
     otp: {
@@ -21,4 +21,4 @@ const verificationSchema = new Schema<TVerification>({
     createdAt: { type: Date, default: Date.now() }
 });
 
-export const Verification = model<TVerification>("Verification", verificationSchema);
+export const Verification = model<IVerification>("Verification", verificationSchema);

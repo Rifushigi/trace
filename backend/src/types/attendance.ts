@@ -1,10 +1,10 @@
-export interface CreateSessionDTO {
+export interface ICreateSessionDTO {
     classId: string;
     startTime?: Date;
     lecturerId: string;
 }
 
-export interface CheckInDTO {
+export interface ICheckInDTO {
     sessionId: string;
     studentId: string;
     method: "face" | "nfc" | "ble" | "geofence";
@@ -16,7 +16,7 @@ export interface CheckInDTO {
     };
 }
 
-export interface AttendanceStats {
+export interface IAttendanceStats {
     totalSessions: number;
     totalStudents: number;
     averageAttendance: number;
@@ -29,16 +29,16 @@ export interface AttendanceStats {
     anomalies: number;
 }
 
-export interface StudentStats {
+export interface IStudentStats {
     studentId: string;
     totalSessions: number;
     attendedSessions: number;
     attendanceRate: number;
     anomalies: number;
     lastCheckIn?: Date;
-} 
+}
 
-export interface PopulatedStudent {
+export interface IPopulatedStudent {
     firstName: string;
     lastName: string;
     email: string;

@@ -1,6 +1,6 @@
 import { Document, ObjectId } from "mongoose";
 
-export interface TLecturer extends Document {
+export interface ILecturer extends Document {
     _id: ObjectId;
     userId: ObjectId;
     staffId: string;

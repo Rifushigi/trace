@@ -1,7 +1,7 @@
-import type { TAttendanceLog } from "../types/index.js";
+import type { IAttendanceLog } from "../types/index.js";
 import mongoose, { model, Schema } from "mongoose";
 
-const attendanceLogSchema = new Schema<TAttendanceLog>({
+const attendanceLogSchema = new Schema<IAttendanceLog>({
     sessionId: { type: mongoose.Types.ObjectId, required: true },
     studentId: { type: mongoose.Types.ObjectId, required: true },
     checkedInAt: { type: Date, default: null },
@@ -10,4 +10,4 @@ const attendanceLogSchema = new Schema<TAttendanceLog>({
     isAnomaly: { type: Boolean, default: false }
 });
 
-export const AttendanceLog = model<TAttendanceLog>("AttendanceLog", attendanceLogSchema);
+export const AttendanceLog = model<IAttendanceLog>("AttendanceLog", attendanceLogSchema);

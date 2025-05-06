@@ -6,8 +6,8 @@ import {
     CheckInNotification,
     CheckInConfirmationNotification,
     AnomalyNotification,
-    TAttendanceLog,
-    TAttendanceSession
+    IAttendanceLog,
+    IAttendanceSession
 } from '../types/index.js';
 import { fcmService } from './fcm_service.js';
 import { User, AttendanceSession, Class } from '../models/index.js';
@@ -36,7 +36,7 @@ class NotificationServiceImpl implements NotificationService {
      * 
      * @param session - The attendance session that has started.
      */
-    async notifySessionStart(session: TAttendanceSession): Promise<void> {
+    async notifySessionStart(session: IAttendanceSession): Promise<void> {
         const notification: SessionStartNotification = {
             sessionId: session._id.toString(),
             startTime: session.startTime
@@ -75,7 +75,7 @@ class NotificationServiceImpl implements NotificationService {
      * 
      * @param session - The attendance session that has ended.
      */
-    async notifySessionEnd(session: TAttendanceSession): Promise<void> {
+    async notifySessionEnd(session: IAttendanceSession): Promise<void> {
         const notification: SessionEndNotification = {
             sessionId: session._id.toString(),
             endTime: session.endTime || new Date()
@@ -106,7 +106,7 @@ class NotificationServiceImpl implements NotificationService {
      * 
      * @param log - The attendance log for the student's check-in.
      */
-    async notifyCheckIn(log: TAttendanceLog): Promise<void> {
+    async notifyCheckIn(log: IAttendanceLog): Promise<void> {
         const session = await AttendanceSession.findById(log.sessionId);
         if (!session) throw new SessionError("Session not found");
 
@@ -157,7 +157,7 @@ class NotificationServiceImpl implements NotificationService {
      * 
      * @param log - The attendance log for the student's check-in.
      */
-    async notifyAnomaly(log: TAttendanceLog): Promise<void> {
+    async notifyAnomaly(log: IAttendanceLog): Promise<void> {
         const session = await AttendanceSession.findById(log.sessionId);
         if (!session) throw new SessionError("Session not found");
 
