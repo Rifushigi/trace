@@ -2,3 +2,5 @@ pnpm:
   onlyBuiltDependencies:
     - bcrypt
     - esbuild
+    - firebase/util
+    - protobufjs
