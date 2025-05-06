@@ -4,6 +4,7 @@ import '../../data/repositories/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../profile/data/repositories/profile_repository.dart';
 
 part 'auth_provider.g.dart';
 
@@ -11,8 +12,17 @@ part 'auth_provider.g.dart';
 class Auth extends _$Auth {
   @override
   FutureOr<UserModel?> build() async {
-    // TODO: Check for existing session
-    return null;
+    try {
+      final authRepository = ref.read(authRepositoryProvider);
+      final profileRepository = ref.read(profileRepositoryProvider);
+      // Check if we have a valid session by attempting to refresh the token
+      await authRepository.refreshToken();
+      // If refresh succeeds, we have a valid session
+      return await profileRepository.getProfile();
+    } catch (e) {
+      // If refresh fails, we don't have a valid session
+      return null;
+    }
   }
 
   Future<void> signIn(String email, String password) async {
