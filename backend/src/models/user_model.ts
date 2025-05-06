@@ -9,6 +9,7 @@ const userSchema = new Schema<TUser>({
     password: { type: String },
     role: { type: String, required: true, enum: ['admin', 'lecturer', 'student'] },
     isVerified: { type: Boolean, default: false },
+    fcmToken: { type: String },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     deletedAt: { type: Date },
