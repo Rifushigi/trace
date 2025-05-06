@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { IAttendanceLog, IAttendanceSession } from "./index.js";
 
 export interface SessionStartNotification {
@@ -37,4 +38,24 @@ export interface NotificationService {
     notifyCheckIn(log: IAttendanceLog): void;
     notifyAnomaly(log: IAttendanceLog): void;
     handleConnection(socket: any): void;
+}
+
+
+export interface INotificationPreferences {
+    userId: mongoose.Types.ObjectId;
+    email: {
+        sessionStart: boolean;
+        sessionEnd: boolean;
+        checkIn: boolean;
+        anomaly: boolean;
+        lowAttendance: boolean;
+    };
+    push: {
+        sessionStart: boolean;
+        sessionEnd: boolean;
+        checkIn: boolean;
+        anomaly: boolean;
+        lowAttendance: boolean;
+    };
+    updatedAt: Date;
 }

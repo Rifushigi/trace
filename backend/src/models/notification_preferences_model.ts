@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
-//TODO
-const notificationPreferencesSchema = new mongoose.Schema({
+import { INotificationPreferences } from "../types/index.js";
+
+const notificationPreferencesSchema = new mongoose.Schema<INotificationPreferences>({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -26,4 +27,4 @@ const notificationPreferencesSchema = new mongoose.Schema({
     }
 });
 
-export const NotificationPreferences = mongoose.model("NotificationPreferences", notificationPreferencesSchema); 
+export const NotificationPreferences = mongoose.model<INotificationPreferences>("NotificationPreferences", notificationPreferencesSchema); 
