@@ -1,0 +1,1330 @@
+{
+	"info": {
+		"_postman_id": "b6aab74e-9aa2-4177-a15b-48b9d7f9108c",
+		"name": "Trace",
+		"description": "API documentation for the Trace attendance system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24614265"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "v1",
+					"item": [
+						{
+							"name": "Sign In",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/signin",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"signin"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Success Response",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"email\": \"rifushigi.teda@gmail.com\",\n    \"password\": \"admin@trace\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/v1/auth/signin",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"auth",
+												"signin"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "set-cookie"
+										},
+										{
+											"key": "Set-Cookie",
+											"value": "accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODE1ZjI0NTk5OTQyOWMyNjgzN2M5NGMiLCJpYXQiOjE3NDYzNDA5NTQsImV4cCI6MTc0NjM0NDU1NH0.vtiNjxLEkyZQDz1jmXEPFsh4FndUIpIjEDAxSCsJH0Y; Max-Age=1; Path=/; Expires=Sun, 04 May 2025 06:42:35 GMT; HttpOnly; SameSite=Strict"
+										},
+										{
+											"key": "Set-Cookie",
+											"value": "refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODE1ZjI0NTk5OTQyOWMyNjgzN2M5NGMiLCJpYXQiOjE3NDYzNDA5NTQsImV4cCI6MTc0Njk0NTc1NH0.iuX75i-OmNmKepn5X0kCEV9_UJJTSDcSg6DAfZria7Q; Max-Age=7; Path=/; Expires=Sun, 04 May 2025 06:42:41 GMT; HttpOnly; SameSite=Strict"
+										},
+										{
+											"key": "Set-Cookie",
+											"value": "deviceId=c29250b9-5686-400c-9cc4-33e9304c81c7; Max-Age=7; Path=/; Expires=Sun, 04 May 2025 06:42:41 GMT; HttpOnly; SameSite=Strict"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "224"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"e0-WTx/K1NsIUdtS7RAGklgpJZ8We0\""
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 04 May 2025 06:42:34 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"response\": {\n        \"status\": true,\n        \"data\": {\n            \"user\": {\n                \"_id\": \"6815f245999429c26837c94c\",\n                \"firstName\": \"Rifushigi\",\n                \"lastName\": \"Teda\",\n                \"email\": \"rifushigi.teda@gmail.com\",\n                \"role\": \"admin\",\n                \"isVerified\": true\n            }\n        },\n        \"message\": \"Successfully logged in\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Refresh Token",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/refresh-token",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"refresh-token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Sign Out",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/signout",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"signout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Send OTP",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"johndoe@gmail.com\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/send-otp",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"send-otp"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Success Response",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"email\": \"johndoe@gmail.com\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/v1/auth/send-otp",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"auth",
+												"send-otp"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "set-cookie"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "62"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"3e-EUPqSUXfab4c8/dvXQXTKaANVLY\""
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 05 May 2025 05:05:00 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"response\": {\n        \"status\": true,\n        \"message\": \"Successfully sent OTP\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Verify OTP",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"user@example.com\",\n    \"otp\": \"123456\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/verify-otp",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"verify-otp"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Send Verification Email",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"johndoe@gmail.com\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/send-verification-email",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"send-verification-email"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Success Response",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"email\": \"johndoe@gmail.com\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/v1/auth/send-verification-email",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"auth",
+												"send-verification-email"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "77"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"4d-d80WWXeZDqnobFvv8JXZXhEhW20\""
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 03 May 2025 14:50:08 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"response\": {\n        \"status\": true,\n        \"message\": \"Successfully sent verification email\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Verify Email",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/verify-email?token=ca0234f8364dd928ebb10c353789b99553a406205f1f0e03921d38efc8c5b367",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"verify-email"
+									],
+									"query": [
+										{
+											"key": "token",
+											"value": "ca0234f8364dd928ebb10c353789b99553a406205f1f0e03921d38efc8c5b367",
+											"description": "Token obtained from the verification email"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Success Response",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/v1/auth/verify-email?token=ca0234f8364dd928ebb10c353789b99553a406205f1f0e03921d38efc8c5b367",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"auth",
+												"verify-email"
+											],
+											"query": [
+												{
+													"key": "token",
+													"value": "ca0234f8364dd928ebb10c353789b99553a406205f1f0e03921d38efc8c5b367",
+													"description": "Token obtained from the verification email"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "68"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"44-/0Zzj1Rp9VcyRv+PvArE5oSQce4\""
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 03 May 2025 14:46:38 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"response\": {\n        \"status\": true,\n        \"message\": \"Successfully verified email\"\n    }\n}"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "v1",
+					"item": [
+						{
+							"name": "Sign Up",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"mylesmorales@gmail.com\",\n    \"password\": \"admin@trace\",\n    \"firstName\": \"Myles\",\n    \"lastName\":\"Morales\",\n    \"role\": \"student\",\n    \"matricNo\":\"BU25CSC1001\",\n    \"program\":\"computer science\",\n    \"level\":\"400\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/users/signup",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"users",
+										"signup"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Success Response",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"email\": \"johndoe@gmail.com\",\n    \"password\": \"password123\",\n    \"name\": \"John Doe\",\n    \"role\": \"student\",\n    \"matricNo\":\"BU25CSC1001\",\n    \"program\":\"computer science\",\n    \"level\":\"400\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/api/v1/users/signup",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"users",
+												"signup"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "66"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"42-P12OeyxNvC/0AgIysSckL60iZ28\""
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 03 May 2025 06:10:08 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"response\": {\n        \"status\": true,\n        \"message\": \"Successfully created user\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "Upload Avatar",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "avatars",
+											"type": "file",
+											"src": "/C:/Users/toped/OneDrive/Pictures/Teddie/teddie-2.1.8 - Copy.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/users/upload-avatar",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"users",
+										"upload-avatar"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Success Response",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "avatars",
+													"type": "file",
+													"src": "/C:/Users/toped/OneDrive/Pictures/Teddie/teddie-2.1.8 - Copy.jpg"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{base_url}}/api/v1/users/upload-avatar",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"users",
+												"upload-avatar"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "set-cookie"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "74"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"4a-Q+rb7RaMkEI1kESf5YNH8RwFzMY\""
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 05 May 2025 05:34:05 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"response\": {\n        \"status\": true,\n        \"message\": \"Successfully uploaded user avatar\"\n    }\n}"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Class",
+			"item": [
+				{
+					"name": "v1",
+					"item": [
+						{
+							"name": "Create Class",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Computer Science 101\",\n    \"code\": \"CS101\",\n    \"lecturerId\": \"lecturer_id\",\n    \"schedule\": {\n        \"day\": \"Monday\",\n        \"startTime\": \"09:00\",\n        \"endTime\": \"11:00\"\n    }\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/class",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"class"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Class",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Updated Class Name\",\n    \"code\": \"CS101\",\n    \"lecturerId\": \"lecturer_id\",\n    \"schedule\": {\n        \"day\": \"Monday\",\n        \"startTime\": \"09:00\",\n        \"endTime\": \"11:00\"\n    }\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/class/:classId",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"class",
+										":classId"
+									],
+									"variable": [
+										{
+											"key": "classId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Class",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/class/:classId",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"class",
+										":classId"
+									],
+									"variable": [
+										{
+											"key": "classId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Lecturer Classes",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/class/lecturer",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"class",
+										"lecturer"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Class Details",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/class/:classId",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"class",
+										":classId"
+									],
+									"variable": [
+										{
+											"key": "classId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Class Students",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/class/:classId/students",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"class",
+										":classId",
+										"students"
+									],
+									"variable": [
+										{
+											"key": "classId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Enroll Student",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/class/:classId/students/:studentId",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"class",
+										":classId",
+										"students",
+										":studentId"
+									],
+									"variable": [
+										{
+											"key": "classId"
+										},
+										{
+											"key": "studentId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Class Schedule",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/class/:classId/schedule",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"class",
+										":classId",
+										"schedule"
+									],
+									"variable": [
+										{
+											"key": "classId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Class Statistics",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/class/:classId/statistics",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"class",
+										":classId",
+										"statistics"
+									],
+									"variable": [
+										{
+											"key": "classId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search Classes",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/class/search",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"class",
+										"search"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Attendance",
+			"item": [
+				{
+					"name": "v1",
+					"item": [
+						{
+							"name": "Start Session",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"classId\": \"class_id\",\n    \"startTime\": \"2024-05-02T09:00:00Z\",\n    \"endTime\": \"2024-05-02T11:00:00Z\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/attendance/sessions",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"attendance",
+										"sessions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "End Session",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/attendance/sessions/:sessionId/end",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"attendance",
+										"sessions",
+										":sessionId",
+										"end"
+									],
+									"variable": [
+										{
+											"key": "sessionId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Class Attendance Report",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/attendance/classes/:classId/report",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"attendance",
+										"classes",
+										":classId",
+										"report"
+									],
+									"variable": [
+										{
+											"key": "classId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Student Attendance Report",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/attendance/students/:studentId/classes/:classId/report",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"attendance",
+										"students",
+										":studentId",
+										"classes",
+										":classId",
+										"report"
+									],
+									"variable": [
+										{
+											"key": "studentId"
+										},
+										{
+											"key": "classId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Export Attendance Report",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/attendance/classes/:classId/export",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"attendance",
+										"classes",
+										":classId",
+										"export"
+									],
+									"variable": [
+										{
+											"key": "classId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Student Check In",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"sessionId\": \"session_id\",\n    \"classId\": \"class_id\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/attendance/check-in",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"attendance",
+										"check-in"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Session Attendance",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/attendance/sessions/:sessionId",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"attendance",
+										"sessions",
+										":sessionId"
+									],
+									"variable": [
+										{
+											"key": "sessionId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Student Attendance History",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/attendance/students/:studentId/classes/:classId",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"attendance",
+										"students",
+										":studentId",
+										"classes",
+										":classId"
+									],
+									"variable": [
+										{
+											"key": "studentId"
+										},
+										{
+											"key": "classId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Automatic Check In",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"sessionId\": \"session_id\",\n    \"studentId\": \"student_id\",\n    \"confidence\": 0.95\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/attendance/auto-checkin",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"attendance",
+										"auto-checkin"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "v1",
+					"item": [
+						{
+							"name": "Get Preferences",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/notifications/preferences/:userId",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"notifications",
+										"preferences",
+										":userId"
+									],
+									"variable": [
+										{
+											"key": "userId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Preferences",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": true,\n    \"push\": false,\n    \"sms\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/notifications/preferences/:userId",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"notifications",
+										"preferences",
+										":userId"
+									],
+									"variable": [
+										{
+											"key": "userId"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reset Preferences",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/notifications/preferences/:userId/reset",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"notifications",
+										"preferences",
+										":userId",
+										"reset"
+									],
+									"variable": [
+										{
+											"key": "userId"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}
