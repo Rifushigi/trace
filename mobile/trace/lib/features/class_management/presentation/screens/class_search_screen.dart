@@ -27,6 +27,7 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
     'Sunday',
   ];
 
+// TODO
   final List<String> _timeSlots = [
     'Any',
     'Morning (8:00 - 12:00)',
@@ -40,6 +41,7 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
     super.dispose();
   }
 
+// TODO
   bool _isTimeInSlot(String time, String slot) {
     final timeValue = int.parse(time.split(':')[0]);
     switch (slot) {
