@@ -1,5 +1,5 @@
 import { verifyAccessToken } from "../services/jwt_service.js";
-import { AccessToken, AuthenticatedRequest } from "../types/index.js";
+import { IAccessToken, AuthenticatedRequest } from "../types/index.js";
 import { middlewareErrorHandler, UnauthorizedError } from "./error_handler.js";
 import { NextFunction, Response, Request } from "express";
 import { validateSession } from "../services/session_service.js";
@@ -9,7 +9,7 @@ export const sessionMiddleware = middlewareErrorHandler(async (req: Request, res
     const token = req.cookies.accessToken || req.headers.authorization?.replace('Bearer ', '');
     if (!token) throw new UnauthorizedError("Missing JWT token");
 
-    const decoded: AccessToken = verifyAccessToken(token);
+    const decoded: IAccessToken = verifyAccessToken(token);
     const userId: string = decoded.userId;
     const deviceId = req.cookies.deviceId;
 
