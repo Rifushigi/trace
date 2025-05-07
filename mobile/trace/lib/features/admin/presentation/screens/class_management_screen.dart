@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../utils/logger.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../../core/network/endpoints.dart';
 
 class ClassManagementScreen extends ConsumerStatefulWidget {
   const ClassManagementScreen({super.key});
 
   @override
-  ConsumerState<ClassManagementScreen> createState() => _ClassManagementScreenState();
+  ConsumerState<ClassManagementScreen> createState() =>
+      _ClassManagementScreenState();
 }
 
 class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
@@ -47,10 +47,13 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
   Future<void> _loadLecturers() async {
     setState(() => _isLoading = true);
     try {
-      final response = await ref.read(apiClientProvider).get('/users/lecturers');
+      final response =
+          await ref.read(apiClientProvider).get('/users/lecturers');
       if (response.statusCode == 200) {
         setState(() {
-          _lecturers = List<Map<String, dynamic>>.from(response.data['data']['lecturers']);
+          _lecturers = List<Map<String, dynamic>>.from(
+            response.data['data']['lecturers'],
+          );
         });
       }
     } catch (e, stackTrace) {
@@ -95,9 +98,9 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
     } catch (e, stackTrace) {
       Logger.error('Failed to create class', e, stackTrace);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create class')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to create class')));
       }
     } finally {
       setState(() => _isLoading = false);
@@ -123,9 +126,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Class'),
-      ),
+      appBar: AppBar(title: const Text('Create Class')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -170,9 +171,11 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
                         border: OutlineInputBorder(),
                       ),
                       items: _lecturers.map((lecturer) {
-                        return DropdownMenuItem(
-                          value: lecturer['_id'],
-                          child: Text('${lecturer['firstName']} ${lecturer['lastName']}'),
+                        return DropdownMenuItem<String>(
+                          value: lecturer['_id'].toString(),
+                          child: Text(
+                            '${lecturer['firstName']} ${lecturer['lastName']}',
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -219,9 +222,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
                           child: OutlinedButton.icon(
                             onPressed: () => _selectTime(context, false),
                             icon: const Icon(Icons.access_time),
-                            label: Text(
-                              'End: ${_endTime.format(context)}',
-                            ),
+                            label: Text('End: ${_endTime.format(context)}'),
                           ),
                         ),
                       ],
@@ -237,4 +238,4 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
             ),
     );
   }
-} 
+}
