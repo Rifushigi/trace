@@ -19,7 +19,7 @@ abstract class NotificationRepository {
     required String topic,
     Map<String, dynamic>? data,
   });
-  
+
   // New methods for handling notification data
   Future<List<NotificationModel>> getNotifications();
   Future<void> markAsRead(String notificationId);
@@ -31,13 +31,15 @@ abstract class NotificationRepository {
 class NotificationRepositoryImpl implements NotificationRepository {
   final FCMService _fcmService;
   final FirebaseMessaging _messaging;
-  final List<NotificationModel> _notifications = [];
+  final List<NotificationModel> _notifications;
 
   NotificationRepositoryImpl({
     FCMService? fcmService,
     FirebaseMessaging? messaging,
+    List<NotificationModel>? notifications,
   })  : _fcmService = fcmService ?? FCMService(),
-        _messaging = messaging ?? FirebaseMessaging.instance;
+        _messaging = messaging ?? FirebaseMessaging.instance,
+        _notifications = notifications ?? [];
 
   @override
   Future<void> initialize() async {
@@ -79,6 +81,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
       type: message.data['type'] ?? 'default',
       data: message.data,
       createdAt: DateTime.now(),
+      isRead: false,
     );
     await saveNotification(notification);
   }
@@ -103,6 +106,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
       type: message.data['type'] ?? 'default',
       data: message.data,
       createdAt: DateTime.now(),
+      isRead: false,
     );
     await saveNotification(notification);
   }
@@ -133,7 +137,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
 
   @override
   Future<List<NotificationModel>> getNotifications() async {
-    return _notifications;
+    return List.unmodifiable(_notifications);
   }
 
   @override
@@ -156,6 +160,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
 
   @override
   Future<void> saveNotification(NotificationModel notification) async {
-    _notifications.insert(0, notification); // Add new notifications at the beginning
+    _notifications.insert(
+        0, notification); // Add new notifications at the beginning
   }
-} 
+}

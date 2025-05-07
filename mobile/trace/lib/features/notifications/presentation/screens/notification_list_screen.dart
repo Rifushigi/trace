@@ -31,15 +31,19 @@ class NotificationListScreen extends ConsumerWidget {
           }
 
           return RefreshIndicator(
-            onRefresh: () => ref.read(notificationsProvider.notifier).loadNotifications(),
+            onRefresh: () =>
+                ref.read(notificationsProvider.notifier).loadNotifications(),
             child: ListView.builder(
               itemCount: notifications.length,
               itemBuilder: (context, index) {
                 final notification = notifications[index];
                 return NotificationTile(
                   notification: notification,
-                  onTap: () => _handleNotificationTap(context, notification),
-                  onDelete: () => ref.read(notificationsProvider.notifier).deleteNotification(notification.id),
+                  onTap: () =>
+                      _handleNotificationTap(context, ref, notification),
+                  onDelete: () => ref
+                      .read(notificationsProvider.notifier)
+                      .deleteNotification(notification.id),
                 );
               },
             ),
@@ -53,24 +57,16 @@ class NotificationListScreen extends ConsumerWidget {
     );
   }
 
-  void _handleNotificationTap(BuildContext context, NotificationModel notification) {
+  void _handleNotificationTap(
+      BuildContext context, WidgetRef ref, NotificationModel notification) {
     if (!notification.isRead) {
-      // Mark as read
       ref.read(notificationsProvider.notifier).markAsRead(notification.id);
     }
 
     // Navigate based on notification type
-    switch (notification.type) {
-      case 'session_start':
-      case 'session_end':
-        Navigator.pushNamed(context, '/class/details', arguments: notification.data['classId']);
-        break;
-      case 'check_in':
-        Navigator.pushNamed(context, '/attendance/details', arguments: notification.data['attendanceId']);
-        break;
-      case 'anomaly':
-        Navigator.pushNamed(context, '/attendance/anomaly', arguments: notification.data['anomalyId']);
-        break;
+    if (notification.route != null) {
+      Navigator.pushNamed(context, notification.route!,
+          arguments: notification.data);
     }
   }
 }
@@ -101,7 +97,9 @@ class NotificationTile extends StatelessWidget {
       ),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: notification.isRead ? Colors.grey : Theme.of(context).primaryColor,
+          backgroundColor: notification.isRead
+              ? Colors.grey
+              : Theme.of(context).primaryColor,
           child: Icon(
             _getNotificationIcon(notification.type),
             color: Colors.white,
@@ -110,7 +108,8 @@ class NotificationTile extends StatelessWidget {
         title: Text(
           notification.title,
           style: TextStyle(
-            fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+            fontWeight:
+                notification.isRead ? FontWeight.normal : FontWeight.bold,
           ),
         ),
         subtitle: Column(
@@ -134,7 +133,7 @@ class NotificationTile extends StatelessWidget {
       case 'session_start':
         return Icons.play_circle_outline;
       case 'session_end':
-        return Icons.stop_circle_outline;
+        return Icons.stop_circle;
       case 'check_in':
         return Icons.check_circle_outline;
       case 'anomaly':
@@ -158,4 +157,4 @@ class NotificationTile extends StatelessWidget {
       return 'Just now';
     }
   }
-} 
+}

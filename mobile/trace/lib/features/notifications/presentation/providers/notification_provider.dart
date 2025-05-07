@@ -2,12 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/notification_model.dart';
 import '../../data/repositories/notification_repository.dart';
 
-final notificationsProvider = StateNotifierProvider<NotificationsNotifier, AsyncValue<List<NotificationModel>>>((ref) {
+final notificationsProvider = StateNotifierProvider<NotificationsNotifier,
+    AsyncValue<List<NotificationModel>>>((ref) {
   final repository = ref.watch(notificationRepositoryProvider);
   return NotificationsNotifier(repository);
 });
 
-class NotificationsNotifier extends StateNotifier<AsyncValue<List<NotificationModel>>> {
+class NotificationsNotifier
+    extends StateNotifier<AsyncValue<List<NotificationModel>>> {
   final NotificationRepository _repository;
 
   NotificationsNotifier(this._repository) : super(const AsyncValue.loading()) {
@@ -18,7 +20,8 @@ class NotificationsNotifier extends StateNotifier<AsyncValue<List<NotificationMo
     try {
       state = const AsyncValue.loading();
       final notifications = await _repository.getNotifications();
-      state = AsyncValue.data(notifications);
+      state = AsyncValue.data(
+          notifications.map(NotificationModel.fromEntity).toList());
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
     }
@@ -36,8 +39,8 @@ class NotificationsNotifier extends StateNotifier<AsyncValue<List<NotificationMo
         }).toList();
         state = AsyncValue.data(updatedNotifications);
       });
-    } catch (e) {
-      // Handle error
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
     }
   }
 
@@ -50,8 +53,8 @@ class NotificationsNotifier extends StateNotifier<AsyncValue<List<NotificationMo
         }).toList();
         state = AsyncValue.data(updatedNotifications);
       });
-    } catch (e) {
-      // Handle error
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
     }
   }
 
@@ -64,8 +67,8 @@ class NotificationsNotifier extends StateNotifier<AsyncValue<List<NotificationMo
         }).toList();
         state = AsyncValue.data(updatedNotifications);
       });
-    } catch (e) {
-      // Handle error
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
     }
   }
-} 
+}
