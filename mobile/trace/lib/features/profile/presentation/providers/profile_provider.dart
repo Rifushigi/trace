@@ -20,12 +20,14 @@ class Profile extends _$Profile {
     }
   }
 
-  Future<void> updateProfile(ProfileModel profile) async {
+  Future<ProfileModel?> updateProfile(ProfileModel profile) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final repository = ref.read(profileRepositoryProvider);
-      return await repository.updateProfile(profile);
+      await repository.updateProfile(profile);
+      return profile;
     });
+    return state.value;
   }
 
   Future<void> uploadAvatar(String filePath) async {
@@ -45,4 +47,4 @@ class Profile extends _$Profile {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _loadProfile());
   }
-} 
+}

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/validation_constants.dart';
-import '../../providers/profile_provider.dart';
+import '../providers/profile_provider.dart';
 import '../../data/models/profile_model.dart';
 import '../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../common/shared_widgets/toast.dart';
@@ -13,7 +13,8 @@ class StudentProfileScreen extends ConsumerStatefulWidget {
   const StudentProfileScreen({super.key});
 
   @override
-  ConsumerState<StudentProfileScreen> createState() => _StudentProfileScreenState();
+  ConsumerState<StudentProfileScreen> createState() =>
+      _StudentProfileScreenState();
 }
 
 class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
@@ -37,14 +38,16 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
   }
 
   void _loadProfile() {
-    final profile = ref.read(profileProvider).value;
-    if (profile != null) {
-      _firstNameController.text = profile.firstName;
-      _lastNameController.text = profile.lastName;
-      _matricNoController.text = profile.matricNo ?? '';
-      _programController.text = profile.program ?? '';
-      _levelController.text = profile.level ?? '';
-    }
+    final profileState = ref.watch(profileProvider);
+    profileState.whenData((profile) {
+      if (profile != null) {
+        _firstNameController.text = profile.firstName;
+        _lastNameController.text = profile.lastName;
+        _matricNoController.text = profile.matricNo ?? '';
+        _programController.text = profile.program ?? '';
+        _levelController.text = profile.level ?? '';
+      }
+    });
   }
 
   @override
@@ -94,7 +97,9 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
             program: _programController.text,
             level: _levelController.text,
           );
-          await ref.read(profileProvider.notifier).updateProfile(updatedProfile);
+          await ref
+              .read(profileProvider.notifier)
+              .updateProfile(updatedProfile);
           setState(() => _isEditing = false);
           if (mounted) {
             Toast.show(
@@ -149,7 +154,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                     const Text('Profile not found'),
                     SizedBox(height: AppConstants.defaultPadding),
                     ElevatedButton(
-                      onPressed: _loadProfile,
+                      onPressed: () =>
+                          ref.read(profileProvider.notifier).refreshProfile(),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -181,7 +187,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                             child: CircleAvatar(
                               backgroundColor: Theme.of(context).primaryColor,
                               child: IconButton(
-                                icon: const Icon(Icons.camera_alt, color: Colors.white),
+                                icon: const Icon(Icons.camera_alt,
+                                    color: Colors.white),
                                 onPressed: _pickImage,
                               ),
                             ),
@@ -282,10 +289,10 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SkeletonLoading(
+                SkeletonLoading(
                   width: 100,
                   height: 100,
-                  borderRadius: 50,
+                  borderRadius: BorderRadius.circular(50),
                 ),
                 SizedBox(height: AppConstants.defaultPadding * 2),
                 SkeletonList(
@@ -303,7 +310,8 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
                 Text('Error: $error'),
                 SizedBox(height: AppConstants.defaultPadding),
                 ElevatedButton(
-                  onPressed: _loadProfile,
+                  onPressed: () =>
+                      ref.read(profileProvider.notifier).refreshProfile(),
                   child: const Text('Retry'),
                 ),
               ],
@@ -313,4 +321,4 @@ class _StudentProfileScreenState extends ConsumerState<StudentProfileScreen> {
       ),
     );
   }
-} 
+}

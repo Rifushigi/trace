@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/validation_constants.dart';
-import '../../providers/profile_provider.dart';
+import '../providers/profile_provider.dart';
 import '../../data/models/profile_model.dart';
 import '../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../common/shared_widgets/toast.dart';
@@ -13,7 +13,8 @@ class LecturerProfileScreen extends ConsumerStatefulWidget {
   const LecturerProfileScreen({super.key});
 
   @override
-  ConsumerState<LecturerProfileScreen> createState() => _LecturerProfileScreenState();
+  ConsumerState<LecturerProfileScreen> createState() =>
+      _LecturerProfileScreenState();
 }
 
 class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
@@ -37,14 +38,16 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
   }
 
   void _loadProfile() {
-    final profile = ref.read(profileProvider).value;
-    if (profile != null) {
-      _firstNameController.text = profile.firstName;
-      _lastNameController.text = profile.lastName;
-      _staffIdController.text = profile.staffId ?? '';
-      _collegeController.text = profile.college ?? '';
-      _departmentController.text = profile.department ?? '';
-    }
+    final profileState = ref.watch(profileProvider);
+    profileState.whenData((profile) {
+      if (profile != null) {
+        _firstNameController.text = profile.firstName;
+        _lastNameController.text = profile.lastName;
+        _staffIdController.text = profile.staffId ?? '';
+        _collegeController.text = profile.college ?? '';
+        _departmentController.text = profile.department ?? '';
+      }
+    });
   }
 
   @override
@@ -94,7 +97,9 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
             college: _collegeController.text,
             department: _departmentController.text,
           );
-          await ref.read(profileProvider.notifier).updateProfile(updatedProfile);
+          await ref
+              .read(profileProvider.notifier)
+              .updateProfile(updatedProfile);
           setState(() => _isEditing = false);
           if (mounted) {
             Toast.show(
@@ -149,7 +154,8 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
                     const Text('Profile not found'),
                     SizedBox(height: AppConstants.defaultPadding),
                     ElevatedButton(
-                      onPressed: _loadProfile,
+                      onPressed: () =>
+                          ref.read(profileProvider.notifier).refreshProfile(),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -181,7 +187,8 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
                             child: CircleAvatar(
                               backgroundColor: Theme.of(context).primaryColor,
                               child: IconButton(
-                                icon: const Icon(Icons.camera_alt, color: Colors.white),
+                                icon: const Icon(Icons.camera_alt,
+                                    color: Colors.white),
                                 onPressed: _pickImage,
                               ),
                             ),
@@ -282,10 +289,10 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SkeletonLoading(
+                SkeletonLoading(
                   width: 100,
                   height: 100,
-                  borderRadius: 50,
+                  borderRadius: BorderRadius.circular(50),
                 ),
                 SizedBox(height: AppConstants.defaultPadding * 2),
                 SkeletonList(
@@ -303,7 +310,8 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
                 Text('Error: $error'),
                 SizedBox(height: AppConstants.defaultPadding),
                 ElevatedButton(
-                  onPressed: _loadProfile,
+                  onPressed: () =>
+                      ref.read(profileProvider.notifier).refreshProfile(),
                   child: const Text('Retry'),
                 ),
               ],
@@ -313,4 +321,4 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
       ),
     );
   }
-} 
+}
