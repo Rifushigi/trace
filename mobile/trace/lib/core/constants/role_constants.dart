@@ -4,14 +4,14 @@ class RoleConstants {
   static const String studentRole = 'student';
   static const String lecturerRole = 'lecturer';
   static const String adminRole = 'admin';
-  
+
   // Role-based Routes
   static const Map<String, String> roleHomeRoutes = {
     studentRole: '/student/home',
     lecturerRole: '/lecturer/home',
     adminRole: '/admin/home',
   };
-  
+
   // Role-based Features
   static const Map<String, List<String>> roleFeatures = {
     studentRole: [
@@ -31,7 +31,7 @@ class RoleConstants {
       'system_settings',
     ],
   };
-  
+
   // Role-based Permissions
   static const Map<String, List<String>> rolePermissions = {
     studentRole: [
@@ -52,4 +52,4 @@ class RoleConstants {
       'write:system_settings',
     ],
   };
-} 
+}
