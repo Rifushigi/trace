@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/role_constants.dart';
-import '../../../../core/constants/validation_constants.dart';
+import 'package:trace/core/constants/app_constants.dart';
+import 'package:trace/core/constants/role_constants.dart';
+import 'package:trace/core/constants/validation_constants.dart';
 import '../../providers/auth_provider.dart';
-import '../../../../common/shared_widgets/loading_overlay.dart';
-import '../../../../common/shared_widgets/toast.dart';
+import 'package:trace/common/shared_widgets/loading_overlay.dart';
+import 'package:trace/common/shared_widgets/toast.dart';
 
 class LecturerSignUpScreen extends ConsumerStatefulWidget {
   const LecturerSignUpScreen({super.key});
 
   @override
-  ConsumerState<LecturerSignUpScreen> createState() => _LecturerSignUpScreenState();
+  ConsumerState<LecturerSignUpScreen> createState() =>
+      _LecturerSignUpScreenState();
 }
 
 class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
@@ -50,7 +51,8 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
         if (mounted) {
           Toast.show(
             context,
-            message: 'Account created successfully! Please check your email for verification.',
+            message:
+                'Account created successfully! Please check your email for verification.',
             type: ToastType.success,
             duration: const Duration(seconds: 5),
           );
@@ -77,7 +79,7 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
       message: 'Creating your account...',
       child: Scaffold(
         appBar: AppBar(
-          title: Text(AppConstants.appName),
+          title: const Text(AppConstants.appName),
         ),
         body: Form(
           key: _formKey,
@@ -122,7 +124,7 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
                     TextFormField(
                       controller: _lastNameController,
                       decoration: const InputDecoration(
@@ -139,7 +141,7 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
                     TextFormField(
                       controller: _emailController,
                       decoration: const InputDecoration(
@@ -157,7 +159,7 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
                     TextFormField(
                       controller: _passwordController,
                       decoration: const InputDecoration(
@@ -198,7 +200,7 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
                     TextFormField(
                       controller: _collegeController,
                       decoration: const InputDecoration(
@@ -221,4 +223,4 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
       ),
     );
   }
-} 
+}

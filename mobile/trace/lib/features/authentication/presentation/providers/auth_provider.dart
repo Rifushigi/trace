@@ -1,36 +1,75 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../data/models/user_model.dart';
-import '../../data/repositories/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/repositories/auth_repository.dart';
-import '../../../../core/providers/repository_providers.dart';
-import '../../../profile/data/repositories/profile_repository.dart';
+import '../../data/repositories/auth_repository.dart';
+import '../../domain/models/user_model.dart';
+import '../../../../core/network/api_client.dart';
 
 part 'auth_provider.g.dart';
+
+@riverpod
+AuthRepository authRepository(Ref ref) {
+  return AuthRepositoryImpl(ref.watch(apiClientProvider));
+}
 
 @riverpod
 class Auth extends _$Auth {
   @override
   FutureOr<UserModel?> build() async {
-    try {
-      final authRepository = ref.read(authRepositoryProvider);
-      final profileRepository = ref.read(profileRepositoryProvider);
-      // Check if we have a valid session by attempting to refresh the token
-      await authRepository.refreshToken();
-      // If refresh succeeds, we have a valid session
-      return await profileRepository.getProfile();
-    } catch (e) {
-      // If refresh fails, we don't have a valid session
-      return null;
-    }
+    return null;
   }
 
   Future<void> signIn(String email, String password) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final repository = ref.read(authRepositoryProvider);
-      return await repository.signIn(email, password);
-    });
+    state = const AsyncValue.loading();
+    try {
+      final auth =
+          await ref.read(authRepositoryProvider).signIn(email, password);
+      state = AsyncValue.data(UserModel(
+        id: auth.id,
+        email: email,
+        role: auth.role,
+        isVerified: auth.isVerified,
+      ));
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+    }
+  }
+
+  Future<void> signOut() async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(authRepositoryProvider).signOut();
+      state = const AsyncValue.data(null);
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+    }
+  }
+
+  Future<void> sendOTP(String email) async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(authRepositoryProvider).sendOtp(email);
+      state = const AsyncValue.data(null);
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+    }
+  }
+
+  Future<void> verifyOTP(String email, String otp) async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(authRepositoryProvider).verifyOtp(email, otp);
+      state = const AsyncValue.data(null);
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+    }
+  }
+
+  Future<void> sendVerificationEmail(String email) async {
+    await ref.read(authRepositoryProvider).sendVerificationEmail(email);
+  }
+
+  Future<void> verifyEmail(String token) async {
+    await ref.read(authRepositoryProvider).verifyEmail(token);
   }
 
   Future<void> signUp({
@@ -39,103 +78,30 @@ class Auth extends _$Auth {
     required String firstName,
     required String lastName,
     required String role,
-    String? matricNo,
-    String? program,
-    String? level,
+    String? staffId,
+    String? college,
+    Map<String, dynamic>? additionalInfo,
   }) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final repository = ref.read(authRepositoryProvider);
-      return await repository.signUp(
+    state = const AsyncValue.loading();
+    try {
+      final auth = await ref.read(authRepositoryProvider).signUp(
+            email: email,
+            password: password,
+            firstName: firstName,
+            lastName: lastName,
+            role: role,
+            staffId: staffId,
+            college: college,
+            additionalInfo: additionalInfo,
+          );
+      state = AsyncValue.data(UserModel(
+        id: auth.id,
         email: email,
-        password: password,
-        firstName: firstName,
-        lastName: lastName,
         role: role,
-        matricNo: matricNo,
-        program: program,
-        level: level,
-      );
-    });
-  }
-
-  Future<void> signOut() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final repository = ref.read(authRepositoryProvider);
-      await repository.signOut();
-      return null;
-    });
-  }
-
-  Future<void> sendOTP(String email) async {
-    final repository = ref.read(authRepositoryProvider);
-    await repository.sendOtp(email);
-  }
-
-  Future<void> verifyOTP(String email, String otp) async {
-    final repository = ref.read(authRepositoryProvider);
-    await repository.verifyOtp(email, otp);
-  }
-
-  Future<void> sendVerificationEmail(String email) async {
-    final repository = ref.read(authRepositoryProvider);
-    await repository.sendVerificationEmail(email);
-  }
-
-  Future<void> verifyEmail(String token) async {
-    final repository = ref.read(authRepositoryProvider);
-    await repository.verifyEmail(token);
+        isVerified: auth.isVerified,
+      ));
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+    }
   }
 }
-
-final authProvider = StateNotifierProvider<AuthNotifier, AsyncValue<void>>((ref) {
-  final authRepository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(authRepository);
-});
-
-class AuthNotifier extends StateNotifier<AsyncValue<void>> {
-  final AuthRepository _authRepository;
-
-  AuthNotifier(this._authRepository) : super(const AsyncValue.data(null));
-
-  Future<void> signIn(String email, String password) async {
-    state = const AsyncValue.loading();
-    try {
-      await _authRepository.signIn(email, password);
-      state = const AsyncValue.data(null);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
-  }
-
-  Future<void> signOut() async {
-    state = const AsyncValue.loading();
-    try {
-      await _authRepository.signOut();
-      state = const AsyncValue.data(null);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
-  }
-
-  Future<void> sendOTP(String email) async {
-    state = const AsyncValue.loading();
-    try {
-      await _authRepository.sendOTP(email);
-      state = const AsyncValue.data(null);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
-  }
-
-  Future<void> verifyOTP(String email, String otp) async {
-    state = const AsyncValue.loading();
-    try {
-      await _authRepository.verifyOTP(email, otp);
-      state = const AsyncValue.data(null);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
-  }
-} 

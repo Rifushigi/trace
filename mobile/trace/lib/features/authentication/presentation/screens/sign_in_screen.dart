@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/role_constants.dart';
-import '../../../../core/constants/validation_constants.dart';
-import '../../providers/auth_provider.dart';
-import '../sign_up/role_selection_screen.dart';
-import '../../../../common/shared_widgets/loading_overlay.dart';
-import '../../../../common/shared_widgets/toast.dart';
+import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/constants/role_constants.dart';
+import '../../../../../core/constants/validation_constants.dart';
+import '../../../../../features/authentication/presentation/providers/auth_provider.dart';
+import '../../../../../common/shared_widgets/loading_overlay.dart';
+import '../../../../../common/shared_widgets/toast.dart';
 import 'package:trace/core/services/haptic_service.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
@@ -34,33 +33,70 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       await HapticService.actionFeedback();
       try {
         await ref.read(authProvider.notifier).signIn(
-              email: _emailController.text,
-              password: _passwordController.text,
+              _emailController.text,
+              _passwordController.text,
             );
-        if (mounted) {
-          final user = ref.read(authProvider).user;
-          if (user != null) {
-            if (!user.isVerified) {
-              Toast.show(
-                context,
-                message: 'Please verify your email before signing in. Check your inbox for the verification link.',
-                type: ToastType.warning,
-                duration: const Duration(seconds: 5),
-              );
-              return;
-            }
-            final route = RoleConstants.roleHomeRoutes[user.role] ?? AppConstants.signInRoute;
-            Navigator.of(context).pushReplacementNamed(route);
+
+        final user = ref.read(authProvider).value;
+        if (user != null) {
+          if (!user.isVerified) {
+            if (!context.mounted) return;
+            await showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => AlertDialog(
+                title: const Text('Email Verification Required'),
+                content: const Text(
+                  'Please verify your email before signing in. Check your inbox for the verification link.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('OK'),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      try {
+                        await ref
+                            .read(authProvider.notifier)
+                            .verifyEmail(user.email);
+                        if (!context.mounted) return;
+                        Toast.show(
+                          context,
+                          message: 'Verification email sent successfully',
+                          type: ToastType.success,
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        Toast.show(
+                          context,
+                          message: e.toString(),
+                          type: ToastType.error,
+                        );
+                      }
+                    },
+                    child: const Text('Resend Email'),
+                  ),
+                ],
+              ),
+            );
+            return;
           }
+          if (!context.mounted) return;
+          final route = RoleConstants.roleHomeRoutes[user.role] ??
+              AppConstants.signInRoute;
+          Navigator.of(context).pushReplacementNamed(route);
         }
       } catch (e) {
-        if (mounted) {
-          Toast.show(
-            context,
-            message: e.toString(),
-            type: ToastType.error,
-          );
-        }
+        if (!context.mounted) return;
+        Toast.show(
+          context,
+          message: e.toString(),
+          type: ToastType.error,
+        );
       }
     }
   }
@@ -74,25 +110,25 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       message: 'Signing in...',
       child: Scaffold(
         appBar: AppBar(
-          title: Text(AppConstants.appName),
+          title: const Text(AppConstants.appName),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(AppConstants.defaultPadding),
+            padding: const EdgeInsets.all(AppConstants.defaultPadding),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
+                  const Text(
                     AppConstants.welcomeMessage,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: AppConstants.defaultPadding * 2),
+                  const SizedBox(height: AppConstants.defaultPadding * 2),
                   TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(
@@ -111,7 +147,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: AppConstants.defaultPadding),
+                  const SizedBox(height: AppConstants.defaultPadding),
                   TextFormField(
                     controller: _passwordController,
                     decoration: InputDecoration(
@@ -142,25 +178,22 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: AppConstants.defaultPadding * 1.5),
+                  const SizedBox(height: AppConstants.defaultPadding * 1.5),
                   ElevatedButton(
-                    onPressed: authState.isLoading ? null : () async {
-                      await HapticService.actionFeedback();
-                      await _signIn();
-                    },
+                    onPressed: authState.isLoading ? null : _signIn,
                     child: const Text('Sign In'),
                   ),
-                  SizedBox(height: AppConstants.defaultPadding),
+                  const SizedBox(height: AppConstants.defaultPadding),
                   TextButton(
-                    onPressed: () async {
-                      await HapticService.navigationFeedback();
+                    onPressed: () {
+                      HapticService.navigationFeedback();
                       Navigator.pushNamed(context, '/sign-up');
                     },
-                    child: Text(AppConstants.signUpPrompt),
+                    child: const Text(AppConstants.signUpPrompt),
                   ),
                   TextButton(
-                    onPressed: () async {
-                      await HapticService.navigationFeedback();
+                    onPressed: () {
+                      HapticService.navigationFeedback();
                       Navigator.pushNamed(context, '/forgot-password');
                     },
                     child: const Text('Forgot Password?'),
@@ -173,4 +206,4 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       ),
     );
   }
-} 
+}

@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/endpoints.dart';
 import '../models/auth_model.dart';
@@ -14,10 +15,20 @@ abstract class AuthRepository {
   Future<void> verifyOtp(String email, String otp);
   Future<void> sendVerificationEmail(String email);
   Future<void> verifyEmail(String token);
+  Future<AuthModel> signUp({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String role,
+    String? staffId,
+    String? college,
+    Map<String, dynamic>? additionalInfo,
+  });
 }
 
 @riverpod
-AuthRepository authRepository(AuthRepositoryRef ref) {
+AuthRepository authRepository(Ref ref) {
   return AuthRepositoryImpl(ref.watch(apiClientProvider));
 }
 
@@ -30,7 +41,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthModel> signIn(String email, String password) async {
     try {
       final response = await _apiClient.post(
-        Endpoints.auth.signIn,
+        '${Endpoints.baseUrl}/auth/signin',
         data: {
           'email': email,
           'password': password,
@@ -45,7 +56,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> signOut() async {
     try {
-      await _apiClient.post(Endpoints.auth.signOut);
+      await _apiClient.post('${Endpoints.baseUrl}/auth/signout');
       await _apiClient.logout();
     } on DioException catch (e) {
       throw _handleError(e);
@@ -55,7 +66,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> refreshToken() async {
     try {
-      await _apiClient.get(Endpoints.auth.refreshToken);
+      await _apiClient.get('${Endpoints.baseUrl}/auth/refresh-token');
     } catch (e) {
       throw Exception('Error refreshing token: $e');
     }
@@ -65,7 +76,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> sendOtp(String email) async {
     try {
       await _apiClient.post(
-        Endpoints.auth.sendOtp,
+        '${Endpoints.baseUrl}/auth/send-otp',
         data: {'email': email},
       );
     } on DioException catch (e) {
@@ -77,7 +88,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> verifyOtp(String email, String otp) async {
     try {
       await _apiClient.post(
-        Endpoints.auth.verifyOtp,
+        '${Endpoints.baseUrl}/auth/verify-otp',
         data: {
           'email': email,
           'otp': otp,
@@ -92,7 +103,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> sendVerificationEmail(String email) async {
     try {
       await _apiClient.post(
-        Endpoints.auth.sendVerificationEmail,
+        '${Endpoints.baseUrl}/auth/send-verification-email',
         data: {'email': email},
       );
     } catch (e) {
@@ -104,11 +115,47 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> verifyEmail(String token) async {
     try {
       await _apiClient.get(
-        Endpoints.auth.verifyEmail,
+        '${Endpoints.baseUrl}/auth/verify-email',
         queryParameters: {'token': token},
       );
     } catch (e) {
       throw Exception('Error verifying email: $e');
+    }
+  }
+
+  @override
+  Future<AuthModel> signUp({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String role,
+    String? staffId,
+    String? college,
+    Map<String, dynamic>? additionalInfo,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'email': email,
+        'password': password,
+        'firstName': firstName,
+        'lastName': lastName,
+        'role': role,
+        if (staffId != null) 'staffId': staffId,
+        if (college != null) 'college': college,
+      };
+
+      if (additionalInfo != null) {
+        data.addAll(additionalInfo);
+      }
+
+      final response = await _apiClient.post(
+        '${Endpoints.baseUrl}/auth/signup',
+        data: data,
+      );
+      return AuthModel.fromJson(response.data['response']['data']['user']);
+    } on DioException catch (e) {
+      throw _handleError(e);
     }
   }
 
@@ -119,4 +166,4 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     return Exception('An error occurred');
   }
-} 
+}

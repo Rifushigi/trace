@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/role_constants.dart';
+import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/constants/role_constants.dart';
 import 'student_sign_up_screen.dart';
 import 'lecturer_sign_up_screen.dart';
-import '../../../../common/shared_widgets/loading_overlay.dart';
-import '../../../../common/shared_widgets/toast.dart';
+import '../../../../../common/shared_widgets/toast.dart';
 
 class RoleSelectionScreen extends ConsumerWidget {
   const RoleSelectionScreen({super.key});
@@ -14,10 +13,10 @@ class RoleSelectionScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppConstants.appName),
+        title: const Text(AppConstants.appName),
       ),
       body: Padding(
-        padding: EdgeInsets.all(AppConstants.defaultPadding),
+        padding: const EdgeInsets.all(AppConstants.defaultPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -29,10 +28,12 @@ class RoleSelectionScreen extends ConsumerWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: AppConstants.defaultPadding * 2),
+            const SizedBox(height: AppConstants.defaultPadding * 2),
             _RoleCard(
               title: 'Student',
-              description: RoleConstants.roleFeatures[RoleConstants.studentRole]?.join(', ') ?? '',
+              description: RoleConstants.roleFeatures[RoleConstants.studentRole]
+                      ?.join(', ') ??
+                  '',
               icon: Icons.school,
               onTap: () {
                 Navigator.of(context).push(
@@ -42,10 +43,13 @@ class RoleSelectionScreen extends ConsumerWidget {
                 );
               },
             ),
-            SizedBox(height: AppConstants.defaultPadding),
+            const SizedBox(height: AppConstants.defaultPadding),
             _RoleCard(
               title: 'Lecturer',
-              description: RoleConstants.roleFeatures[RoleConstants.lecturerRole]?.join(', ') ?? '',
+              description: RoleConstants
+                      .roleFeatures[RoleConstants.lecturerRole]
+                      ?.join(', ') ??
+                  '',
               icon: Icons.person,
               onTap: () {
                 Navigator.of(context).push(
@@ -55,10 +59,11 @@ class RoleSelectionScreen extends ConsumerWidget {
                 );
               },
             ),
-            SizedBox(height: AppConstants.defaultPadding * 1.5),
+            const SizedBox(height: AppConstants.defaultPadding * 1.5),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pushReplacementNamed(AppConstants.signInRoute);
+                Navigator.of(context)
+                    .pushReplacementNamed(AppConstants.signInRoute);
               },
               child: const Text('Already have an account? Sign In'),
             ),
@@ -101,7 +106,7 @@ class _RoleCard extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
         child: Padding(
-          padding: EdgeInsets.all(AppConstants.defaultPadding),
+          padding: const EdgeInsets.all(AppConstants.defaultPadding),
           child: Column(
             children: [
               Icon(
@@ -109,7 +114,7 @@ class _RoleCard extends StatelessWidget {
                 size: 48,
                 color: Theme.of(context).primaryColor,
               ),
-              SizedBox(height: AppConstants.defaultPadding),
+              const SizedBox(height: AppConstants.defaultPadding),
               Text(
                 title,
                 style: const TextStyle(
@@ -117,12 +122,16 @@ class _RoleCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: AppConstants.defaultSpacing),
+              const SizedBox(height: AppConstants.defaultSpacing),
               Text(
                 description,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.color
+                      ?.withAlpha(179),
                 ),
               ),
             ],
@@ -131,4 +140,4 @@ class _RoleCard extends StatelessWidget {
       ),
     );
   }
-} 
+}
