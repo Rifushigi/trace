@@ -4,6 +4,8 @@ import '../../data/repositories/attendance_repository.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../data/services/attendance_local_storage.dart';
 import '../../data/services/attendance_cache_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/models/attendance_session.dart';
 
 part 'attendance_provider.g.dart';
 
@@ -12,71 +14,65 @@ class AttendanceActions extends _$AttendanceActions {
   @override
   Future<void> build() async {}
 
-  Future<void> startSession(String classId) async {
+  Future<AttendanceModel> startSession(String classId) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final session = await ref.read(attendanceRepositoryProvider).startSession(classId);
+    final result = await AsyncValue.guard<AttendanceModel>(() async {
+      final session =
+          await ref.read(attendanceRepositoryProvider).startSession(classId);
       // Cache class info if available
       try {
-        final classInfo = await ref.read(attendanceRepositoryProvider).getClassInfo(classId);
-        await ref.read(attendanceLocalStorageProvider).cacheClassInfo(classId, classInfo);
+        final classInfo =
+            await ref.read(attendanceRepositoryProvider).getClassInfo(classId);
+        final storage = await ref.read(attendanceLocalStorageProvider.future);
+        await storage.cacheClassInfo(classId, classInfo);
       } catch (e) {
         // Ignore class info caching errors
       }
       return session;
     });
+    state = result;
+    return result.value!;
   }
 
   Future<void> endSession(String sessionId) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => 
-      ref.read(attendanceRepositoryProvider).endSession(sessionId)
-    );
+    state = await AsyncValue.guard(
+        () => ref.read(attendanceRepositoryProvider).endSession(sessionId));
   }
 
-  Future<void> studentCheckIn(String sessionId, String classId) async {
+  Future<void> studentCheckIn(String sessionId) async {
     final repository = ref.read(attendanceRepositoryProvider);
-    await repository.studentCheckIn(sessionId, classId);
+    await repository.studentCheckIn(sessionId);
   }
 
-  Future<List<AttendanceModel>> getSessionAttendance(String sessionId) async {
+  Future<List<AttendanceModel>> getAttendanceHistory(String classId) async {
     final repository = ref.read(attendanceRepositoryProvider);
-    return repository.getSessionAttendance(sessionId);
-  }
-
-  Future<List<AttendanceModel>> getStudentAttendanceHistory(String studentId, String classId) async {
-    final repository = ref.read(attendanceRepositoryProvider);
-    return repository.getStudentAttendanceHistory(studentId, classId);
-  }
-
-  Future<void> automaticCheckIn(String sessionId, String studentId, double confidence) async {
-    final repository = ref.read(attendanceRepositoryProvider);
-    await repository.automaticCheckIn(sessionId, studentId, confidence);
+    return repository.getAttendanceHistory(classId);
   }
 
   Future<void> manualCheckIn(String sessionId, String studentId) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => 
-      ref.read(attendanceRepositoryProvider).manualCheckIn(sessionId, studentId)
-    );
+    state = await AsyncValue.guard(() => ref
+        .read(attendanceRepositoryProvider)
+        .manualCheckIn(sessionId, studentId));
   }
 
   Future<void> syncPendingCheckIns() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => 
-      ref.read(attendanceRepositoryProvider).syncPendingCheckIns()
-    );
+    state = await AsyncValue.guard(
+        () => ref.read(attendanceRepositoryProvider).syncPendingCheckIns());
   }
 
   Future<void> retryFailedOperations() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => 
-      ref.read(attendanceRepositoryProvider).retryFailedOperations()
-    );
+    state = await AsyncValue.guard(
+        () => ref.read(attendanceRepositoryProvider).retryFailedOperations());
   }
 
   Future<Map<String, dynamic>?> getOfflineSessionData(String sessionId) async {
-    return await ref.read(attendanceRepositoryProvider).getOfflineSessionData(sessionId);
+    return await ref
+        .read(attendanceRepositoryProvider)
+        .getOfflineSessionData(sessionId);
   }
 }
 
@@ -85,10 +81,10 @@ class AttendanceSync extends _$AttendanceSync {
   @override
   Future<void> build() async {
     // Listen for connectivity changes
-    ref.listen(connectivityServiceProvider, (previous, next) {
-      if (next) {
+    ref.listen(connectivityServiceProvider, (previous, next) async {
+      if (next.value == true) {
         // When back online, sync pending data
-        syncPendingData();
+        await syncPendingData();
       }
     });
   }
@@ -113,14 +109,17 @@ class AttendanceHistory extends _$AttendanceHistory {
 
   Future<List<dynamic>> _loadAttendanceHistory(String classId) async {
     try {
-      final history = await ref.read(attendanceRepositoryProvider).getAttendanceHistory(classId);
+      final history = await ref
+          .read(attendanceRepositoryProvider)
+          .getAttendanceHistory(classId);
       return history;
     } catch (e) {
       // If online fetch fails, try to get from cache
-      final cachedHistory = await ref.read(attendanceLocalStorageProvider).getCachedAttendanceHistory();
+      final storage = await ref.read(attendanceLocalStorageProvider.future);
+      final cachedHistory = await storage.getOfflineSessions();
       final classHistory = cachedHistory[classId];
       if (classHistory != null) {
-        return classHistory;
+        return [classHistory];
       }
       rethrow;
     }
@@ -128,7 +127,8 @@ class AttendanceHistory extends _$AttendanceHistory {
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _loadAttendanceHistory(state.value?.first['classId'] ?? ''));
+    state = await AsyncValue.guard(
+        () => _loadAttendanceHistory(state.value?.first['classId'] ?? ''));
   }
 }
 
@@ -141,11 +141,13 @@ class ClassInfo extends _$ClassInfo {
 
   Future<Map<String, dynamic>> _loadClassInfo(String classId) async {
     try {
-      final info = await ref.read(attendanceRepositoryProvider).getClassInfo(classId);
+      final info =
+          await ref.read(attendanceRepositoryProvider).getClassInfo(classId);
       return info;
     } catch (e) {
       // If online fetch fails, try to get from cache
-      final cachedInfo = await ref.read(attendanceLocalStorageProvider).getCachedClassInfo();
+      final storage = await ref.read(attendanceLocalStorageProvider.future);
+      final cachedInfo = await storage.getCachedClassInfo();
       final info = cachedInfo[classId];
       if (info != null) {
         return info;
@@ -156,7 +158,8 @@ class ClassInfo extends _$ClassInfo {
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _loadClassInfo(state.value?['id'] ?? ''));
+    state =
+        await AsyncValue.guard(() => _loadClassInfo(state.value?['id'] ?? ''));
   }
 }
 
@@ -172,7 +175,9 @@ class ActiveSessions extends _$ActiveSessions {
       return await ref.read(attendanceRepositoryProvider).getActiveSessions();
     } catch (e) {
       // If online fetch fails, try to get from cache
-      final cachedSessions = await ref.read(attendanceCacheServiceProvider).getCachedActiveSessions();
+      final cacheService =
+          await ref.read(attendanceCacheServiceProvider.future);
+      final cachedSessions = await cacheService.getCachedActiveSessions();
       if (cachedSessions != null) {
         return cachedSessions;
       }
@@ -193,14 +198,18 @@ class StudentAttendanceStatus extends _$StudentAttendanceStatus {
     return _loadStudentStatus(classId, studentId);
   }
 
-  Future<Map<String, dynamic>> _loadStudentStatus(String classId, String studentId) async {
+  Future<Map<String, dynamic>> _loadStudentStatus(
+      String classId, String studentId) async {
     try {
-      return await ref.read(attendanceRepositoryProvider)
+      return await ref
+          .read(attendanceRepositoryProvider)
           .getStudentAttendanceStatus(classId, studentId);
     } catch (e) {
       // If online fetch fails, try to get from cache
-      final cachedStatus = await ref.read(attendanceCacheServiceProvider)
-          .getCachedStudentAttendanceStatus(classId, studentId);
+      final cacheService =
+          await ref.read(attendanceCacheServiceProvider.future);
+      final cachedStatus = await cacheService.getCachedStudentAttendanceStatus(
+          classId, studentId);
       if (cachedStatus != null) {
         return cachedStatus;
       }
@@ -210,9 +219,8 @@ class StudentAttendanceStatus extends _$StudentAttendanceStatus {
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => 
-      _loadStudentStatus(state.value?['classId'] ?? '', state.value?['studentId'] ?? '')
-    );
+    state = await AsyncValue.guard(() => _loadStudentStatus(
+        state.value?['classId'] ?? '', state.value?['studentId'] ?? ''));
   }
 }
 
@@ -225,11 +233,14 @@ class ClassSchedule extends _$ClassSchedule {
 
   Future<List<Map<String, dynamic>>> _loadClassSchedule(String classId) async {
     try {
-      return await ref.read(attendanceRepositoryProvider).getClassSchedule(classId);
+      return await ref
+          .read(attendanceRepositoryProvider)
+          .getClassSchedule(classId);
     } catch (e) {
       // If online fetch fails, try to get from cache
-      final cachedSchedule = await ref.read(attendanceCacheServiceProvider)
-          .getCachedClassSchedule(classId);
+      final cacheService =
+          await ref.read(attendanceCacheServiceProvider.future);
+      final cachedSchedule = await cacheService.getCachedClassSchedule(classId);
       if (cachedSchedule != null) {
         return cachedSchedule;
       }
@@ -239,11 +250,12 @@ class ClassSchedule extends _$ClassSchedule {
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _loadClassSchedule(state.value?.first['classId'] ?? ''));
+    state = await AsyncValue.guard(
+        () => _loadClassSchedule(state.value?.first['classId'] ?? ''));
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class ClassStats extends _$ClassStats {
   @override
   Future<Map<String, dynamic>> build(String classId) async {
@@ -252,11 +264,14 @@ class ClassStats extends _$ClassStats {
 
   Future<Map<String, dynamic>> _loadClassStats(String classId) async {
     try {
-      return await ref.read(attendanceRepositoryProvider).getClassStats(classId);
+      return await ref
+          .read(attendanceRepositoryProvider)
+          .getClassStats(classId);
     } catch (e) {
       // If online fetch fails, try to get from cache
-      final cachedStats = await ref.read(attendanceCacheServiceProvider)
-          .getCachedClassStats(classId);
+      final cacheService =
+          await ref.read(attendanceCacheServiceProvider.future);
+      final cachedStats = await cacheService.getCachedClassStats(classId);
       if (cachedStats != null) {
         return cachedStats;
       }
@@ -266,6 +281,32 @@ class ClassStats extends _$ClassStats {
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _loadClassStats(state.value?['classId'] ?? ''));
+    state = await AsyncValue.guard(
+        () => _loadClassStats(state.value?['classId'] ?? ''));
   }
-} 
+}
+
+final activeSessionProvider =
+    FutureProvider.family<AttendanceSession?, String>((ref, classId) async {
+  try {
+    final activeSessions =
+        await ref.read(attendanceRepositoryProvider).getActiveSessions();
+    final classSession = activeSessions.firstWhere(
+      (session) => session.classId == classId,
+      orElse: () =>
+          throw Exception('No active session found for class $classId'),
+    );
+    return AttendanceSession(
+      id: classSession.sessionId,
+      startTime: classSession.timestamp,
+      endTime: null, // Active session doesn't have an end time yet
+      status: classSession.status,
+      presentCount: 0, // This will be updated when students check in
+      absentCount: 0, // This will be updated when students check in
+      totalCount: 0, // This will be updated when students check in
+    );
+  } catch (e) {
+    // If no active session is found, return null
+    return null;
+  }
+});

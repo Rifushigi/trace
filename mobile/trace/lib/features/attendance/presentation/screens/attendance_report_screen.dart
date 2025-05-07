@@ -11,10 +11,12 @@ class AttendanceReportScreen extends ConsumerStatefulWidget {
   const AttendanceReportScreen({super.key, required this.classId});
 
   @override
-  ConsumerState<AttendanceReportScreen> createState() => _AttendanceReportScreenState();
+  ConsumerState<AttendanceReportScreen> createState() =>
+      _AttendanceReportScreenState();
 }
 
-class _AttendanceReportScreenState extends ConsumerState<AttendanceReportScreen> {
+class _AttendanceReportScreenState
+    extends ConsumerState<AttendanceReportScreen> {
   List<AttendanceModel> _attendanceList = [];
   bool _isLoading = false;
   Map<String, int> _attendanceStats = {};
@@ -31,7 +33,9 @@ class _AttendanceReportScreenState extends ConsumerState<AttendanceReportScreen>
     });
 
     try {
-      final attendance = await ref.read(attendanceActionsProvider.notifier).getClassAttendance(widget.classId);
+      final attendance = await ref
+          .read(attendanceActionsProvider.notifier)
+          .getAttendanceHistory(widget.classId);
       setState(() {
         _attendanceList = attendance;
         _calculateStats();
@@ -59,7 +63,8 @@ class _AttendanceReportScreenState extends ConsumerState<AttendanceReportScreen>
     };
 
     for (final attendance in _attendanceList) {
-      _attendanceStats[attendance.status] = (_attendanceStats[attendance.status] ?? 0) + 1;
+      _attendanceStats[attendance.status] =
+          (_attendanceStats[attendance.status] ?? 0) + 1;
     }
   }
 
@@ -88,11 +93,14 @@ class _AttendanceReportScreenState extends ConsumerState<AttendanceReportScreen>
                         padding: EdgeInsets.all(AppConstants.defaultPadding),
                         child: Column(
                           children: [
-                            _buildStatRow('Present', _attendanceStats['present'] ?? 0),
+                            _buildStatRow(
+                                'Present', _attendanceStats['present'] ?? 0),
                             const Divider(),
-                            _buildStatRow('Absent', _attendanceStats['absent'] ?? 0),
+                            _buildStatRow(
+                                'Absent', _attendanceStats['absent'] ?? 0),
                             const Divider(),
-                            _buildStatRow('Late', _attendanceStats['late'] ?? 0),
+                            _buildStatRow(
+                                'Late', _attendanceStats['late'] ?? 0),
                           ],
                         ),
                       ),
@@ -143,4 +151,4 @@ class _AttendanceReportScreenState extends ConsumerState<AttendanceReportScreen>
       ),
     );
   }
-} 
+}

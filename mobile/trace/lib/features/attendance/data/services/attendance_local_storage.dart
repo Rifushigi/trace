@@ -1,14 +1,26 @@
 import 'dart:convert';
-import 'package:shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/attendance_model.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AttendanceLocalStorage {
+part 'attendance_local_storage.g.dart';
+
+@riverpod
+Future<AttendanceStorage> attendanceLocalStorage(Ref ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  return AttendanceStorage(prefs);
+}
+
+class AttendanceStorage {
   final SharedPreferences _prefs;
   static const String _offlineSessionsKey = 'offline_sessions';
   static const String _pendingCheckInsKey = 'pending_check_ins';
   static const String _syncQueueKey = 'sync_queue';
   static const String _lastSyncTimestampKey = 'last_sync_timestamp';
   static const String _offlineDataKey = 'offline_data';
+  static const String _attendanceHistoryKey = 'attendance_history';
+  static const String _classInfoKey = 'class_info';
 
   // Empty state constants
   static const Map<String, dynamic> emptySession = {
@@ -48,10 +60,13 @@ class AttendanceLocalStorage {
     'isEmpty': true,
   };
 
-  AttendanceLocalStorage(this._prefs);
+  AttendanceStorage(this._prefs);
 
   // Offline Session Management
-  Future<void> storeOfflineSession(String sessionId, Map<String, dynamic> sessionData) async {
+  Future<void> storeOfflineSession(
+    String sessionId,
+    Map<String, dynamic> sessionData,
+  ) async {
     final offlineSessions = await getOfflineSessions();
     offlineSessions[sessionId] = {
       ...sessionData,
@@ -67,7 +82,9 @@ class AttendanceLocalStorage {
     if (sessionsJson == null) return {};
 
     final Map<String, dynamic> decoded = jsonDecode(sessionsJson);
-    return decoded.map((key, value) => MapEntry(key, Map<String, dynamic>.from(value)));
+    return decoded.map(
+      (key, value) => MapEntry(key, Map<String, dynamic>.from(value)),
+    );
   }
 
   Future<Map<String, dynamic>> getOfflineSession(String sessionId) async {
@@ -98,23 +115,39 @@ class AttendanceLocalStorage {
     return decoded.map((item) => Map<String, dynamic>.from(item)).toList();
   }
 
-  Future<Map<String, dynamic>> getPendingCheckIn(String sessionId, String studentId) async {
+  Future<Map<String, dynamic>> getPendingCheckIn(
+    String sessionId,
+    String studentId,
+  ) async {
     final pendingCheckIns = await getPendingCheckIns();
     return pendingCheckIns.firstWhere(
-      (checkIn) => checkIn['sessionId'] == sessionId && checkIn['studentId'] == studentId,
-      orElse: () => {...emptyCheckIn, 'sessionId': sessionId, 'studentId': studentId},
+      (checkIn) =>
+          checkIn['sessionId'] == sessionId &&
+          checkIn['studentId'] == studentId,
+      orElse: () => {
+        ...emptyCheckIn,
+        'sessionId': sessionId,
+        'studentId': studentId,
+      },
     );
   }
 
-  Future<void> updatePendingCheckInRetry(String sessionId, String studentId, {bool incrementRetry = true}) async {
+  Future<void> updatePendingCheckInRetry(
+    String sessionId,
+    String studentId, {
+    bool incrementRetry = true,
+  }) async {
     final pendingCheckIns = await getPendingCheckIns();
     final index = pendingCheckIns.indexWhere(
-      (checkIn) => checkIn['sessionId'] == sessionId && checkIn['studentId'] == studentId,
+      (checkIn) =>
+          checkIn['sessionId'] == sessionId &&
+          checkIn['studentId'] == studentId,
     );
-    
+
     if (index != -1) {
       if (incrementRetry) {
-        pendingCheckIns[index]['retryCount'] = (pendingCheckIns[index]['retryCount'] ?? 0) + 1;
+        pendingCheckIns[index]['retryCount'] =
+            (pendingCheckIns[index]['retryCount'] ?? 0) + 1;
       }
       pendingCheckIns[index]['lastAttempt'] = DateTime.now().toIso8601String();
       await _prefs.setString(_pendingCheckInsKey, jsonEncode(pendingCheckIns));
@@ -124,13 +157,18 @@ class AttendanceLocalStorage {
   Future<void> removePendingCheckIn(String sessionId, String studentId) async {
     final pendingCheckIns = await getPendingCheckIns();
     pendingCheckIns.removeWhere(
-      (checkIn) => checkIn['sessionId'] == sessionId && checkIn['studentId'] == studentId,
+      (checkIn) =>
+          checkIn['sessionId'] == sessionId &&
+          checkIn['studentId'] == studentId,
     );
     await _prefs.setString(_pendingCheckInsKey, jsonEncode(pendingCheckIns));
   }
 
   // Sync Queue Management
-  Future<void> addToSyncQueue(String operation, Map<String, dynamic> data) async {
+  Future<void> addToSyncQueue(
+    String operation,
+    Map<String, dynamic> data,
+  ) async {
     final queue = await getSyncQueue();
     queue.add({
       'operation': operation,
@@ -184,7 +222,9 @@ class AttendanceLocalStorage {
     if (dataJson == null) return {};
 
     final Map<String, dynamic> decoded = jsonDecode(dataJson);
-    return decoded.map((key, value) => MapEntry(key, Map<String, dynamic>.from(value)));
+    return decoded.map(
+      (key, value) => MapEntry(key, Map<String, dynamic>.from(value)),
+    );
   }
 
   Future<T?> getOfflineDataItem<T>(String key) async {
@@ -196,14 +236,19 @@ class AttendanceLocalStorage {
     return null;
   }
 
-  Future<Map<String, dynamic>> getOfflineDataItemWithMetadata(String key) async {
+  Future<Map<String, dynamic>> getOfflineDataItemWithMetadata(
+    String key,
+  ) async {
     final offlineData = await getOfflineData();
     return offlineData[key] ?? {...emptyOfflineData};
   }
 
   // Sync Timestamp Management
   Future<void> updateLastSyncTimestamp() async {
-    await _prefs.setString(_lastSyncTimestampKey, DateTime.now().toIso8601String());
+    await _prefs.setString(
+      _lastSyncTimestampKey,
+      DateTime.now().toIso8601String(),
+    );
   }
 
   Future<DateTime?> getLastSyncTimestamp() async {
@@ -223,16 +268,12 @@ class AttendanceLocalStorage {
   // Data Validation
   Future<bool> validateOfflineData() async {
     try {
-      final sessions = await getOfflineSessions();
-      final checkIns = await getPendingCheckIns();
-      final queue = await getSyncQueue();
-      final offlineData = await getOfflineData();
+      await getOfflineSessions();
+      await getPendingCheckIns();
+      await getSyncQueue();
+      await getOfflineData();
 
-      // Validate data structure
-      return sessions is Map &&
-          checkIns is List &&
-          queue is List &&
-          offlineData is Map;
+      return true;
     } catch (e) {
       return false;
     }
@@ -243,10 +284,10 @@ class AttendanceLocalStorage {
     final pendingCheckIns = await getPendingCheckIns();
     final syncQueue = await getSyncQueue();
     final offlineSessions = await getOfflineSessions();
-    
-    return pendingCheckIns.isNotEmpty || 
-           syncQueue.isNotEmpty || 
-           offlineSessions.isNotEmpty;
+
+    return pendingCheckIns.isNotEmpty ||
+        syncQueue.isNotEmpty ||
+        offlineSessions.isNotEmpty;
   }
 
   // Check if specific data is empty
@@ -269,4 +310,46 @@ class AttendanceLocalStorage {
     final data = await getOfflineDataItemWithMetadata(key);
     return data['isEmpty'] ?? true;
   }
-} 
+
+  Future<void> cacheClassInfo(
+      String classId, Map<String, dynamic> classInfo) async {
+    final classInfoMap = await getCachedClassInfo();
+    classInfoMap[classId] = {
+      ...classInfo,
+      'lastUpdated': DateTime.now().toIso8601String(),
+    };
+    await _prefs.setString(_classInfoKey, jsonEncode(classInfoMap));
+  }
+
+  Future<Map<String, Map<String, dynamic>>> getCachedClassInfo() async {
+    final classInfoJson = _prefs.getString(_classInfoKey);
+    if (classInfoJson == null) return {};
+
+    final Map<String, dynamic> decoded = jsonDecode(classInfoJson);
+    return decoded.map(
+      (key, value) => MapEntry(key, Map<String, dynamic>.from(value)),
+    );
+  }
+
+  // Cache attendance history
+  Future<void> cacheAttendanceHistory(
+      String classId, List<AttendanceModel> history) async {
+    final historyMap = await getCachedAttendanceHistory();
+    historyMap[classId] = history.map((h) => h.toJson()).toList();
+    await _prefs.setString(_attendanceHistoryKey, jsonEncode(historyMap));
+  }
+
+  Future<Map<String, List<Map<String, dynamic>>>>
+      getCachedAttendanceHistory() async {
+    final historyJson = _prefs.getString(_attendanceHistoryKey);
+    if (historyJson == null) return {};
+
+    final Map<String, dynamic> decoded = jsonDecode(historyJson);
+    return decoded.map(
+      (key, value) => MapEntry(
+        key,
+        List<Map<String, dynamic>>.from(value as List),
+      ),
+    );
+  }
+}

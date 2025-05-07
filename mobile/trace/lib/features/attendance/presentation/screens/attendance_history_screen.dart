@@ -11,10 +11,12 @@ class AttendanceHistoryScreen extends ConsumerStatefulWidget {
   const AttendanceHistoryScreen({super.key, required this.classId});
 
   @override
-  ConsumerState<AttendanceHistoryScreen> createState() => _AttendanceHistoryScreenState();
+  ConsumerState<AttendanceHistoryScreen> createState() =>
+      _AttendanceHistoryScreenState();
 }
 
-class _AttendanceHistoryScreenState extends ConsumerState<AttendanceHistoryScreen> {
+class _AttendanceHistoryScreenState
+    extends ConsumerState<AttendanceHistoryScreen> {
   List<AttendanceModel> _attendanceList = [];
   bool _isLoading = false;
 
@@ -30,7 +32,9 @@ class _AttendanceHistoryScreenState extends ConsumerState<AttendanceHistoryScree
     });
 
     try {
-      final attendance = await ref.read(attendanceActionsProvider.notifier).getClassAttendance(widget.classId);
+      final attendance = await ref
+          .read(attendanceActionsProvider.notifier)
+          .getAttendanceHistory(widget.classId);
       setState(() {
         _attendanceList = attendance;
       });
@@ -66,7 +70,8 @@ class _AttendanceHistoryScreenState extends ConsumerState<AttendanceHistoryScree
                   itemBuilder: (context, index) {
                     final attendance = _attendanceList[index];
                     return Card(
-                      margin: EdgeInsets.symmetric(vertical: AppConstants.defaultSpacing / 2),
+                      margin: EdgeInsets.symmetric(
+                          vertical: AppConstants.defaultSpacing / 2),
                       child: ListTile(
                         title: Text(
                           'Student ID: ${attendance.studentId}',
@@ -88,4 +93,4 @@ class _AttendanceHistoryScreenState extends ConsumerState<AttendanceHistoryScree
             ),
     );
   }
-} 
+}

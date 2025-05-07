@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/role_constants.dart';
-import '../../../authentication/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../providers/attendance_provider.dart';
+import '../providers/attendance_actions_provider.dart' as actions;
+import '../../data/models/attendance_session.dart';
 import '../../../../utils/logger.dart';
-import '../../../../common/appbar/role_app_bar.dart';
 import '../../../../common/shared_widgets/app_card.dart';
 import '../../../../common/shared_widgets/empty_state.dart';
 import '../../../../common/styles/app_styles.dart';
-import '../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
-import '../../../../common/shared_widgets/refresh_wrapper.dart';
 import '../../../../common/providers/connectivity_service_provider.dart';
 
 enum AttendanceHistorySortOption {
@@ -39,13 +38,17 @@ class AttendanceManagementScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AttendanceManagementScreen> createState() => _AttendanceManagementScreenState();
+  ConsumerState<AttendanceManagementScreen> createState() =>
+      _AttendanceManagementScreenState();
 }
 
-class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagementScreen> {
+class _AttendanceManagementScreenState
+    extends ConsumerState<AttendanceManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
   AttendanceHistoryFilter _currentFilter = AttendanceHistoryFilter.all;
   String _searchQuery = '';
+  AttendanceHistorySortOption _currentSortOption =
+      AttendanceHistorySortOption.dateDesc;
 
   @override
   void dispose() {
@@ -53,11 +56,16 @@ class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagemen
     super.dispose();
   }
 
-  List<AttendanceSession> _filterAndSearchHistory(List<AttendanceSession> history) {
+  List<AttendanceSession> _filterAndSearchHistory(
+      List<AttendanceSession> history) {
     return history.where((session) {
       // Apply status filter
-      if (_currentFilter == AttendanceHistoryFilter.active && session.status != 'active') return false;
-      if (_currentFilter == AttendanceHistoryFilter.ended && session.status == 'active') return false;
+      if (_currentFilter == AttendanceHistoryFilter.active) {
+        if (session.status != 'active') return false;
+      }
+      if (_currentFilter == AttendanceHistoryFilter.ended) {
+        if (session.status == 'active') return false;
+      }
 
       // Apply search query
       if (_searchQuery.isEmpty) return true;
@@ -68,475 +76,226 @@ class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagemen
     }).toList();
   }
 
+  void _sortHistory(AttendanceHistorySortOption option) {
+    setState(() {
+      _currentSortOption = option;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final user = authState.user!;
-    final attendanceState = ref.watch(attendanceActionsProvider);
     final syncState = ref.watch(attendanceSyncProvider);
     final isOnline = ref.watch(connectivityServiceProvider).isConnected;
 
-    // Ensure only lecturers and admins can access
-    if (user.role != RoleConstants.lecturerRole && user.role != RoleConstants.adminRole) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Access Denied'),
-        ),
-        body: const Center(
-          child: Text('Only lecturers and administrators can manage attendance.'),
-        ),
-      );
-    }
+    return authState.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      data: (user) {
+        if (user == null) {
+          return const Scaffold(
+            body: Center(child: Text('Please log in to manage attendance')),
+          );
+        }
 
-    final activeSessionAsync = ref.watch(activeSessionProvider(widget.classId));
-    final attendanceHistoryAsync = ref.watch(attendanceHistoryProvider(widget.classId));
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Attendance Management'),
-        actions: [
-          if (!isOnline)
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Icon(Icons.cloud_off, color: Colors.orange),
+        // Ensure only lecturers and admins can access
+        if (user.role != RoleConstants.lecturerRole &&
+            user.role != RoleConstants.adminRole) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Access Denied'),
             ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.read(attendanceActionsProvider.notifier).syncPendingCheckIns();
-            },
+            body: const Center(
+              child: Text(
+                  'Only lecturers and administrators can manage attendance.'),
+            ),
+          );
+        }
+
+        final activeSessionAsync =
+            ref.watch(activeSessionProvider(widget.classId));
+        final attendanceHistoryAsync =
+            ref.watch(attendanceHistoryProvider(widget.classId));
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Attendance Management'),
+            actions: [
+              if (!isOnline)
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Icon(Icons.cloud_off, color: Colors.orange),
+                ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  ref
+                      .read(actions.attendanceActionsProvider.notifier)
+                      .syncPendingCheckIns();
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          if (isOnline) {
-            await ref.read(attendanceActionsProvider.notifier).syncPendingCheckIns();
-          }
-        },
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            if (!isOnline)
-              Container(
-                padding: const EdgeInsets.all(8),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.cloud_off, color: Colors.orange),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'You are offline. Changes will be synced when you are back online.',
-                        style: TextStyle(color: Colors.orange[800]),
-                      ),
+          body: RefreshIndicator(
+            onRefresh: () async {
+              if (isOnline) {
+                await ref
+                    .read(actions.attendanceActionsProvider.notifier)
+                    .syncPendingCheckIns();
+              }
+            },
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (!isOnline)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withAlpha(25),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange),
                     ),
-                  ],
-                ),
-              ),
-            if (syncState.isLoading)
-              const Center(child: CircularProgressIndicator()),
-            if (syncState.hasError)
-              Container(
-                padding: const EdgeInsets.all(8),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.error, color: Colors.red),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Error syncing data: ${syncState.error}',
-                        style: const TextStyle(color: Colors.red),
-                      ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.cloud_off, color: Colors.orange),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'You are offline. Changes will be synced when you are back online.',
+                            style: TextStyle(color: Colors.orange[800]),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            // Class Info Card
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.className,
-                    style: AppStyles.titleLarge,
                   ),
-                  SizedBox(height: AppConstants.defaultSpacing),
-                  Text(
-                    'Class ID: ${widget.classId}',
-                    style: AppStyles.bodyMedium,
+                if (syncState.isLoading)
+                  const Center(child: CircularProgressIndicator()),
+                if (syncState.hasError)
+                  Container(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withAlpha(25),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Error syncing data: ${syncState.error}',
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
-            SizedBox(height: AppConstants.defaultPadding * 1.5),
-
-            // Active Session Section
-            activeSessionAsync.when(
-              data: (session) {
-                if (session == null) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Start New Session',
-                        style: AppStyles.titleLarge,
-                      ),
-                      SizedBox(height: AppConstants.defaultSpacing),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          _showStartSessionDialog(context, ref);
-                        },
-                        icon: const Icon(Icons.play_arrow),
-                        label: const Text('Start Attendance Session'),
-                      ),
-                    ],
-                  );
-                }
-
-                return AppCard(
+                // Class Info Card
+                AppCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Active Session',
-                            style: AppStyles.titleLarge,
-                          ),
-                          Text(
-                            'Started: ${_formatTime(session.startTime)}',
-                            style: AppStyles.bodyMedium,
-                          ),
-                        ],
+                      Text(
+                        widget.className,
+                        style: AppStyles.titleLarge,
                       ),
-                      SizedBox(height: AppConstants.defaultPadding),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _StatItem(
-                              label: 'Present',
-                              value: session.presentCount.toString(),
-                              icon: Icons.check_circle,
-                              color: Colors.green,
-                            ),
-                          ),
-                          Expanded(
-                            child: _StatItem(
-                              label: 'Absent',
-                              value: session.absentCount.toString(),
-                              icon: Icons.cancel,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: AppConstants.defaultPadding),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton.icon(
-                            onPressed: () {
-                              _showManualCheckInDialog(context, ref, session.id);
-                            },
-                            icon: const Icon(Icons.person_add),
-                            label: const Text('Manual Check-in'),
-                          ),
-                          SizedBox(width: AppConstants.defaultSpacing),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              _showEndSessionDialog(context, ref, session.id);
-                            },
-                            icon: const Icon(Icons.stop),
-                            label: const Text('End Session'),
-                          ),
-                        ],
+                      const SizedBox(height: AppConstants.defaultSpacing),
+                      Text(
+                        'Class ID: ${widget.classId}',
+                        style: AppStyles.bodyMedium,
                       ),
                     ],
                   ),
-                );
-              },
-              loading: () => SkeletonList(
-                itemCount: 3,
-                itemHeight: 80,
-                spacing: AppConstants.defaultPadding,
-              ),
-              error: (error, stackTrace) {
-                Logger.error('Failed to load active session', error, stackTrace);
-                return EmptyState(
-                  message: 'Failed to load active session',
-                  icon: Icons.error_outline,
-                  onRetry: () {
-                    ref.invalidate(activeSessionProvider(widget.classId));
-                  },
-                );
-              },
-            ),
-
-            SizedBox(height: AppConstants.defaultPadding * 1.5),
-
-            // Attendance History Section
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Attendance History',
-                      style: AppStyles.titleLarge,
-                    ),
-                    PopupMenuButton<AttendanceHistorySortOption>(
-                      icon: const Icon(Icons.sort),
-                      tooltip: 'Sort by',
-                      onSelected: (option) {
-                        // Sort the list based on the selected option
-                        ref.read(attendanceHistoryProvider(widget.classId).notifier).sortHistory(option);
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: AttendanceHistorySortOption.dateDesc,
-                          child: Row(
-                            children: [
-                              Icon(Icons.arrow_downward),
-                              SizedBox(width: 8),
-                              Text('Newest First'),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: AttendanceHistorySortOption.dateAsc,
-                          child: Row(
-                            children: [
-                              Icon(Icons.arrow_upward),
-                              SizedBox(width: 8),
-                              Text('Oldest First'),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: AttendanceHistorySortOption.presentCountDesc,
-                          child: Row(
-                            children: [
-                              Icon(Icons.arrow_downward),
-                              SizedBox(width: 8),
-                              Text('Most Present'),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: AttendanceHistorySortOption.presentCountAsc,
-                          child: Row(
-                            children: [
-                              Icon(Icons.arrow_upward),
-                              SizedBox(width: 8),
-                              Text('Least Present'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
                 ),
-                SizedBox(height: AppConstants.defaultSpacing),
+                const SizedBox(height: AppConstants.defaultPadding * 1.5),
 
-                // Search and Filter Bar
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Search by date, time, or session ID',
-                          prefixIcon: const Icon(Icons.search),
-                          suffixIcon: _searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () {
-                                    setState(() {
-                                      _searchController.clear();
-                                      _searchQuery = '';
-                                    });
-                                  },
-                                )
-                              : null,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppConstants.defaultRadius,
-                            ),
+                // Active Session Section
+                activeSessionAsync.when(
+                  data: (session) {
+                    if (session == null) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Start New Session',
+                            style: AppStyles.titleLarge,
                           ),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            _searchQuery = value;
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(width: AppConstants.defaultSpacing),
-                    PopupMenuButton<AttendanceHistoryFilter>(
-                      icon: const Icon(Icons.filter_list),
-                      tooltip: 'Filter by status',
-                      initialValue: _currentFilter,
-                      onSelected: (filter) {
-                        setState(() {
-                          _currentFilter = filter;
-                        });
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: AttendanceHistoryFilter.all,
-                          child: Row(
-                            children: [
-                              Icon(Icons.history),
-                              SizedBox(width: 8),
-                              Text('All Sessions'),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: AttendanceHistoryFilter.active,
-                          child: Row(
-                            children: [
-                              Icon(Icons.play_arrow, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text('Active Only'),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: AttendanceHistoryFilter.ended,
-                          child: Row(
-                            children: [
-                              Icon(Icons.stop, color: Colors.grey),
-                              SizedBox(width: 8),
-                              Text('Ended Only'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: AppConstants.defaultSpacing),
-
-                // Filter indicator
-                if (_currentFilter != AttendanceHistoryFilter.all || _searchQuery.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Wrap(
-                      spacing: 8,
-                      children: [
-                        if (_currentFilter != AttendanceHistoryFilter.all)
-                          Chip(
-                            label: Text(
-                              _currentFilter == AttendanceHistoryFilter.active
-                                  ? 'Active Only'
-                                  : 'Ended Only',
-                            ),
-                            deleteIcon: const Icon(Icons.close, size: 16),
-                            onDeleted: () {
-                              setState(() {
-                                _currentFilter = AttendanceHistoryFilter.all;
-                              });
+                          const SizedBox(height: AppConstants.defaultSpacing),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              _showStartSessionDialog(context, ref);
                             },
+                            icon: const Icon(Icons.play_arrow),
+                            label: const Text('Start Attendance Session'),
                           ),
-                        if (_searchQuery.isNotEmpty)
-                          Chip(
-                            label: Text('Search: $_searchQuery'),
-                            deleteIcon: const Icon(Icons.close, size: 16),
-                            onDeleted: () {
-                              setState(() {
-                                _searchController.clear();
-                                _searchQuery = '';
-                              });
-                            },
-                          ),
-                      ],
-                    ),
-                  ),
-
-                attendanceHistoryAsync.when(
-                  data: (history) {
-                    if (history.isEmpty) {
-                      return EmptyState(
-                        message: 'No attendance history available',
-                        icon: Icons.history,
+                        ],
                       );
                     }
 
-                    final filteredHistory = _filterAndSearchHistory(history);
-                    if (filteredHistory.isEmpty) {
-                      return EmptyState(
-                        message: 'No sessions match your search criteria',
-                        icon: Icons.search_off,
-                      );
-                    }
-
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filteredHistory.length,
-                      itemBuilder: (context, index) {
-                        final session = filteredHistory[index];
-                        return AppCard(
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: session.status == 'active'
-                                  ? Colors.green
-                                  : Colors.grey,
-                              child: Icon(
-                                session.status == 'active'
-                                    ? Icons.play_arrow
-                                    : Icons.stop,
-                                color: Colors.white,
+                    return AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Active Session',
+                                style: AppStyles.titleLarge,
                               ),
-                            ),
-                            title: Text(
-                              'Session ${index + 1}',
-                              style: AppStyles.titleMedium,
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Date: ${_formatDate(session.startTime)}',
-                                  style: AppStyles.bodyMedium,
-                                ),
-                                Text(
-                                  'Time: ${_formatTime(session.startTime)}',
-                                  style: AppStyles.bodyMedium,
-                                ),
-                              ],
-                            ),
-                            trailing: Text(
-                              '${session.presentCount}/${session.totalCount}',
-                              style: AppStyles.titleMedium,
-                            ),
-                            onTap: () {
-                              Navigator.of(context).pushNamed(
-                                AppConstants.attendanceDetailsRoute,
-                                arguments: {
-                                  'sessionId': session.id,
-                                  'className': widget.className,
-                                },
-                              );
-                            },
+                              Text(
+                                'Started: ${_formatTime(session.startTime)}',
+                                style: AppStyles.bodyMedium,
+                              ),
+                            ],
                           ),
-                        );
-                      },
+                          SizedBox(height: AppConstants.defaultPadding),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _StatItem(
+                                  label: 'Present',
+                                  value: session.presentCount.toString(),
+                                  icon: Icons.check_circle,
+                                  color: Colors.green,
+                                ),
+                              ),
+                              Expanded(
+                                child: _StatItem(
+                                  label: 'Absent',
+                                  value: session.absentCount.toString(),
+                                  icon: Icons.cancel,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: AppConstants.defaultPadding),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () {
+                                  _showManualCheckInDialog(
+                                      context, ref, session.id);
+                                },
+                                icon: const Icon(Icons.person_add),
+                                label: const Text('Manual Check-in'),
+                              ),
+                              SizedBox(width: AppConstants.defaultSpacing),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  _showEndSessionDialog(
+                                      context, ref, session.id);
+                                },
+                                icon: const Icon(Icons.stop),
+                                label: const Text('End Session'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     );
                   },
                   loading: () => SkeletonList(
@@ -545,21 +304,334 @@ class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagemen
                     spacing: AppConstants.defaultPadding,
                   ),
                   error: (error, stackTrace) {
-                    Logger.error('Failed to load attendance history', error, stackTrace);
+                    Logger.error(
+                        'Failed to load active session', error, stackTrace);
                     return EmptyState(
-                      message: 'Failed to load attendance history',
+                      message: 'Failed to load active session',
                       icon: Icons.error_outline,
                       onRetry: () {
-                        ref.invalidate(attendanceHistoryProvider(widget.classId));
+                        ref.invalidate(activeSessionProvider(widget.classId));
                       },
                     );
                   },
                 ),
+
+                SizedBox(height: AppConstants.defaultPadding * 1.5),
+
+                // Attendance History Section
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Attendance History',
+                          style: AppStyles.titleLarge,
+                        ),
+                        PopupMenuButton<AttendanceHistorySortOption>(
+                          icon: const Icon(Icons.sort),
+                          tooltip: 'Sort by',
+                          onSelected: _sortHistory,
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: AttendanceHistorySortOption.dateDesc,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_downward),
+                                  SizedBox(width: 8),
+                                  Text('Newest First'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: AttendanceHistorySortOption.dateAsc,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_upward),
+                                  SizedBox(width: 8),
+                                  Text('Oldest First'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value:
+                                  AttendanceHistorySortOption.presentCountDesc,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_downward),
+                                  SizedBox(width: 8),
+                                  Text('Most Present'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value:
+                                  AttendanceHistorySortOption.presentCountAsc,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_upward),
+                                  SizedBox(width: 8),
+                                  Text('Least Present'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: AppConstants.defaultSpacing),
+
+                    // Search and Filter Bar
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              hintText: 'Search by date, time, or session ID',
+                              prefixIcon: const Icon(Icons.search),
+                              suffixIcon: _searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () {
+                                        setState(() {
+                                          _searchController.clear();
+                                          _searchQuery = '';
+                                        });
+                                      },
+                                    )
+                                  : null,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppConstants.defaultRadius,
+                                ),
+                              ),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value;
+                              });
+                            },
+                          ),
+                        ),
+                        SizedBox(width: AppConstants.defaultSpacing),
+                        PopupMenuButton<AttendanceHistoryFilter>(
+                          icon: const Icon(Icons.filter_list),
+                          tooltip: 'Filter by status',
+                          initialValue: _currentFilter,
+                          onSelected: (filter) {
+                            setState(() {
+                              _currentFilter = filter;
+                            });
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: AttendanceHistoryFilter.all,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.history),
+                                  SizedBox(width: 8),
+                                  Text('All Sessions'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: AttendanceHistoryFilter.active,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.play_arrow, color: Colors.green),
+                                  SizedBox(width: 8),
+                                  Text('Active Only'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: AttendanceHistoryFilter.ended,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.stop, color: Colors.grey),
+                                  SizedBox(width: 8),
+                                  Text('Ended Only'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: AppConstants.defaultSpacing),
+
+                    // Filter indicator
+                    if (_currentFilter != AttendanceHistoryFilter.all ||
+                        _searchQuery.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Wrap(
+                          spacing: 8,
+                          children: [
+                            if (_currentFilter != AttendanceHistoryFilter.all)
+                              Chip(
+                                label: Text(
+                                  _currentFilter ==
+                                          AttendanceHistoryFilter.active
+                                      ? 'Active Only'
+                                      : 'Ended Only',
+                                ),
+                                deleteIcon: const Icon(Icons.close, size: 16),
+                                onDeleted: () {
+                                  setState(() {
+                                    _currentFilter =
+                                        AttendanceHistoryFilter.all;
+                                  });
+                                },
+                              ),
+                            if (_searchQuery.isNotEmpty)
+                              Chip(
+                                label: Text('Search: $_searchQuery'),
+                                deleteIcon: const Icon(Icons.close, size: 16),
+                                onDeleted: () {
+                                  setState(() {
+                                    _searchController.clear();
+                                    _searchQuery = '';
+                                  });
+                                },
+                              ),
+                          ],
+                        ),
+                      ),
+
+                    attendanceHistoryAsync.when(
+                      data: (history) {
+                        if (history.isEmpty) {
+                          return EmptyState(
+                            message: 'No attendance history available',
+                            icon: Icons.history,
+                          );
+                        }
+
+                        final List<AttendanceSession> sessions = history
+                            .map((h) => AttendanceSession.fromJson(
+                                h as Map<String, dynamic>))
+                            .toList();
+
+                        // Sort the sessions based on the current sort option
+                        switch (_currentSortOption) {
+                          case AttendanceHistorySortOption.dateDesc:
+                            sessions.sort(
+                                (a, b) => b.startTime.compareTo(a.startTime));
+                            break;
+                          case AttendanceHistorySortOption.dateAsc:
+                            sessions.sort(
+                                (a, b) => a.startTime.compareTo(b.startTime));
+                            break;
+                          case AttendanceHistorySortOption.presentCountDesc:
+                            sessions.sort((a, b) =>
+                                b.presentCount.compareTo(a.presentCount));
+                            break;
+                          case AttendanceHistorySortOption.presentCountAsc:
+                            sessions.sort((a, b) =>
+                                a.presentCount.compareTo(b.presentCount));
+                            break;
+                        }
+
+                        final filteredHistory =
+                            _filterAndSearchHistory(sessions);
+                        if (filteredHistory.isEmpty) {
+                          return EmptyState(
+                            message: 'No matching attendance records found',
+                            icon: Icons.search_off,
+                          );
+                        }
+
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: filteredHistory.length,
+                          itemBuilder: (context, index) {
+                            final session = filteredHistory[index];
+                            return AppCard(
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: session.status == 'active'
+                                      ? Colors.green
+                                      : Colors.grey,
+                                  child: Icon(
+                                    session.status == 'active'
+                                        ? Icons.play_arrow
+                                        : Icons.stop,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                title: Text(
+                                  'Session ${index + 1}',
+                                  style: AppStyles.titleMedium,
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Date: ${_formatDate(session.startTime)}',
+                                      style: AppStyles.bodyMedium,
+                                    ),
+                                    Text(
+                                      'Time: ${_formatTime(session.startTime)}',
+                                      style: AppStyles.bodyMedium,
+                                    ),
+                                  ],
+                                ),
+                                trailing: Text(
+                                  '${session.presentCount}/${session.totalCount}',
+                                  style: AppStyles.titleMedium,
+                                ),
+                                onTap: () {
+                                  Navigator.of(context).pushNamed(
+                                    AppConstants.attendanceDetailsRoute,
+                                    arguments: {
+                                      'sessionId': session.id,
+                                      'className': widget.className,
+                                    },
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      loading: () => SkeletonList(
+                        itemCount: 3,
+                        itemHeight: 80,
+                        spacing: AppConstants.defaultPadding,
+                      ),
+                      error: (error, stackTrace) {
+                        Logger.error('Failed to load attendance history', error,
+                            stackTrace);
+                        return EmptyState(
+                          message: 'Error loading attendance history: $error',
+                          icon: Icons.error_outline,
+                          onRetry: () {
+                            ref.invalidate(
+                                attendanceHistoryProvider(widget.classId));
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
+      error: (error, stackTrace) {
+        Logger.error(
+            'Failed to load attendance management screen', error, stackTrace);
+        return Scaffold(
+          body: Center(
+            child: Text('Failed to load attendance management screen: $error'),
+          ),
+        );
+      },
     );
   }
 
@@ -568,7 +640,8 @@ class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagemen
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Start Attendance Session'),
-        content: const Text('Are you sure you want to start a new attendance session?'),
+        content: const Text(
+            'Are you sure you want to start a new attendance session?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -578,7 +651,9 @@ class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagemen
             onPressed: () async {
               Navigator.pop(context);
               try {
-                await ref.read(attendanceProvider.notifier).startSession(widget.classId);
+                await ref
+                    .read(actions.attendanceActionsProvider.notifier)
+                    .startSession(widget.classId);
                 if (context.mounted) {
                   Toast.show(
                     context,
@@ -603,12 +678,14 @@ class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagemen
     );
   }
 
-  void _showEndSessionDialog(BuildContext context, WidgetRef ref, String sessionId) {
+  void _showEndSessionDialog(
+      BuildContext context, WidgetRef ref, String sessionId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('End Attendance Session'),
-        content: const Text('Are you sure you want to end this attendance session?'),
+        content:
+            const Text('Are you sure you want to end this attendance session?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -618,7 +695,9 @@ class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagemen
             onPressed: () async {
               Navigator.pop(context);
               try {
-                await ref.read(attendanceProvider.notifier).endSession(sessionId);
+                await ref
+                    .read(actions.attendanceActionsProvider.notifier)
+                    .endSession(sessionId);
                 if (context.mounted) {
                   Toast.show(
                     context,
@@ -647,7 +726,8 @@ class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagemen
     );
   }
 
-  void _showManualCheckInDialog(BuildContext context, WidgetRef ref, String sessionId) {
+  void _showManualCheckInDialog(
+      BuildContext context, WidgetRef ref, String sessionId) {
     final isOnline = ref.read(connectivityServiceProvider).isConnected;
     final studentIdController = TextEditingController();
 
@@ -663,7 +743,7 @@ class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagemen
                 padding: const EdgeInsets.all(8),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withAlpha(25),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.orange),
                 ),
@@ -705,10 +785,12 @@ class _AttendanceManagementScreenState extends ConsumerState<AttendanceManagemen
 
               Navigator.pop(context);
               try {
-                await ref.read(attendanceActionsProvider.notifier).manualCheckIn(
-                  sessionId,
-                  studentIdController.text,
-                );
+                await ref
+                    .read(actions.attendanceActionsProvider.notifier)
+                    .manualCheckIn(
+                      sessionId,
+                      studentIdController.text,
+                    );
 
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
