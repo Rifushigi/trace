@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_constants.dart';
-import '../constants/role_constants.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/authentication/presentation/screens/sign_in_screen.dart';
@@ -9,8 +8,8 @@ import '../../features/authentication/presentation/screens/sign_up/role_selectio
 import '../../features/authentication/presentation/screens/sign_up/student_sign_up_screen.dart';
 import '../../features/authentication/presentation/screens/sign_up/lecturer_sign_up_screen.dart';
 import '../../features/authentication/presentation/screens/forgot_password_screen.dart';
-import '../../features/authentication/presentation/screens/home/student_home_screen.dart';
-import '../../features/authentication/presentation/screens/home/lecturer_home_screen.dart';
+import '../../features/home/presentation/screens/student_home_screen.dart';
+import '../../features/home/presentation/screens/lecturer_home_screen.dart';
 import '../../features/profile/presentation/screens/student_profile_screen.dart';
 import '../../features/profile/presentation/screens/lecturer_profile_screen.dart';
 import '../../features/class_management/presentation/screens/student_class_list_screen.dart';
@@ -52,34 +51,46 @@ class AppRouter {
       case '/lecturer/profile':
         return MaterialPageRoute(builder: (_) => const LecturerProfileScreen());
       case '/student/classes':
-        return MaterialPageRoute(builder: (_) => const StudentClassListScreen());
+        return MaterialPageRoute(
+            builder: (_) => const StudentClassListScreen());
       case '/lecturer/classes':
         return MaterialPageRoute(builder: (_) => const ClassListScreen());
       case '/class/create':
         return MaterialPageRoute(builder: (_) => const CreateClassScreen());
       case '/class/details':
         final classId = settings.arguments as String;
-        return MaterialPageRoute(builder: (_) => ClassDetailsScreen(classId: classId));
+        return MaterialPageRoute(
+            builder: (_) => ClassDetailsScreen(classId: classId));
       case '/class/update':
         final classModel = settings.arguments as ClassModel;
-        return MaterialPageRoute(builder: (_) => UpdateClassScreen(classModel: classModel));
+        return MaterialPageRoute(
+            builder: (_) => UpdateClassScreen(classModel: classModel));
       case '/class-statistics':
         final classId = settings.arguments as String;
         return MaterialPageRoute(
           builder: (context) => Consumer(
             builder: (context, ref, child) {
-              final user = ref.watch(authProvider).user;
-              if (user?.role != 'lecturer' && user?.role != 'admin') {
-                return Scaffold(
-                  appBar: AppBar(
-                    title: const Text('Access Denied'),
-                  ),
-                  body: const Center(
-                    child: Text('Only lecturers and administrators can view class statistics'),
-                  ),
-                );
-              }
-              return ClassStatisticsScreen(classId: classId);
+              return ref.watch(authProvider).when(
+                    data: (user) {
+                      if (user?.role != 'lecturer' && user?.role != 'admin') {
+                        return Scaffold(
+                          appBar: AppBar(
+                            title: const Text('Access Denied'),
+                          ),
+                          body: const Center(
+                            child: Text(
+                                'Only lecturers and administrators can view class statistics'),
+                          ),
+                        );
+                      }
+                      return ClassStatisticsScreen(classId: classId);
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (_, __) => const Scaffold(
+                      body: Center(child: Text('Error loading user data')),
+                    ),
+                  );
             },
           ),
         );
@@ -127,4 +138,4 @@ class AppRouter {
         );
     }
   }
-} 
+}
