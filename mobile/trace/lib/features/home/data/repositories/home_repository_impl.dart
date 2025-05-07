@@ -1,14 +1,16 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/dashboard_item.dart';
 import '../../domain/repositories/home_repository.dart';
-import '../../../authentication/data/models/auth_model.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/endpoints.dart';
 import '../../../../utils/logger.dart';
 
-final homeRepositoryProvider = Provider<HomeRepository>((ref) {
-  return HomeRepositoryImpl(ref.read(apiClientProvider));
-});
+part 'home_repository_impl.g.dart';
+
+@riverpod
+HomeRepository homeRepository(HomeRepositoryRef ref) {
+  return HomeRepositoryImpl(ref.watch(apiClientProvider));
+}
 
 class HomeRepositoryImpl implements HomeRepository {
   final ApiClient _apiClient;
@@ -23,16 +25,19 @@ class HomeRepositoryImpl implements HomeRepository {
     }
 
     try {
-      final response = await _apiClient.get('/dashboard/items', queryParameters: {'role': role});
-      
+      final response = await _apiClient
+          .get('/dashboard/items', queryParameters: {'role': role});
+
       if (response.statusCode == 200) {
         final List<dynamic> items = response.data['data']['items'];
-        return items.map((item) => DashboardItem(
-          title: item['title'],
-          route: item['route'],
-          icon: item['icon'],
-          description: item['description'],
-        )).toList();
+        return items
+            .map((item) => DashboardItem(
+                  title: item['title'],
+                  route: item['route'],
+                  icon: item['icon'],
+                  description: item['description'],
+                ))
+            .toList();
       } else {
         // Fallback to hardcoded items if API fails
         Logger.warning('Failed to fetch dashboard items, using fallback data');
@@ -81,7 +86,7 @@ class HomeRepositoryImpl implements HomeRepository {
   Future<Map<String, dynamic>> getDashboardStats(String userId) async {
     try {
       final response = await _apiClient.get('/dashboard/stats/$userId');
-      
+
       if (response.statusCode == 200) {
         return response.data['data'];
       } else {
@@ -110,7 +115,8 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<void> updateDashboardPreferences(String userId, Map<String, dynamic> preferences) async {
+  Future<void> updateDashboardPreferences(
+      String userId, Map<String, dynamic> preferences) async {
     try {
       await _apiClient.put(
         '/dashboard/preferences/$userId',
@@ -122,4 +128,4 @@ class HomeRepositoryImpl implements HomeRepository {
       rethrow;
     }
   }
-} 
+}

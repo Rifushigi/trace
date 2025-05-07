@@ -1,51 +1,56 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/dashboard_item.dart';
 import '../../data/repositories/home_repository_impl.dart';
-import '../../../authentication/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../../utils/logger.dart';
 
-final dashboardItemsProvider = FutureProvider<List<DashboardItem>>((ref) async {
+part 'home_provider.g.dart';
+
+@riverpod
+Future<List<DashboardItem>> dashboardItems(Ref ref) async {
   final authState = ref.watch(authProvider);
-  final user = authState.user;
+  final user = authState.value;
   if (user == null) throw Exception('User not authenticated');
-  
-  final repository = ref.read(homeRepositoryProvider);
+
+  final repository = ref.watch(homeRepositoryProvider);
   return repository.getDashboardItems(user.role);
-});
+}
 
-final dashboardStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+@riverpod
+Future<Map<String, dynamic>> dashboardStats(Ref ref) async {
   final authState = ref.watch(authProvider);
-  final user = authState.user;
+  final user = authState.value;
   if (user == null) throw Exception('User not authenticated');
-  
-  final repository = ref.read(homeRepositoryProvider);
+
+  final repository = ref.watch(homeRepositoryProvider);
   return repository.getDashboardStats(user.id);
-});
+}
 
-final homePreferencesProvider = StateNotifierProvider<HomePreferencesNotifier, Map<String, dynamic>>((ref) {
-  final authState = ref.watch(authProvider);
-  final user = authState.user;
-  if (user == null) throw Exception('User not authenticated');
-  
-  return HomePreferencesNotifier(
-    ref.read(homeRepositoryProvider),
-    user.id,
-  );
-});
+@riverpod
+class HomePreferences extends _$HomePreferences {
+  @override
+  Map<String, dynamic> build() {
+    final authState = ref.watch(authProvider);
+    final user = authState.value;
+    if (user == null) throw Exception('User not authenticated');
 
-class HomePreferencesNotifier extends StateNotifier<Map<String, dynamic>> {
-  final HomeRepository _repository;
-  final String _userId;
-
-  HomePreferencesNotifier(this._repository, this._userId) : super({
-    'showRecentActivity': true,
-    'showSystemStats': true,
-    'showUserStats': true,
-  });
+    return {
+      'showRecentActivity': true,
+      'showSystemStats': true,
+      'showUserStats': true,
+    };
+  }
 
   Future<void> updatePreferences(Map<String, dynamic> preferences) async {
     try {
-      await _repository.updateDashboardPreferences(_userId, preferences);
+      final authState = ref.watch(authProvider);
+      final user = authState.value;
+      if (user == null) throw Exception('User not authenticated');
+
+      await ref
+          .read(homeRepositoryProvider)
+          .updateDashboardPreferences(user.id, preferences);
       state = preferences;
       Logger.info('Successfully updated dashboard preferences');
     } catch (e, stackTrace) {
@@ -64,4 +69,4 @@ class HomePreferencesNotifier extends StateNotifier<Map<String, dynamic>> {
       rethrow;
     }
   }
-} 
+}
