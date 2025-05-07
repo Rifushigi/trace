@@ -13,7 +13,7 @@ ApiClient apiClient(ApiClientRef ref) {
       baseUrl: Endpoints.baseUrl,
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 3),
-      headers: {
+      headers: const {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
@@ -21,7 +21,9 @@ ApiClient apiClient(ApiClientRef ref) {
   );
 
   final prefs = ref.watch(sharedPreferencesProvider);
-  return ApiClient(dio, prefs);
+  final client = ApiClient(dio, prefs);
+  client._setupInterceptors();
+  return client;
 }
 
 class ApiClient {
@@ -31,9 +33,7 @@ class ApiClient {
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
 
-  ApiClient(this._dio, this._prefs) {
-    _setupInterceptors();
-  }
+  const ApiClient(this._dio, this._prefs);
 
   void _setupInterceptors() {
     _dio.interceptors.addAll([
@@ -56,7 +56,8 @@ class ApiClient {
           // Add access token if available
           final accessToken = _prefs.getString(_accessTokenKey);
           if (accessToken != null) {
-            options.headers['Cookie'] = '${options.headers['Cookie'] ?? ''}; accessToken=$accessToken';
+            options.headers['Cookie'] =
+                '${options.headers['Cookie'] ?? ''}; accessToken=$accessToken';
           }
 
           return handler.next(options);
@@ -67,11 +68,14 @@ class ApiClient {
           if (cookies != null) {
             for (final cookie in cookies) {
               if (cookie.startsWith('deviceId=')) {
-                await _prefs.setString(_deviceIdKey, cookie.split(';')[0].split('=')[1]);
+                await _prefs.setString(
+                    _deviceIdKey, cookie.split(';')[0].split('=')[1]);
               } else if (cookie.startsWith('accessToken=')) {
-                await _prefs.setString(_accessTokenKey, cookie.split(';')[0].split('=')[1]);
+                await _prefs.setString(
+                    _accessTokenKey, cookie.split(';')[0].split('=')[1]);
               } else if (cookie.startsWith('refreshToken=')) {
-                await _prefs.setString(_refreshTokenKey, cookie.split(';')[0].split('=')[1]);
+                await _prefs.setString(
+                    _refreshTokenKey, cookie.split(';')[0].split('=')[1]);
               }
             }
           }
@@ -95,9 +99,11 @@ class ApiClient {
                 if (cookies != null) {
                   for (final cookie in cookies) {
                     if (cookie.startsWith('accessToken=')) {
-                      await _prefs.setString(_accessTokenKey, cookie.split(';')[0].split('=')[1]);
+                      await _prefs.setString(
+                          _accessTokenKey, cookie.split(';')[0].split('=')[1]);
                     } else if (cookie.startsWith('refreshToken=')) {
-                      await _prefs.setString(_refreshTokenKey, cookie.split(';')[0].split('=')[1]);
+                      await _prefs.setString(
+                          _refreshTokenKey, cookie.split(';')[0].split('=')[1]);
                     }
                   }
                 }
@@ -139,24 +145,31 @@ class ApiClient {
   }
 
   // HTTP Methods
-  Future<Response> get(String path, {Map<String, dynamic>? queryParameters, Options? options}) {
+  Future<Response> get(String path,
+      {Map<String, dynamic>? queryParameters, Options? options}) {
     return _dio.get(path, queryParameters: queryParameters, options: options);
   }
 
-  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
-    return _dio.post(path, data: data, queryParameters: queryParameters, options: options);
+  Future<Response> post(String path,
+      {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
+    return _dio.post(path,
+        data: data, queryParameters: queryParameters, options: options);
   }
 
-  Future<Response> put(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
-    return _dio.put(path, data: data, queryParameters: queryParameters, options: options);
+  Future<Response> put(String path,
+      {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
+    return _dio.put(path,
+        data: data, queryParameters: queryParameters, options: options);
   }
 
-  Future<Response> delete(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
-    return _dio.delete(path, data: data, queryParameters: queryParameters, options: options);
+  Future<Response> delete(String path,
+      {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
+    return _dio.delete(path,
+        data: data, queryParameters: queryParameters, options: options);
   }
 }
 
 @riverpod
 SharedPreferences sharedPreferences(SharedPreferencesRef ref) {
   throw UnimplementedError('Initialize SharedPreferences in main.dart');
-} 
+}

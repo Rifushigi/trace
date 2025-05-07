@@ -3,83 +3,86 @@ class Endpoints {
 
   // Auth endpoints
   static final auth = _AuthEndpoints();
-  
+
   // User endpoints
   static final user = _UserEndpoints();
-  
+
   // Course endpoints
   static final course = _CourseEndpoints();
-  
+
   // Attendance endpoints
   static final attendance = _AttendanceEndpoints();
 
-  static class Endpoints {
-    static const String getLecturerClasses = '$baseUrl/class/lecturer';
-    static const String getEnrolledClasses = '$baseUrl/class/enrolled';
-    static const String getClassDetails = '$baseUrl/class/:classId';
-    static const String createClass = '$baseUrl/class';
-    static const String updateClass = '$baseUrl/class/:classId';
-    static const String deleteClass = '$baseUrl/class/:classId';
-    static const String searchClasses = '$baseUrl/class/search';
-    static const String enrollStudent = '$baseUrl/class/:classId/students/:studentId';
-    static const String unenrollStudent = '$baseUrl/class/:classId/students/:studentId';
+  // Class endpoints
+  static final classes = _ClassEndpoints();
+}
 
-    static String getClassDetails(String classId) => getClassDetails.replaceAll(':classId', classId);
-    static String updateClass(String classId) => updateClass.replaceAll(':classId', classId);
-    static String deleteClass(String classId) => deleteClass.replaceAll(':classId', classId);
-    static String enrollStudent(String classId, String studentId) => 
-        enrollStudent
-            .replaceAll(':classId', classId)
-            .replaceAll(':studentId', studentId);
-    static String unenrollStudent(String classId, String studentId) => 
-        unenrollStudent
-            .replaceAll(':classId', classId)
-            .replaceAll(':studentId', studentId);
-  }
+class _ClassEndpoints {
+  String get getLecturerClasses => '${Endpoints.baseUrl}/class/lecturer';
+  String get getEnrolledClasses => '${Endpoints.baseUrl}/class/enrolled';
+  String get getClassDetails => '${Endpoints.baseUrl}/class/:classId';
+  String get createClass => '${Endpoints.baseUrl}/class';
+  String get updateClass => '${Endpoints.baseUrl}/class/:classId';
+  String get deleteClass => '${Endpoints.baseUrl}/class/:classId';
+  String get searchClasses => '${Endpoints.baseUrl}/class/search';
+  String get enrollStudent =>
+      '${Endpoints.baseUrl}/class/:classId/students/:studentId';
+  String get unenrollStudent =>
+      '${Endpoints.baseUrl}/class/:classId/students/:studentId';
 
-  static class Auth {
-    static const String signIn = '$baseUrl/auth/signin';
-    static const String signUp = '$baseUrl/auth/signup';
-    static const String signOut = '$baseUrl/auth/signout';
-    static const String refreshToken = '$baseUrl/auth/refresh-token';
-    static const String sendOtp = '$baseUrl/auth/send-otp';
-    static const String verifyOtp = '$baseUrl/auth/verify-otp';
-    static const String sendVerificationEmail = '$baseUrl/auth/send-verification-email';
-    static const String verifyEmail = '$baseUrl/auth/verify-email';
-  }
-
-  static class Profile {
-    static const String getProfile = '$baseUrl/profile';
-    static const String updateProfile = '$baseUrl/profile';
-    static const String uploadAvatar = '$baseUrl/profile/avatar';
-  }
-
-  static class Attendance {
-    static const String startSession = '$baseUrl/attendance/sessions';
-    static const String endSession = '$baseUrl/attendance/sessions/:sessionId/end';
-    static const String checkIn = '$baseUrl/attendance/check-in';
-    static const String getSessionAttendance = '$baseUrl/attendance/sessions/:sessionId';
-    static const String getStudentAttendanceHistory = '$baseUrl/attendance/students/:studentId/classes/:classId';
-    static const String autoCheckIn = '$baseUrl/attendance/auto-checkin';
-
-    static String endSession(String sessionId) => endSession.replaceAll(':sessionId', sessionId);
-    static String getSessionAttendance(String sessionId) => getSessionAttendance.replaceAll(':sessionId', sessionId);
-    static String getStudentAttendanceHistory(String studentId, String classId) =>
-        getStudentAttendanceHistory
-            .replaceAll(':studentId', studentId)
-            .replaceAll(':classId', classId);
-  }
+  String getClassDetailsUrl(String classId) =>
+      getClassDetails.replaceAll(':classId', classId);
+  String updateClassUrl(String classId) =>
+      updateClass.replaceAll(':classId', classId);
+  String deleteClassUrl(String classId) =>
+      deleteClass.replaceAll(':classId', classId);
+  String enrollStudentUrl(String classId, String studentId) => enrollStudent
+      .replaceAll(':classId', classId)
+      .replaceAll(':studentId', studentId);
+  String unenrollStudentUrl(String classId, String studentId) => unenrollStudent
+      .replaceAll(':classId', classId)
+      .replaceAll(':studentId', studentId);
 }
 
 class _AuthEndpoints {
-  final String signIn = '${Endpoints.baseUrl}/auth/signin';
-  final String signUp = '${Endpoints.baseUrl}/users/signup';
-  final String signOut = '${Endpoints.baseUrl}/auth/signout';
-  final String refreshToken = '${Endpoints.baseUrl}/auth/refresh-token';
-  final String sendOtp = '${Endpoints.baseUrl}/auth/send-otp';
-  final String verifyOtp = '${Endpoints.baseUrl}/auth/verify-otp';
-  final String sendVerificationEmail = '${Endpoints.baseUrl}/auth/send-verification-email';
-  final String verifyEmail = '${Endpoints.baseUrl}/auth/verify-email';
+  static const String signIn = '${Endpoints.baseUrl}/auth/signin';
+  static const String signUp = '${Endpoints.baseUrl}/auth/signup';
+  static const String signOut = '${Endpoints.baseUrl}/auth/signout';
+  static const String refreshToken = '${Endpoints.baseUrl}/auth/refresh-token';
+  static const String sendOtp = '${Endpoints.baseUrl}/auth/send-otp';
+  static const String verifyOtp = '${Endpoints.baseUrl}/auth/verify-otp';
+  static const String sendVerificationEmail =
+      '${Endpoints.baseUrl}/auth/send-verification-email';
+  static const String verifyEmail = '${Endpoints.baseUrl}/auth/verify-email';
+}
+
+class _ProfileEndpoints {
+  static const String getProfile = '${Endpoints.baseUrl}/profile';
+  static const String updateProfile = '${Endpoints.baseUrl}/profile';
+  static const String uploadAvatar = '${Endpoints.baseUrl}/profile/avatar';
+}
+
+class _AttendanceEndpoints {
+  static const String startSession = '${Endpoints.baseUrl}/attendance/sessions';
+  static const String endSession =
+      '${Endpoints.baseUrl}/attendance/sessions/:sessionId/end';
+  static const String checkIn = '${Endpoints.baseUrl}/attendance/check-in';
+  static const String getSessionAttendance =
+      '${Endpoints.baseUrl}/attendance/sessions/:sessionId';
+  static const String getStudentAttendanceHistory =
+      '${Endpoints.baseUrl}/attendance/students/:studentId/classes/:classId';
+  static const String autoCheckIn =
+      '${Endpoints.baseUrl}/attendance/auto-checkin';
+
+  static String endSessionUrl(String sessionId) =>
+      endSession.replaceAll(':sessionId', sessionId);
+  static String getSessionAttendanceUrl(String sessionId) =>
+      getSessionAttendance.replaceAll(':sessionId', sessionId);
+  static String getStudentAttendanceHistoryUrl(
+          String studentId, String classId) =>
+      getStudentAttendanceHistory
+          .replaceAll(':studentId', studentId)
+          .replaceAll(':classId', classId);
 }
 
 class _UserEndpoints {
@@ -92,14 +95,3 @@ class _CourseEndpoints {
   final String list = '${Endpoints.baseUrl}/courses';
   final String details = '${Endpoints.baseUrl}/courses/:id';
 }
-
-class _AttendanceEndpoints {
-  final String list = '${Endpoints.baseUrl}/attendance';
-  final String details = '${Endpoints.baseUrl}/attendance/:id';
-  final String sessions = '${Endpoints.baseUrl}/attendance/sessions';
-  final String manualCheckIn = '${Endpoints.baseUrl}/attendance/check-in';
-  final String autoCheckIn = '${Endpoints.baseUrl}/attendance/auto-checkin';
-  final String classReport = '${Endpoints.baseUrl}/attendance/classes/:classId/report';
-  final String studentReport = '${Endpoints.baseUrl}/attendance/students/:studentId/classes/:classId/report';
-  final String export = '${Endpoints.baseUrl}/attendance/classes/:classId/export';
-} 
