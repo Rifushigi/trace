@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../../common/animations/app_animations.dart';
@@ -20,7 +20,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _checkInitialRoute() async {
-    await Future.delayed(const Duration(seconds: 2)); // Show splash for 2 seconds
+    await Future.delayed(
+        const Duration(seconds: 2)); // Show splash for 2 seconds
 
     if (!mounted) return;
 
@@ -34,27 +35,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     }
 
     final authState = ref.read(authProvider);
-    if (authState.user != null) {
-      // User is logged in, navigate to appropriate home screen
+    if (!mounted) return;
+
+    authState.whenData((user) {
       if (!mounted) return;
-      switch (authState.user?.role) {
-        case 'student':
-          Navigator.of(context).pushReplacementNamed(AppConstants.studentHomeRoute);
-          break;
-        case 'lecturer':
-          Navigator.of(context).pushReplacementNamed(AppConstants.lecturerHomeRoute);
-          break;
-        case 'admin':
-          Navigator.of(context).pushReplacementNamed(AppConstants.adminHomeRoute);
-          break;
-        default:
-          Navigator.of(context).pushReplacementNamed('/sign-in');
+
+      if (user != null) {
+        // User is logged in, navigate to appropriate home screen
+        switch (user.role) {
+          case 'student':
+            Navigator.of(context)
+                .pushReplacementNamed(AppConstants.studentHomeRoute);
+            break;
+          case 'lecturer':
+            Navigator.of(context)
+                .pushReplacementNamed(AppConstants.lecturerHomeRoute);
+            break;
+          case 'admin':
+            Navigator.of(context)
+                .pushReplacementNamed(AppConstants.adminHomeRoute);
+            break;
+          default:
+            Navigator.of(context).pushReplacementNamed('/sign-in');
+        }
+      } else {
+        // User is not logged in
+        Navigator.of(context).pushReplacementNamed('/sign-in');
       }
-    } else {
-      // User is not logged in
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/sign-in');
-    }
+    });
   }
 
   @override
@@ -84,4 +92,4 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       ),
     );
   }
-} 
+}
