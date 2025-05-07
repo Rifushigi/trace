@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/class_provider.dart';
 import '../../data/models/class_model.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../../common/shared_widgets/loading_overlay.dart';
+import '../../../../common/shared_widgets/toast.dart';
 
 class ClassSearchScreen extends ConsumerStatefulWidget {
   const ClassSearchScreen({super.key});
@@ -27,7 +30,6 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
     'Sunday',
   ];
 
-// TODO
   final List<String> _timeSlots = [
     'Any',
     'Morning (8:00 - 12:00)',
@@ -41,28 +43,36 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
     super.dispose();
   }
 
-// TODO
   bool _isTimeInSlot(String time, String slot) {
-    final timeValue = int.parse(time.split(':')[0]);
-    switch (slot) {
-      case 'Morning (8:00 - 12:00)':
-        return timeValue >= 8 && timeValue < 12;
-      case 'Afternoon (12:00 - 16:00)':
-        return timeValue >= 12 && timeValue < 16;
-      case 'Evening (16:00 - 20:00)':
-        return timeValue >= 16 && timeValue < 20;
-      default:
-        return true;
+    try {
+      final timeValue = int.parse(time.split(':')[0]);
+      switch (slot) {
+        case 'Morning (8:00 - 12:00)':
+          return timeValue >= 8 && timeValue < 12;
+        case 'Afternoon (12:00 - 16:00)':
+          return timeValue >= 12 && timeValue < 16;
+        case 'Evening (16:00 - 20:00)':
+          return timeValue >= 16 && timeValue < 20;
+        default:
+          return true;
+      }
+    } catch (e) {
+      // If time parsing fails, return false to exclude the class
+      return false;
     }
   }
 
   bool _matchesFilters(ClassModel classModel) {
-    if (_selectedDay != 'Any' && classModel.schedule.day != _selectedDay) {
+    final schedule = classModel.schedule;
+    final day = schedule['day'] as String? ?? 'N/A';
+    final startTime = schedule['startTime'] as String? ?? 'N/A';
+
+    if (_selectedDay != 'Any' && day != _selectedDay) {
       return false;
     }
 
     if (_selectedTimeSlot != 'Any') {
-      if (!_isTimeInSlot(classModel.schedule.startTime, _selectedTimeSlot)) {
+      if (!_isTimeInSlot(startTime, _selectedTimeSlot)) {
         return false;
       }
     }
@@ -72,7 +82,8 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final searchResultsAsync = ref.watch(searchClassesProvider(_searchController.text));
+    final searchResultsAsync =
+        ref.watch(searchClassesProvider(_searchController.text));
 
     return Scaffold(
       appBar: AppBar(
@@ -93,11 +104,17 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
                       icon: const Icon(Icons.clear),
                       onPressed: () {
                         _searchController.clear();
-                        setState(() {});
+                        if (mounted) {
+                          setState(() {});
+                        }
                       },
                     ),
                   ),
-                  onChanged: (value) => setState(() {}),
+                  onChanged: (value) {
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  },
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -115,9 +132,11 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
                           );
                         }).toList(),
                         onChanged: (value) {
-                          setState(() {
-                            _selectedDay = value!;
-                          });
+                          if (mounted && value != null) {
+                            setState(() {
+                              _selectedDay = value;
+                            });
+                          }
                         },
                       ),
                     ),
@@ -135,9 +154,11 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
                           );
                         }).toList(),
                         onChanged: (value) {
-                          setState(() {
-                            _selectedTimeSlot = value!;
-                          });
+                          if (mounted && value != null) {
+                            setState(() {
+                              _selectedTimeSlot = value;
+                            });
+                          }
                         },
                       ),
                     ),
@@ -148,9 +169,11 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
                   title: const Text('Show Only Available Classes'),
                   value: _showOnlyAvailable,
                   onChanged: (value) {
-                    setState(() {
-                      _showOnlyAvailable = value;
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _showOnlyAvailable = value;
+                      });
+                    }
                   },
                 ),
               ],
@@ -160,7 +183,7 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
             child: searchResultsAsync.when(
               data: (classes) {
                 final filteredClasses = classes.where(_matchesFilters).toList();
-                
+
                 if (filteredClasses.isEmpty) {
                   return const Center(
                     child: Text('No classes found matching your criteria'),
@@ -171,6 +194,11 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
                   itemCount: filteredClasses.length,
                   itemBuilder: (context, index) {
                     final classModel = filteredClasses[index];
+                    final schedule = classModel.schedule;
+                    final day = schedule['day'] as String? ?? 'N/A';
+                    final startTime = schedule['startTime'] as String? ?? 'N/A';
+                    final endTime = schedule['endTime'] as String? ?? 'N/A';
+
                     return Card(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -182,24 +210,39 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Code: ${classModel.code}'),
-                            Text(
-                              'Schedule: ${classModel.schedule.day} ${classModel.schedule.startTime} - ${classModel.schedule.endTime}',
-                            ),
+                            Text('Schedule: $day $startTime - $endTime'),
                           ],
                         ),
                         trailing: ElevatedButton(
                           onPressed: () async {
-                            final user = ref.read(authProvider).user;
+                            final user = ref.read(authProvider).value;
                             if (user != null) {
-                              await ref
-                                  .read(classActionsProvider.notifier)
-                                  .enrollStudent(classModel.id, user.id);
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Successfully enrolled in class'),
-                                  ),
-                                );
+                              LoadingOverlay(
+                                isLoading: true,
+                                message: 'Enrolling in class...',
+                                child: const SizedBox(),
+                              );
+
+                              try {
+                                await ref
+                                    .read(classActionsProvider.notifier)
+                                    .enrollStudent(classModel.id, user.id);
+                                if (mounted) {
+                                  Toast.show(
+                                    context,
+                                    message: 'Successfully enrolled in class',
+                                    type: ToastType.success,
+                                  );
+                                }
+                              } catch (error) {
+                                if (mounted) {
+                                  Toast.show(
+                                    context,
+                                    message:
+                                        'Failed to enroll: ${error.toString()}',
+                                    type: ToastType.error,
+                                  );
+                                }
                               }
                             }
                           },
@@ -211,11 +254,35 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Center(child: Text('Error: $error')),
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Error loading classes',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      error.toString(),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: Colors.red),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => ref.refresh(
+                          searchClassesProvider(_searchController.text)),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-} 
+}

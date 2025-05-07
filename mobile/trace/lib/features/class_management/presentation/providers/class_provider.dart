@@ -1,35 +1,50 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/class_model.dart';
+import '../../data/models/class_statistics.dart';
 import '../../data/repositories/class_repository.dart';
-import '../../../auth/data/models/user_model.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../../core/network/api_client.dart';
 
 final classRepositoryProvider = Provider<ClassRepository>((ref) {
-  return ClassRepository();
+  return ClassRepositoryImpl(ref.watch(apiClientProvider));
 });
 
-final searchClassesProvider = FutureProvider.family<List<ClassModel>, String>((ref, query) async {
+final classListProvider = FutureProvider<List<ClassModel>>((ref) async {
+  final repository = ref.watch(classRepositoryProvider);
+  return repository.getLecturerClasses();
+});
+
+final enrolledClassesProvider = FutureProvider<List<ClassModel>>((ref) async {
+  final repository = ref.watch(classRepositoryProvider);
+  return repository.getEnrolledClasses();
+});
+
+final searchClassesProvider =
+    FutureProvider.family<List<ClassModel>, String>((ref, query) async {
   final repository = ref.watch(classRepositoryProvider);
   return repository.searchClasses(query);
 });
 
-final classDetailsProvider = FutureProvider.family<ClassModel?, String>((ref, classId) async {
+final classDetailsProvider =
+    FutureProvider.family<ClassModel?, String>((ref, classId) async {
   final repository = ref.watch(classRepositoryProvider);
-  return repository.getClassById(classId);
+  return repository.getClassDetails(classId);
 });
 
-final classStatisticsProvider = FutureProvider.family<ClassStatistics?, String>((ref, classId) async {
+final classStatisticsProvider =
+    FutureProvider.family<ClassStatistics?, String>((ref, classId) async {
   final repository = ref.watch(classRepositoryProvider);
-  final user = ref.watch(authProvider).user;
-  
+  final user = ref.watch(authProvider).value;
+
   if (user == null) {
     throw Exception('User must be logged in to view class statistics');
   }
-  
+
   return repository.getClassStatistics(classId, user);
 });
 
-final classActionsProvider = StateNotifierProvider<ClassActionsNotifier, AsyncValue<void>>((ref) {
+final classActionsProvider =
+    StateNotifierProvider<ClassActionsNotifier, AsyncValue<void>>((ref) {
   final repository = ref.watch(classRepositoryProvider);
   return ClassActionsNotifier(repository);
 });
@@ -49,10 +64,10 @@ class ClassActionsNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  Future<void> updateClass(ClassModel classModel) async {
+  Future<void> updateClass(String classId, ClassModel classModel) async {
     state = const AsyncValue.loading();
     try {
-      await _repository.updateClass(classModel);
+      await _repository.updateClass(classId, classModel);
       state = const AsyncValue.data(null);
     } catch (error, stack) {
       state = AsyncValue.error(error, stack);

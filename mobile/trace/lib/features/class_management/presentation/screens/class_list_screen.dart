@@ -7,7 +7,7 @@ import 'create_class_screen.dart';
 import 'update_class_screen.dart';
 import '../../../../core/constants/role_constants.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
@@ -19,8 +19,10 @@ class ClassListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final classListAsync = ref.watch(classListProvider);
-    final user = ref.watch(authProvider).user;
-    final isLecturerOrAdmin = user?.role == RoleConstants.lecturerRole || user?.role == RoleConstants.adminRole;
+    final authState = ref.watch(authProvider);
+    final user = authState.value;
+    final isLecturerOrAdmin = user?.role == RoleConstants.lecturerRole ||
+        user?.role == RoleConstants.adminRole;
 
     // If not a lecturer or admin, show access denied
     if (!isLecturerOrAdmin) {
@@ -29,7 +31,8 @@ class ClassListScreen extends ConsumerWidget {
           title: const Text('Access Denied'),
         ),
         body: const Center(
-          child: Text('Only lecturers and administrators can access this screen.'),
+          child:
+              Text('Only lecturers and administrators can access this screen.'),
         ),
       );
     }
@@ -43,7 +46,8 @@ class ClassListScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const CreateClassScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const CreateClassScreen()),
               );
             },
           ),
@@ -61,11 +65,19 @@ class ClassListScreen extends ConsumerWidget {
               );
             }
           },
-          children: classes.map((classModel) => _buildClassCard(context, ref, classModel)).toList(),
+          children: classes
+              .map((classModel) => _buildClassCard(context, ref, classModel))
+              .toList(),
         ),
-        loading: () => const SkeletonList(
+        loading: () => ListView.builder(
           itemCount: 5,
-          itemHeight: 100,
+          itemBuilder: (context, index) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: const SkeletonLoading(
+              width: double.infinity,
+              height: 100,
+            ),
+          ),
         ),
         error: (error, stack) => Center(
           child: Column(
@@ -78,7 +90,10 @@ class ClassListScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               Text(
                 error.toString(),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Colors.red),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -92,7 +107,13 @@ class ClassListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildClassCard(BuildContext context, WidgetRef ref, ClassModel classModel) {
+  Widget _buildClassCard(
+      BuildContext context, WidgetRef ref, ClassModel classModel) {
+    final schedule = classModel.schedule;
+    final day = schedule['day'] as String? ?? 'N/A';
+    final startTime = schedule['startTime'] as String? ?? 'N/A';
+    final endTime = schedule['endTime'] as String? ?? 'N/A';
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
@@ -101,7 +122,7 @@ class ClassListScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Code: ${classModel.code}'),
-            Text('Schedule: ${classModel.schedule.day} ${classModel.schedule.startTime} - ${classModel.schedule.endTime}'),
+            Text('Schedule: $day $startTime - $endTime'),
           ],
         ),
         trailing: Row(
@@ -126,7 +147,9 @@ class ClassListScreen extends ConsumerWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => UpdateClassScreen(classModel: classModel)),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          UpdateClassScreen(classModel: classModel)),
                 );
               },
               tooltip: 'Edit Class',
@@ -138,7 +161,8 @@ class ClassListScreen extends ConsumerWidget {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Delete Class'),
-                    content: const Text('Are you sure you want to delete this class?'),
+                    content: const Text(
+                        'Are you sure you want to delete this class?'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
@@ -160,7 +184,9 @@ class ClassListScreen extends ConsumerWidget {
                   );
 
                   try {
-                    await ref.read(classActionsProvider.notifier).deleteClass(classModel.id);
+                    await ref
+                        .read(classActionsProvider.notifier)
+                        .deleteClass(classModel.id);
                     if (context.mounted) {
                       Toast.show(
                         context,
@@ -186,7 +212,9 @@ class ClassListScreen extends ConsumerWidget {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ClassDetailsScreen(classId: classModel.id)),
+            MaterialPageRoute(
+                builder: (context) =>
+                    ClassDetailsScreen(classId: classModel.id)),
           );
         },
       ),

@@ -5,7 +5,7 @@ import '../../data/models/class_model.dart';
 import 'class_details_screen.dart';
 import '../../../../core/constants/role_constants.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
@@ -17,7 +17,7 @@ class StudentClassListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final enrolledClassesAsync = ref.watch(enrolledClassesProvider);
-    final user = ref.watch(authProvider).user;
+    final user = ref.watch(authProvider).value;
     final isStudent = user?.role == RoleConstants.studentRole;
 
     // If not a student, show access denied
@@ -78,7 +78,9 @@ class StudentClassListScreen extends ConsumerWidget {
                 );
               }
             },
-            children: classes.map((classModel) => _buildClassCard(context, classModel)).toList(),
+            children: classes
+                .map((classModel) => _buildClassCard(context, classModel))
+                .toList(),
           );
         },
         loading: () => const SkeletonList(
@@ -96,7 +98,10 @@ class StudentClassListScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               Text(
                 error.toString(),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Colors.red),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -111,6 +116,11 @@ class StudentClassListScreen extends ConsumerWidget {
   }
 
   Widget _buildClassCard(BuildContext context, ClassModel classModel) {
+    final schedule = classModel.schedule;
+    final day = schedule['day'] as String? ?? 'N/A';
+    final startTime = schedule['startTime'] as String? ?? 'N/A';
+    final endTime = schedule['endTime'] as String? ?? 'N/A';
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
@@ -119,7 +129,7 @@ class StudentClassListScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Code: ${classModel.code}'),
-            Text('Schedule: ${classModel.schedule.day} ${classModel.schedule.startTime} - ${classModel.schedule.endTime}'),
+            Text('Schedule: $day $startTime - $endTime'),
           ],
         ),
         trailing: Row(
@@ -184,15 +194,15 @@ class ClassSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    return _buildSearchResults();
+    return _buildSearchResults(context);
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return _buildSearchResults();
+    return _buildSearchResults(context);
   }
 
-  Widget _buildSearchResults() {
+  Widget _buildSearchResults(BuildContext context) {
     if (query.isEmpty) {
       return const Center(child: Text('Enter a search term'));
     }
@@ -214,17 +224,24 @@ class ClassSearchDelegate extends SearchDelegate {
               subtitle: Text('Code: ${classModel.code}'),
               trailing: ElevatedButton(
                 onPressed: () async {
-                  final user = ref.read(authProvider).user;
+                  final user = ref.read(authProvider).value;
                   if (user != null) {
-                    LoadingOverlay(
-                      isLoading: true,
-                      message: 'Enrolling in class...',
-                      child: const SizedBox(),
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const LoadingOverlay(
+                        isLoading: true,
+                        message: 'Enrolling in class...',
+                        child: SizedBox(),
+                      ),
                     );
 
                     try {
-                      await ref.read(classActionsProvider.notifier).enrollStudent(classModel.id, user.id);
+                      await ref
+                          .read(classActionsProvider.notifier)
+                          .enrollStudent(classModel.id, user.id);
                       if (context.mounted) {
+                        Navigator.pop(context); // Close loading overlay
                         Toast.show(
                           context,
                           message: 'Successfully enrolled in class',
@@ -234,6 +251,7 @@ class ClassSearchDelegate extends SearchDelegate {
                       }
                     } catch (error) {
                       if (context.mounted) {
+                        Navigator.pop(context); // Close loading overlay
                         Toast.show(
                           context,
                           message: 'Failed to enroll: ${error.toString()}',
@@ -264,7 +282,10 @@ class ClassSearchDelegate extends SearchDelegate {
             const SizedBox(height: 8),
             Text(
               error.toString(),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: Colors.red),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -276,4 +297,4 @@ class ClassSearchDelegate extends SearchDelegate {
       ),
     );
   }
-} 
+}

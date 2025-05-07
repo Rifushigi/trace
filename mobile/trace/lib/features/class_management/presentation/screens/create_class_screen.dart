@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/class_provider.dart';
 import '../../data/models/class_model.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
 
 class CreateClassScreen extends ConsumerStatefulWidget {
   const CreateClassScreen({super.key});
@@ -14,7 +15,6 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _codeController = TextEditingController();
-  final _lecturerIdController = TextEditingController();
   final _dayController = TextEditingController();
   final _startTimeController = TextEditingController();
   final _endTimeController = TextEditingController();
@@ -36,7 +36,6 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
   void dispose() {
     _nameController.dispose();
     _codeController.dispose();
-    _lecturerIdController.dispose();
     _dayController.dispose();
     _startTimeController.dispose();
     _endTimeController.dispose();
@@ -44,7 +43,8 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
     super.dispose();
   }
 
-  Future<void> _selectTime(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectTime(
+      BuildContext context, TextEditingController controller) async {
     final TimeOfDay? time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
@@ -68,6 +68,15 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
 
   Future<void> _createClass() async {
     if (_formKey.currentState?.validate() ?? false) {
+      final user = ref.read(authProvider).value;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('You must be logged in to create a class')),
+        );
+        return;
+      }
+
       final schedule = ClassSchedule(
         day: _isRecurring ? _selectedDays.first : _dayController.text,
         startTime: _startTimeController.text,
@@ -87,9 +96,11 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
       // Check for schedule conflicts
       final existingClasses = await ref.read(classListProvider.future);
       for (final existingClass in existingClasses) {
-        if (schedule.hasConflict(existingClass.schedule)) {
+        final existingSchedule = ClassSchedule.fromJson(existingClass.schedule);
+        if (schedule.hasConflict(existingSchedule)) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Schedule conflicts with ${existingClass.name}')),
+            SnackBar(
+                content: Text('Schedule conflicts with ${existingClass.name}')),
           );
           return;
         }
@@ -99,8 +110,8 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
         id: '', // Will be set by the server
         name: _nameController.text,
         code: _codeController.text,
-        lecturerId: _lecturerIdController.text,
-        schedule: schedule,
+        lecturerId: user.id,
+        schedule: schedule.toJson(),
       );
 
       await ref.read(classActionsProvider.notifier).createClass(newClass);
@@ -125,17 +136,14 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
-                validator: (value) => value?.isEmpty ?? true ? 'Please enter a name' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Please enter a name' : null,
               ),
               TextFormField(
                 controller: _codeController,
                 decoration: const InputDecoration(labelText: 'Code'),
-                validator: (value) => value?.isEmpty ?? true ? 'Please enter a code' : null,
-              ),
-              TextFormField(
-                controller: _lecturerIdController,
-                decoration: const InputDecoration(labelText: 'Lecturer ID'),
-                validator: (value) => value?.isEmpty ?? true ? 'Please enter a lecturer ID' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Please enter a code' : null,
               ),
               SwitchListTile(
                 title: const Text('Recurring Schedule'),
@@ -146,7 +154,15 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
                 TextFormField(
                   controller: _dayController,
                   decoration: const InputDecoration(labelText: 'Day'),
-                  validator: (value) => value?.isEmpty ?? true ? 'Please enter a day' : null,
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'Please enter a day';
+                    }
+                    if (!_weekDays.contains(value)) {
+                      return 'Please enter a valid day of the week';
+                    }
+                    return null;
+                  },
                 ),
               ] else ...[
                 const Text('Select Days:'),
@@ -168,6 +184,14 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
                     );
                   }).toList(),
                 ),
+                if (_selectedDays.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      'Please select at least one day',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _endDateController,
@@ -177,6 +201,12 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
                   ),
                   readOnly: true,
                   onTap: () => _selectDate(context),
+                  validator: (value) {
+                    if (_isRecurring && (value?.isEmpty ?? true)) {
+                      return 'Please select an end date for recurring schedule';
+                    }
+                    return null;
+                  },
                 ),
               ],
               TextFormField(
@@ -187,7 +217,8 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
                 ),
                 readOnly: true,
                 onTap: () => _selectTime(context, _startTimeController),
-                validator: (value) => value?.isEmpty ?? true ? 'Please select start time' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Please select start time' : null,
               ),
               TextFormField(
                 controller: _endTimeController,
@@ -197,7 +228,8 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
                 ),
                 readOnly: true,
                 onTap: () => _selectTime(context, _endTimeController),
-                validator: (value) => value?.isEmpty ?? true ? 'Please select end time' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Please select end time' : null,
               ),
               const SizedBox(height: 16),
               ElevatedButton(

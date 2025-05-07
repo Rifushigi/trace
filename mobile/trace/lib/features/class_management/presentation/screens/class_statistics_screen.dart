@@ -18,21 +18,28 @@ class ClassStatisticsScreen extends ConsumerWidget {
         title: const Text('Class Statistics'),
       ),
       body: statisticsAsync.when(
-        data: (statistics) => SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSummaryCards(statistics),
-              const SizedBox(height: 24),
-              _buildAttendanceChart(statistics),
-              const SizedBox(height: 24),
-              _buildStudentAttendanceList(statistics),
-              const SizedBox(height: 24),
-              _buildRecentSessionsList(statistics),
-            ],
-          ),
-        ),
+        data: (statistics) {
+          if (statistics == null) {
+            return const Center(
+              child: Text('No statistics available for this class'),
+            );
+          }
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSummaryCards(statistics),
+                const SizedBox(height: 24),
+                _buildAttendanceChart(context, statistics),
+                const SizedBox(height: 24),
+                _buildStudentAttendanceList(statistics),
+                const SizedBox(height: 24),
+                _buildRecentSessionsList(statistics),
+              ],
+            ),
+          );
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
           child: Padding(
@@ -96,14 +103,33 @@ class ClassStatisticsScreen extends ConsumerWidget {
         ),
         _SummaryCard(
           title: 'Recent Rate',
-          value: '${(statistics.recentSessions.first.attendanceRate * 100).toStringAsFixed(1)}%',
+          value: statistics.recentSessions.isNotEmpty
+              ? '${(statistics.recentSessions.first.attendanceRate * 100).toStringAsFixed(1)}%'
+              : 'N/A',
           icon: Icons.trending_up,
         ),
       ],
     );
   }
 
-  Widget _buildAttendanceChart(ClassStatistics statistics) {
+  Widget _buildAttendanceChart(
+      BuildContext context, ClassStatistics statistics) {
+    if (statistics.attendanceByDay.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(
+            child: Text('No attendance data available'),
+          ),
+        ),
+      );
+    }
+
+    final maxAttendance = statistics.attendanceByDay.values
+        .reduce((a, b) => a > b ? a : b)
+        .toDouble();
+    final days = statistics.attendanceByDay.keys.toList();
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -123,14 +149,14 @@ class ClassStatisticsScreen extends ConsumerWidget {
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
-                  maxY: statistics.attendanceByDay.values.reduce((a, b) => a > b ? a : b).toDouble(),
+                  maxY: maxAttendance,
                   barGroups: statistics.attendanceByDay.entries.map((entry) {
                     return BarChartGroupData(
-                      x: statistics.attendanceByDay.keys.toList().indexOf(entry.key),
+                      x: days.indexOf(entry.key),
                       barRods: [
                         BarChartRodData(
                           toY: entry.value.toDouble(),
-                          color: Theme.of(context).primaryColor,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ],
                     );
@@ -141,14 +167,38 @@ class ClassStatisticsScreen extends ConsumerWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index >= 0 && index < days.length) {
+                            return Text(
+                              days[index],
+                              style: const TextStyle(fontSize: 10),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) {
                           return Text(
-                            statistics.attendanceByDay.keys.elementAt(value.toInt()),
+                            value.toInt().toString(),
                             style: const TextStyle(fontSize: 10),
                           );
                         },
                       ),
                     ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
+                  gridData: const FlGridData(show: false),
+                  borderData: FlBorderData(show: false),
                 ),
               ),
             ),
@@ -159,6 +209,17 @@ class ClassStatisticsScreen extends ConsumerWidget {
   }
 
   Widget _buildStudentAttendanceList(ClassStatistics statistics) {
+    if (statistics.attendanceByStudent.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(
+            child: Text('No student attendance data available'),
+          ),
+        ),
+      );
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -178,7 +239,8 @@ class ClassStatisticsScreen extends ConsumerWidget {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: statistics.attendanceByStudent.length,
               itemBuilder: (context, index) {
-                final entry = statistics.attendanceByStudent.entries.elementAt(index);
+                final entry =
+                    statistics.attendanceByStudent.entries.elementAt(index);
                 return ListTile(
                   title: Text(entry.key),
                   trailing: Text(
@@ -201,6 +263,17 @@ class ClassStatisticsScreen extends ConsumerWidget {
   }
 
   Widget _buildRecentSessionsList(ClassStatistics statistics) {
+    if (statistics.recentSessions.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(
+            child: Text('No recent sessions available'),
+          ),
+        ),
+      );
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -224,7 +297,7 @@ class ClassStatisticsScreen extends ConsumerWidget {
                 return ListTile(
                   title: Text(session.date.toString().split(' ')[0]),
                   subtitle: Text(
-                    'Present: ${session.presentCount} | Absent: ${session.absentCount} | Late: ${session.lateCount}',
+                    'Present: ${session.presentCount} | Total: ${session.totalCount}',
                   ),
                   trailing: Text(
                     '${(session.attendanceRate * 100).toStringAsFixed(1)}%',
@@ -288,4 +361,4 @@ class _SummaryCard extends StatelessWidget {
       ),
     );
   }
-} 
+}
