@@ -9,12 +9,15 @@ import '../network/endpoints.dart';
 import '../routes/app_router.dart';
 import 'package:flutter/material.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService();
 });
 
 class NotificationService {
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
   IO.Socket? _socket;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   bool _isSocketConnected = false;
@@ -25,7 +28,8 @@ class NotificationService {
     await Firebase.initializeApp();
 
     // Initialize local notifications
-    const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const initializationSettingsIOS = DarwinInitializationSettings();
     const initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
@@ -71,7 +75,7 @@ class NotificationService {
     if (_isSocketConnected) return;
     _currentUserId = userId;
 
-    _socket = IO.io(ApiClient.baseUrl, <String, dynamic>{
+    _socket = IO.io(Endpoints.baseUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
       'path': '/socket.io',
@@ -158,16 +162,20 @@ class NotificationService {
 
     switch (type) {
       case 'session_start':
-        Navigator.pushNamed(context, '/class/details', arguments: data['classId']);
+        Navigator.pushNamed(context, '/class/details',
+            arguments: data['classId']);
         break;
       case 'session_end':
-        Navigator.pushNamed(context, '/class/details', arguments: data['classId']);
+        Navigator.pushNamed(context, '/class/details',
+            arguments: data['classId']);
         break;
       case 'check_in':
-        Navigator.pushNamed(context, '/attendance/details', arguments: data['attendanceId']);
+        Navigator.pushNamed(context, '/attendance/details',
+            arguments: data['attendanceId']);
         break;
       case 'anomaly':
-        Navigator.pushNamed(context, '/attendance/anomaly', arguments: data['anomalyId']);
+        Navigator.pushNamed(context, '/attendance/anomaly',
+            arguments: data['anomalyId']);
         break;
     }
   }
@@ -212,4 +220,4 @@ class NotificationService {
       payload: json.encode(data),
     );
   }
-} 
+}
