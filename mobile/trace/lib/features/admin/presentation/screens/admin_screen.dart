@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../authentication/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../../utils/logger.dart';
 import '../../../../core/network/api_client.dart';
 import 'class_management_screen.dart';
@@ -12,7 +12,8 @@ class AdminScreen extends ConsumerStatefulWidget {
   ConsumerState<AdminScreen> createState() => _AdminScreenState();
 }
 
-class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProviderStateMixin {
+class _AdminScreenState extends ConsumerState<AdminScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Map<String, dynamic>> _classes = [];
   bool _isLoading = false;
@@ -32,7 +33,8 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
   }
 
   void _handleTabChange() {
-    if (_tabController.index == 1) { // Classes tab
+    if (_tabController.index == 1) {
+      // Classes tab
       _loadClasses();
     }
   }
@@ -43,15 +45,17 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
       final response = await ref.read(apiClientProvider).get('/class');
       if (response.statusCode == 200) {
         setState(() {
-          _classes = List<Map<String, dynamic>>.from(response.data['data']['classes']);
+          _classes = List<Map<String, dynamic>>.from(
+            response.data['data']['classes'],
+          );
         });
       }
     } catch (e, stackTrace) {
       Logger.error('Failed to load classes', e, stackTrace);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load classes')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to load classes')));
       }
     } finally {
       setState(() => _isLoading = false);
@@ -60,125 +64,143 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-    final user = authState.user;
-    
-    if (user == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text('Please sign in to access the admin panel'),
-        ),
-      );
-    }
+    return ref.watch(authProvider).when(
+          data: (user) {
+            if (user == null) {
+              return const Scaffold(
+                body: Center(
+                    child: Text('Please sign in to access the admin panel')),
+              );
+            }
 
-    if (user.role != 'admin') {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Access Denied'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () async {
-                try {
-                  await ref.read(authProvider.notifier).signOut();
-                  if (context.mounted) {
-                    Navigator.of(context).pushReplacementNamed('/sign-in');
-                  }
-                } catch (e, stackTrace) {
-                  Logger.error('Failed to sign out', e, stackTrace);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Failed to sign out')),
-                    );
-                  }
-                }
-              },
-            ),
-          ],
-        ),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.admin_panel_settings,
-                size: 64,
-                color: Colors.red,
+            if (user.role != 'admin') {
+              return Scaffold(
+                appBar: AppBar(
+                  title: const Text('Access Denied'),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.logout),
+                      onPressed: () async {
+                        try {
+                          await ref.read(authProvider.notifier).signOut();
+                          if (context.mounted) {
+                            Navigator.of(context)
+                                .pushReplacementNamed('/sign-in');
+                          }
+                        } catch (e, stackTrace) {
+                          Logger.error('Failed to sign out', e, stackTrace);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Failed to sign out')),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                body: const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.admin_panel_settings,
+                          size: 64, color: Colors.red),
+                      SizedBox(height: 16),
+                      Text(
+                        'Access Denied',
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'This panel is only accessible to administrators.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('Admin Panel'),
+                bottom: TabBar(
+                  controller: _tabController,
+                  tabs: const [
+                    Tab(icon: Icon(Icons.dashboard), text: 'Dashboard'),
+                    Tab(icon: Icon(Icons.class_), text: 'Classes'),
+                    Tab(icon: Icon(Icons.people), text: 'Users'),
+                    Tab(icon: Icon(Icons.settings), text: 'Settings'),
+                  ],
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.logout),
+                    onPressed: () async {
+                      try {
+                        await ref.read(authProvider.notifier).signOut();
+                        if (context.mounted) {
+                          Navigator.of(context)
+                              .pushReplacementNamed('/sign-in');
+                        }
+                      } catch (e, stackTrace) {
+                        Logger.error('Failed to sign out', e, stackTrace);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Failed to sign out')),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                ],
               ),
-              SizedBox(height: 16),
-              Text(
-                'Access Denied',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              body: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Dashboard Tab
+                  const _DashboardTab(),
+
+                  // Classes Tab
+                  _ClassesTab(
+                    classes: _classes,
+                    isLoading: _isLoading,
+                    onRefresh: _loadClasses,
+                  ),
+
+                  // Users Tab
+                  const _UsersTab(),
+
+                  // Settings Tab
+                  const _SettingsTab(),
+                ],
+              ),
+              floatingActionButton: _buildFloatingActionButton(),
+            );
+          },
+          loading: () => const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          ),
+          error: (error, stackTrace) {
+            Logger.error('Auth state error', error, stackTrace);
+            return Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Failed to load user data'),
+                    ElevatedButton(
+                      onPressed: () => ref.invalidate(authProvider),
+                      child: const Text('Retry'),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 8),
-              Text(
-                'This panel is only accessible to administrators.',
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Panel'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.dashboard), text: 'Dashboard'),
-            Tab(icon: Icon(Icons.class_), text: 'Classes'),
-            Tab(icon: Icon(Icons.people), text: 'Users'),
-            Tab(icon: Icon(Icons.settings), text: 'Settings'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              try {
-                await ref.read(authProvider.notifier).signOut();
-                if (context.mounted) {
-                  Navigator.of(context).pushReplacementNamed('/sign-in');
-                }
-              } catch (e, stackTrace) {
-                Logger.error('Failed to sign out', e, stackTrace);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Failed to sign out')),
-                  );
-                }
-              }
-            },
-          ),
-        ],
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // Dashboard Tab
-          const _DashboardTab(),
-          
-          // Classes Tab
-          _ClassesTab(
-            classes: _classes,
-            isLoading: _isLoading,
-            onRefresh: _loadClasses,
-          ),
-          
-          // Users Tab
-          const _UsersTab(),
-          
-          // Settings Tab
-          const _SettingsTab(),
-        ],
-      ),
-      floatingActionButton: _buildFloatingActionButton(),
-    );
+            );
+          },
+        );
   }
 
   Widget? _buildFloatingActionButton() {
@@ -215,9 +237,7 @@ class _DashboardTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Dashboard Content'),
-    );
+    return const Center(child: Text('Dashboard Content'));
   }
 }
 
@@ -245,10 +265,7 @@ class _ClassesTab extends StatelessWidget {
           children: [
             const Text('No classes found'),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: onRefresh,
-              child: const Text('Refresh'),
-            ),
+            ElevatedButton(onPressed: onRefresh, child: const Text('Refresh')),
           ],
         ),
       );
@@ -267,10 +284,7 @@ class _ClassesTab extends StatelessWidget {
               subtitle: Text('Code: ${classData['code']}'),
               trailing: PopupMenuButton(
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Edit'),
-                  ),
+                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
                   const PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete'),
@@ -293,9 +307,7 @@ class _UsersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Users Management'),
-    );
+    return const Center(child: Text('Users Management'));
   }
 }
 
@@ -304,8 +316,6 @@ class _SettingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('System Settings'),
-    );
+    return const Center(child: Text('System Settings'));
   }
-} 
+}

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../common/animations/app_animations.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -18,12 +18,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<OnboardingPage> _pages = [
     OnboardingPage(
       title: 'Welcome to Trace',
-      description: 'Track attendance with ease using facial recognition technology.',
+      description:
+          'Track attendance with ease using facial recognition technology.',
       image: 'assets/images/onboarding_1.png',
     ),
     OnboardingPage(
       title: 'Smart Attendance',
-      description: 'Automatically mark attendance using our advanced AI system.',
+      description:
+          'Automatically mark attendance using our advanced AI system.',
       image: 'assets/images/onboarding_2.png',
     ),
     OnboardingPage(
@@ -105,7 +107,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Theme.of(context).primaryColor.withOpacity(0.1),
+                      Theme.of(context).primaryColor.withAlpha(25),
                       Theme.of(context).scaffoldBackgroundColor,
                     ],
                   ),
@@ -148,7 +150,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: Text(
                     'Swipe up to skip • Swipe left/right to navigate',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.color
+                              ?.withAlpha(179),
                         ),
                   ),
                 ),
@@ -201,12 +207,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 ? _completeOnboarding
                                 : () {
                                     _pageController.nextPage(
-                                      duration: const Duration(milliseconds: 300),
+                                      duration:
+                                          const Duration(milliseconds: 300),
                                       curve: Curves.easeInOut,
                                     );
                                   },
                             child: Text(
-                              _currentPage == _pages.length - 1 ? 'Get Started' : 'Next',
+                              _currentPage == _pages.length - 1
+                                  ? 'Get Started'
+                                  : 'Next',
                             ),
                           ),
                         ),
@@ -298,7 +307,7 @@ class _PageIndicator extends StatelessWidget {
           shape: BoxShape.circle,
           color: isActive
               ? Theme.of(context).primaryColor
-              : Theme.of(context).primaryColor.withOpacity(0.3),
+              : Theme.of(context).primaryColor.withAlpha(77),
         ),
       ),
     );
@@ -315,4 +324,4 @@ class OnboardingPage {
     required this.description,
     required this.image,
   });
-} 
+}
