@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'translations/en.dart';
-import 'translations/fr.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show
+        GlobalMaterialLocalizations,
+        GlobalWidgetsLocalizations,
+        GlobalCupertinoLocalizations;
+import 'package:trace/localization/translations/en.dart';
+import 'package:trace/localization/translations/fr.dart';
 
 class AppLocalizations {
   final Locale locale;
 
-  AppLocalizations(this.locale);
+  const AppLocalizations(this.locale);
 
   static AppLocalizations of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
@@ -40,19 +44,19 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool shouldReload(_AppLocalizationsDelegate old) => false;
+  bool shouldReload(covariant _AppLocalizationsDelegate old) => false;
 }
 
 class AppLocalizationsSetup {
-  static const localizationsDelegates = [
+  static final List<LocalizationsDelegate<dynamic>> localizationsDelegates = [
     AppLocalizations.delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalWidgetsLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
   ];
 
-  static const supportedLocales = [
+  static const List<Locale> supportedLocales = [
     Locale('en'), // English
     Locale('fr'), // French
   ];
-} 
+}
