@@ -11,10 +11,12 @@ class AttendanceSessionScreen extends ConsumerStatefulWidget {
   const AttendanceSessionScreen({super.key, required this.classId});
 
   @override
-  ConsumerState<AttendanceSessionScreen> createState() => _AttendanceSessionScreenState();
+  ConsumerState<AttendanceSessionScreen> createState() =>
+      _AttendanceSessionScreenState();
 }
 
-class _AttendanceSessionScreenState extends ConsumerState<AttendanceSessionScreen> {
+class _AttendanceSessionScreenState
+    extends ConsumerState<AttendanceSessionScreen> {
   String? _sessionId;
   List<AttendanceModel> _attendanceList = [];
   bool _isLoading = false;
@@ -26,11 +28,15 @@ class _AttendanceSessionScreenState extends ConsumerState<AttendanceSessionScree
 
     try {
       final startTime = DateTime.now();
-      final endTime = startTime.add(const Duration(hours: 2)); // Example: 2-hour session
-      await ref.read(attendanceActionsProvider.notifier).startSession(widget.classId, startTime, endTime);
+      final endTime =
+          startTime.add(const Duration(hours: 2)); // Example: 2-hour session
+      await ref
+          .read(attendanceActionsProvider.notifier)
+          .startSession(widget.classId);
       // TODO: Store sessionId from response
       setState(() {
-        _sessionId = 'dummy_session_id'; // Replace with actual sessionId from API
+        _sessionId =
+            'dummy_session_id'; // Replace with actual sessionId from API
       });
     } catch (e) {
       if (mounted) {
@@ -54,7 +60,9 @@ class _AttendanceSessionScreenState extends ConsumerState<AttendanceSessionScree
       });
 
       try {
-        await ref.read(attendanceActionsProvider.notifier).endSession(_sessionId!);
+        await ref
+            .read(attendanceActionsProvider.notifier)
+            .endSession(_sessionId!);
         setState(() {
           _sessionId = null;
           _attendanceList = [];
@@ -82,7 +90,9 @@ class _AttendanceSessionScreenState extends ConsumerState<AttendanceSessionScree
       });
 
       try {
-        final attendance = await ref.read(attendanceActionsProvider.notifier).getSessionAttendance(_sessionId!);
+        final attendance = await ref
+            .read(attendanceActionsProvider.notifier)
+            .getAttendanceHistory(widget.classId);
         setState(() {
           _attendanceList = attendance;
         });
@@ -150,7 +160,8 @@ class _AttendanceSessionScreenState extends ConsumerState<AttendanceSessionScree
                 itemBuilder: (context, index) {
                   final attendance = _attendanceList[index];
                   return Card(
-                    margin: EdgeInsets.symmetric(vertical: AppConstants.defaultSpacing / 2),
+                    margin: EdgeInsets.symmetric(
+                        vertical: AppConstants.defaultSpacing / 2),
                     child: ListTile(
                       title: Text(
                         'Student ID: ${attendance.studentId}',
