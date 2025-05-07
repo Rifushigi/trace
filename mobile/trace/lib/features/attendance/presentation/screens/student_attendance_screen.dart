@@ -2,18 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/role_constants.dart';
-import '../../../authentication/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../providers/attendance_provider.dart';
 import '../../../../utils/logger.dart';
 import '../../../../common/appbar/role_app_bar.dart';
 import '../../../../common/shared_widgets/app_card.dart';
 import '../../../../common/shared_widgets/empty_state.dart';
 import '../../../../common/styles/app_styles.dart';
+import '../../data/models/attendance_model.dart';
 
 enum StudentAttendanceFilter {
   all,
   present,
   absent,
+}
+
+enum StudentAttendanceSortOption {
+  dateDesc,
+  dateAsc,
+  statusPresent,
+  statusAbsent,
 }
 
 class StudentAttendanceScreen extends ConsumerStatefulWidget {
@@ -27,10 +35,12 @@ class StudentAttendanceScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<StudentAttendanceScreen> createState() => _StudentAttendanceScreenState();
+  ConsumerState<StudentAttendanceScreen> createState() =>
+      _StudentAttendanceScreenState();
 }
 
-class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScreen> {
+class _StudentAttendanceScreenState
+    extends ConsumerState<StudentAttendanceScreen> {
   final TextEditingController _searchController = TextEditingController();
   StudentAttendanceFilter _currentFilter = StudentAttendanceFilter.all;
   String _searchQuery = '';
@@ -41,27 +51,29 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
     super.dispose();
   }
 
-  List<AttendanceRecord> _filterAndSearchHistory(List<AttendanceRecord> history) {
+  List<AttendanceModel> _filterAndSearchHistory(List<AttendanceModel> history) {
     return history.where((record) {
       // Apply status filter
-      if (_currentFilter == StudentAttendanceFilter.present && !record.isPresent) return false;
-      if (_currentFilter == StudentAttendanceFilter.absent && record.isPresent) return false;
+      if (_currentFilter == StudentAttendanceFilter.present &&
+          record.status != 'present') return false;
+      if (_currentFilter == StudentAttendanceFilter.absent &&
+          record.status != 'absent') return false;
 
       // Apply search query
       if (_searchQuery.isEmpty) return true;
       final query = _searchQuery.toLowerCase();
-      return _formatDate(record.date).toLowerCase().contains(query) ||
-          _formatTime(record.date).toLowerCase().contains(query);
+      return _formatDate(record.timestamp).toLowerCase().contains(query) ||
+          _formatTime(record.timestamp).toLowerCase().contains(query);
     }).toList();
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final user = authState.user!;
+    final user = authState.value;
 
     // Ensure only students can access
-    if (user.role != RoleConstants.studentRole) {
+    if (user?.role != RoleConstants.studentRole) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Access Denied'),
@@ -73,7 +85,8 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
     }
 
     final activeSessionAsync = ref.watch(activeSessionProvider(widget.classId));
-    final studentAttendanceAsync = ref.watch(studentAttendanceProvider(widget.classId));
+    final studentAttendanceAsync =
+        ref.watch(attendanceHistoryProvider(widget.classId));
 
     return Scaffold(
       appBar: StudentAppBar(
@@ -83,7 +96,7 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
             icon: const Icon(Icons.refresh),
             onPressed: () {
               ref.invalidate(activeSessionProvider(widget.classId));
-              ref.invalidate(studentAttendanceProvider(widget.classId));
+              ref.invalidate(attendanceHistoryProvider(widget.classId));
             },
           ),
         ],
@@ -91,7 +104,7 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(activeSessionProvider(widget.classId));
-          ref.invalidate(studentAttendanceProvider(widget.classId));
+          ref.invalidate(attendanceHistoryProvider(widget.classId));
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -149,17 +162,17 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                         Row(
                           children: [
                             Expanded(
-                              child: _StatItem(
+                              child: _buildStatItem(
                                 label: 'Present',
-                                value: session.presentCount.toString(),
+                                value: session.status == 'present' ? '1' : '0',
                                 icon: Icons.check_circle,
                                 color: Colors.green,
                               ),
                             ),
                             Expanded(
-                              child: _StatItem(
+                              child: _buildStatItem(
                                 label: 'Absent',
-                                value: session.absentCount.toString(),
+                                value: session.status == 'absent' ? '1' : '0',
                                 icon: Icons.cancel,
                                 color: Colors.red,
                               ),
@@ -172,7 +185,8 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, stackTrace) {
-                  Logger.error('Failed to load active session', error, stackTrace);
+                  Logger.error(
+                      'Failed to load active session', error, stackTrace);
                   return EmptyState(
                     message: 'Failed to load active session',
                     icon: Icons.error_outline,
@@ -201,7 +215,10 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                         tooltip: 'Sort by',
                         onSelected: (option) {
                           // Sort the list based on the selected option
-                          ref.read(studentAttendanceProvider(widget.classId).notifier).sortHistory(option);
+                          ref
+                              .read(attendanceHistoryProvider(widget.classId)
+                                  .notifier)
+                              .refresh();
                         },
                         itemBuilder: (context) => [
                           const PopupMenuItem(
@@ -331,7 +348,8 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                   SizedBox(height: AppConstants.defaultSpacing),
 
                   // Filter indicator
-                  if (_currentFilter != StudentAttendanceFilter.all || _searchQuery.isNotEmpty)
+                  if (_currentFilter != StudentAttendanceFilter.all ||
+                      _searchQuery.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: Wrap(
@@ -340,7 +358,8 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                           if (_currentFilter != StudentAttendanceFilter.all)
                             Chip(
                               label: Text(
-                                _currentFilter == StudentAttendanceFilter.present
+                                _currentFilter ==
+                                        StudentAttendanceFilter.present
                                     ? 'Present Only'
                                     : 'Absent Only',
                               ),
@@ -375,7 +394,8 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                         );
                       }
 
-                      final filteredAttendance = _filterAndSearchHistory(attendance);
+                      final filteredAttendance = _filterAndSearchHistory(
+                          attendance.cast<AttendanceModel>());
                       if (filteredAttendance.isEmpty) {
                         return EmptyState(
                           message: 'No records match your search criteria',
@@ -392,11 +412,11 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                           return AppCard(
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: record.isPresent
+                                backgroundColor: record.status == 'present'
                                     ? Colors.green
                                     : Colors.red,
                                 child: Icon(
-                                  record.isPresent
+                                  record.status == 'present'
                                       ? Icons.check
                                       : Icons.close,
                                   color: Colors.white,
@@ -410,11 +430,11 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Date: ${_formatDate(record.date)}',
+                                    'Date: ${_formatDate(record.timestamp)}',
                                     style: AppStyles.bodyMedium,
                                   ),
                                   Text(
-                                    'Time: ${_formatTime(record.date)}',
+                                    'Time: ${_formatTime(record.timestamp)}',
                                     style: AppStyles.bodyMedium,
                                   ),
                                 ],
@@ -424,14 +444,17 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
                         },
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (error, stackTrace) {
-                      Logger.error('Failed to load attendance history', error, stackTrace);
+                      Logger.error('Failed to load attendance history', error,
+                          stackTrace);
                       return EmptyState(
                         message: 'Failed to load attendance history',
                         icon: Icons.error_outline,
                         onRetry: () {
-                          ref.invalidate(studentAttendanceProvider(widget.classId));
+                          ref.invalidate(
+                              attendanceHistoryProvider(widget.classId));
                         },
                       );
                     },
@@ -445,6 +468,28 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
     );
   }
 
+  Widget _buildStatItem({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Icon(icon, color: color),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: AppStyles.titleLarge.copyWith(color: color),
+        ),
+        Text(
+          label,
+          style: AppStyles.bodyMedium,
+        ),
+      ],
+    );
+  }
+
   String _formatTime(DateTime dateTime) {
     return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
@@ -452,4 +497,4 @@ class _StudentAttendanceScreenState extends ConsumerState<StudentAttendanceScree
   String _formatDate(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
   }
-} 
+}

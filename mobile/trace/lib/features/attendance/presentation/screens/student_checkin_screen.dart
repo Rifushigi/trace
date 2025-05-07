@@ -12,7 +12,8 @@ class StudentCheckinScreen extends ConsumerStatefulWidget {
   const StudentCheckinScreen({super.key, required this.sessionId});
 
   @override
-  ConsumerState<StudentCheckinScreen> createState() => _StudentCheckinScreenState();
+  ConsumerState<StudentCheckinScreen> createState() =>
+      _StudentCheckinScreenState();
 }
 
 class _StudentCheckinScreenState extends ConsumerState<StudentCheckinScreen> {
@@ -28,10 +29,9 @@ class _StudentCheckinScreenState extends ConsumerState<StudentCheckinScreen> {
 
       try {
         await HapticService.actionFeedback();
-        await ref.read(attendanceActionsProvider.notifier).checkIn(
-          widget.sessionId,
-          _studentIdController.text,
-        );
+        await ref.read(attendanceActionsProvider.notifier).studentCheckIn(
+              widget.sessionId,
+            );
         if (mounted) {
           await HapticService.successFeedback();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -86,7 +86,8 @@ class _StudentCheckinScreenState extends ConsumerState<StudentCheckinScreen> {
                       if (value == null || value.isEmpty) {
                         return ValidationConstants.requiredField;
                       }
-                      if (!ValidationConstants.matricNumberRegex.hasMatch(value)) {
+                      if (!ValidationConstants.matricNumberRegex
+                          .hasMatch(value)) {
                         return ValidationConstants.invalidMatricNumber;
                       }
                       return null;
@@ -96,10 +97,12 @@ class _StudentCheckinScreenState extends ConsumerState<StudentCheckinScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : () async {
-                        await HapticService.actionFeedback();
-                        await _checkIn();
-                      },
+                      onPressed: _isLoading
+                          ? null
+                          : () async {
+                              await HapticService.actionFeedback();
+                              await _checkIn();
+                            },
                       child: _isLoading
                           ? const CircularProgressIndicator()
                           : const Text('Check In'),
@@ -113,4 +116,4 @@ class _StudentCheckinScreenState extends ConsumerState<StudentCheckinScreen> {
       ),
     );
   }
-} 
+}
