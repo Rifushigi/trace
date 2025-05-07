@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:trace/common/theme/theme_provider.dart';
+import '../../../../common/theme/theme_provider.dart';
 
 class ThemeSettingsScreen extends ConsumerWidget {
   const ThemeSettingsScreen({super.key});
@@ -20,10 +20,10 @@ class ThemeSettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.brightness_auto),
             title: const Text('System Theme'),
             subtitle: const Text('Follow system theme settings'),
-            trailing: Radio<ThemeMode>(
-              value: ThemeMode.system,
+            trailing: Radio<AppThemeMode>(
+              value: AppThemeMode.system,
               groupValue: currentTheme,
-              onChanged: (ThemeMode? value) {
+              onChanged: (AppThemeMode? value) {
                 if (value != null) {
                   themeNotifier.setThemeMode(value);
                 }
@@ -34,10 +34,10 @@ class ThemeSettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.light_mode),
             title: const Text('Light Theme'),
             subtitle: const Text('Always use light theme'),
-            trailing: Radio<ThemeMode>(
-              value: ThemeMode.light,
+            trailing: Radio<AppThemeMode>(
+              value: AppThemeMode.light,
               groupValue: currentTheme,
-              onChanged: (ThemeMode? value) {
+              onChanged: (AppThemeMode? value) {
                 if (value != null) {
                   themeNotifier.setThemeMode(value);
                 }
@@ -48,10 +48,10 @@ class ThemeSettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.dark_mode),
             title: const Text('Dark Theme'),
             subtitle: const Text('Always use dark theme'),
-            trailing: Radio<ThemeMode>(
-              value: ThemeMode.dark,
+            trailing: Radio<AppThemeMode>(
+              value: AppThemeMode.dark,
               groupValue: currentTheme,
-              onChanged: (ThemeMode? value) {
+              onChanged: (AppThemeMode? value) {
                 if (value != null) {
                   themeNotifier.setThemeMode(value);
                 }
@@ -62,4 +62,4 @@ class ThemeSettingsScreen extends ConsumerWidget {
       ),
     );
   }
-} 
+}
