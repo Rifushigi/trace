@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../core/constants/app_constants.dart';
 import '../core/services/haptic_service.dart';
 
 enum UserRole {
