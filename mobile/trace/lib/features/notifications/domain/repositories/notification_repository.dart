@@ -1,5 +1,4 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trace/core/services/fcm_service.dart';
 import 'package:trace/features/notifications/data/models/notification_model.dart';
 
