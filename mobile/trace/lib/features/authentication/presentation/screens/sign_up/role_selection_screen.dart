@@ -12,62 +12,77 @@ class RoleSelectionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppConstants.appName),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Choose your role',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppConstants.defaultPadding * 2),
-            _RoleCard(
-              title: 'Student',
-              description: RoleConstants.roleFeatures[RoleConstants.studentRole]
-                      ?.join(', ') ??
-                  '',
-              icon: Icons.school,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const StudentSignUpScreen(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(AppConstants.defaultPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: AppConstants.defaultPadding * 2),
+                // App Logo Text
+                ShaderMask(
+                  shaderCallback: (bounds) => LinearGradient(
+                    colors: [
+                      Theme.of(context).primaryColor,
+                      Theme.of(context).primaryColor.withAlpha(204),
+                    ],
+                  ).createShader(bounds),
+                  child: const Text(
+                    AppConstants.appName,
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1.2,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: AppConstants.defaultPadding),
-            _RoleCard(
-              title: 'Lecturer',
-              description: RoleConstants
-                      .roleFeatures[RoleConstants.lecturerRole]
-                      ?.join(', ') ??
-                  '',
-              icon: Icons.person,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const LecturerSignUpScreen(),
+                ),
+                const SizedBox(height: AppConstants.defaultPadding * 3),
+                const Text(
+                  'Choose your role',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                );
-              },
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppConstants.defaultPadding * 2),
+                _RoleCard(
+                  title: 'Student',
+                  icon: Icons.school,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const StudentSignUpScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: AppConstants.defaultPadding),
+                _RoleCard(
+                  title: 'Lecturer',
+                  icon: Icons.person,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const LecturerSignUpScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: AppConstants.defaultPadding * 1.5),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context)
+                        .pushReplacementNamed(AppConstants.signInRoute);
+                  },
+                  child: const Text('Already have an account? Sign In'),
+                ),
+              ],
             ),
-            const SizedBox(height: AppConstants.defaultPadding * 1.5),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context)
-                    .pushReplacementNamed(AppConstants.signInRoute);
-              },
-              child: const Text('Already have an account? Sign In'),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -76,13 +91,11 @@ class RoleSelectionScreen extends ConsumerWidget {
 
 class _RoleCard extends StatelessWidget {
   final String title;
-  final String description;
   final IconData icon;
   final VoidCallback onTap;
 
   const _RoleCard({
     required this.title,
-    required this.description,
     required this.icon,
     required this.onTap,
   });
@@ -95,15 +108,7 @@ class _RoleCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
       ),
       child: InkWell(
-        onTap: () {
-          Toast.show(
-            context,
-            message: 'Navigating to $title sign up...',
-            type: ToastType.info,
-            duration: const Duration(seconds: 1),
-          );
-          onTap();
-        },
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
         child: Padding(
           padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -120,18 +125,6 @@ class _RoleCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: AppConstants.defaultSpacing),
-              Text(
-                description,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.color
-                      ?.withAlpha(179),
                 ),
               ),
             ],
