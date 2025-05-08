@@ -29,7 +29,7 @@ class AppButton extends StatelessWidget {
         backgroundColor: backgroundColor,
         foregroundColor: textColor,
         minimumSize: isFullWidth
-            ? Size(double.infinity, 48)
+            ? const Size(double.infinity, 48)
             : const Size(120, 48),
       ),
       child: _buildChild(),

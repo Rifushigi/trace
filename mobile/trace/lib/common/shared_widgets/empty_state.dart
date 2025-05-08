@@ -20,7 +20,7 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(AppConstants.defaultPadding),
+        padding: const EdgeInsets.all(AppConstants.defaultPadding),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -29,7 +29,7 @@ class EmptyState extends StatelessWidget {
               size: 64,
               color: Colors.grey[400],
             ),
-            SizedBox(height: AppConstants.defaultSpacing),
+            const SizedBox(height: AppConstants.defaultSpacing),
             Text(
               message,
               style: AppStyles.bodyLarge.copyWith(
@@ -38,7 +38,7 @@ class EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
-              SizedBox(height: AppConstants.defaultSpacing),
+              const SizedBox(height: AppConstants.defaultSpacing),
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
