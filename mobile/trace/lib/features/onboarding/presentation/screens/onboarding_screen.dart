@@ -96,12 +96,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           }
         },
         child: Stack(
+          fit: StackFit.expand,
           children: [
             // Background with animated container
             AppAnimations.animatedContainer(
               context: context,
               duration: const Duration(milliseconds: 800),
               child: Container(
+                width: double.infinity,
+                height: double.infinity,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,

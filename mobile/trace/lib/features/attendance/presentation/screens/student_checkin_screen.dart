@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/validation_constants.dart';
 import '../providers/attendance_provider.dart';
-import '../../../../common/styles/app_styles.dart';
 import 'package:trace/core/services/haptic_service.dart';
 
 class StudentCheckinScreen extends ConsumerStatefulWidget {
@@ -71,7 +70,7 @@ class _StudentCheckinScreenState extends ConsumerState<StudentCheckinScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(AppConstants.defaultPadding),
+            padding: const EdgeInsets.all(AppConstants.defaultPadding),
             child: Form(
               key: _formKey,
               child: Column(
@@ -93,7 +92,7 @@ class _StudentCheckinScreenState extends ConsumerState<StudentCheckinScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: AppConstants.defaultSpacing),
+                  const SizedBox(height: AppConstants.defaultSpacing),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
