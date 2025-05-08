@@ -10,11 +10,10 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.light(
+      colorScheme: const ColorScheme.light(
         primary: _primaryColor,
         secondary: _secondaryColor,
         error: _errorColor,
-        background: Colors.grey[50]!,
         surface: Colors.white,
       ),
       appBarTheme: const AppBarTheme(
@@ -75,7 +74,6 @@ class AppTheme {
         primary: _primaryColor,
         secondary: _secondaryColor,
         error: _errorColor,
-        background: Colors.grey[900]!,
         surface: Colors.grey[800]!,
       ),
       appBarTheme: AppBarTheme(

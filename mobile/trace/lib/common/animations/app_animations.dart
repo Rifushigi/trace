@@ -141,25 +141,30 @@ class AppAnimations {
     Duration staggerDuration = const Duration(milliseconds: 50),
     Curve curve = Curves.easeInOut,
   }) {
-    return ListView.builder(
-      itemCount: children.length,
-      itemBuilder: (context, index) {
-        return TweenAnimationBuilder<double>(
-          duration: itemDuration + (staggerDuration * index),
-          curve: curve,
-          tween: Tween(begin: 0.0, end: 1.0),
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.translate(
-                offset: Offset(0, 20 * (1 - value)),
-                child: child,
-              ),
-            );
-          },
-          child: children[index],
-        );
-      },
+    return SizedBox(
+      height: 40, // Fixed height for the page indicators
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: children.asMap().entries.map((entry) {
+          final index = entry.key;
+          final child = entry.value;
+          return TweenAnimationBuilder<double>(
+            duration: itemDuration + (staggerDuration * index),
+            curve: curve,
+            tween: Tween(begin: 0.0, end: 1.0),
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(0, 20 * (1 - value)),
+                  child: child,
+                ),
+              );
+            },
+            child: child,
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -218,40 +223,27 @@ class AppAnimations {
     );
   }
 
-  // Animated container with theme-aware colors
+  // Animated container with fade and scale
   static Widget animatedContainer({
-    required Widget child,
     required BuildContext context,
+    required Widget child,
     Duration duration = const Duration(milliseconds: 300),
     Curve curve = Curves.easeInOut,
-    EdgeInsetsGeometry? padding,
-    EdgeInsetsGeometry? margin,
-    BorderRadius? borderRadius,
-    BoxBorder? border,
-    Color? backgroundColor,
-    List<BoxShadow>? boxShadow,
   }) {
-    final theme = Theme.of(context);
-    return AnimatedContainer(
+    return TweenAnimationBuilder<double>(
       duration: duration,
       curve: curve,
-      padding: padding,
-      margin: margin,
-      decoration: BoxDecoration(
-        color: backgroundColor ?? theme.colorScheme.surface,
-        borderRadius: borderRadius,
-        border: border,
-        boxShadow: boxShadow ?? [
-          BoxShadow(
-            color: theme.brightness == Brightness.dark
-                ? Colors.black12
-                : Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.scale(
+            scale: 0.95 + (value * 0.05),
+            child: child,
           ),
-        ],
-      ),
-      child: child,
+        );
+      },
+      child: SizedBox.expand(child: child),
     );
   }
 
@@ -267,23 +259,28 @@ class AppAnimations {
     bool useFlip = false,
   }) {
     Widget animatedChild = child;
-    
+
     if (useFade) {
-      animatedChild = fadeIn(child: animatedChild, duration: duration, curve: curve);
+      animatedChild =
+          fadeIn(child: animatedChild, duration: duration, curve: curve);
     }
     if (useScale) {
-      animatedChild = scaleIn(child: animatedChild, duration: duration, curve: curve);
+      animatedChild =
+          scaleIn(child: animatedChild, duration: duration, curve: curve);
     }
     if (useSlide) {
-      animatedChild = slideIn(child: animatedChild, duration: duration, curve: curve);
+      animatedChild =
+          slideIn(child: animatedChild, duration: duration, curve: curve);
     }
     if (useRotate) {
-      animatedChild = rotateIn(child: animatedChild, duration: duration, curve: curve);
+      animatedChild =
+          rotateIn(child: animatedChild, duration: duration, curve: curve);
     }
     if (useFlip) {
-      animatedChild = flipIn(child: animatedChild, duration: duration, curve: curve);
+      animatedChild =
+          flipIn(child: animatedChild, duration: duration, curve: curve);
     }
-    
+
     return animatedChild;
   }
-} 
+}

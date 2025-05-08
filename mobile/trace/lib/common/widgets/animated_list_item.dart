@@ -11,7 +11,7 @@ class AnimatedListItem extends StatelessWidget {
   final bool animate;
 
   const AnimatedListItem({
-    Key? key,
+    super.key,
     required this.child,
     this.onTap,
     this.padding,
@@ -19,19 +19,23 @@ class AnimatedListItem extends StatelessWidget {
     this.borderRadius,
     this.showDivider = true,
     this.animate = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    Widget content = AppAnimations.animatedContainer(
-      context: context,
+    Widget content = Container(
       padding: padding ?? const EdgeInsets.all(16),
       margin: margin,
-      borderRadius: borderRadius ?? BorderRadius.circular(12),
-      child: child,
+      decoration: BoxDecoration(
+        borderRadius: borderRadius ?? BorderRadius.circular(12),
+      ),
+      child: AppAnimations.animatedContainer(
+        context: context,
+        child: child,
+      ),
     );
 
     if (onTap != null) {
@@ -70,12 +74,12 @@ class AnimatedListSection extends StatelessWidget {
   final bool animate;
 
   const AnimatedListSection({
-    Key? key,
+    super.key,
     required this.title,
     required this.children,
     this.padding,
     this.animate = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -117,23 +121,27 @@ class AnimatedCard extends StatelessWidget {
   final bool animate;
 
   const AnimatedCard({
-    Key? key,
+    super.key,
     required this.child,
     this.onTap,
     this.padding,
     this.margin,
     this.borderRadius,
     this.animate = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    Widget content = AppAnimations.animatedContainer(
-      context: context,
+    Widget content = Container(
       padding: padding ?? const EdgeInsets.all(16),
       margin: margin,
-      borderRadius: borderRadius ?? BorderRadius.circular(12),
-      child: child,
+      decoration: BoxDecoration(
+        borderRadius: borderRadius ?? BorderRadius.circular(12),
+      ),
+      child: AppAnimations.animatedContainer(
+        context: context,
+        child: child,
+      ),
     );
 
     if (onTap != null) {
@@ -152,4 +160,4 @@ class AnimatedCard extends StatelessWidget {
 
     return content;
   }
-} 
+}
