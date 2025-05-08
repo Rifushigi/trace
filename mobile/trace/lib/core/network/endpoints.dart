@@ -45,50 +45,42 @@ class _ClassEndpoints {
 }
 
 class _AuthEndpoints {
-  static const String signIn = '${Endpoints.baseUrl}/auth/signin';
-  static const String signUp = '${Endpoints.baseUrl}/auth/signup';
-  static const String signOut = '${Endpoints.baseUrl}/auth/signout';
-  static const String refreshToken = '${Endpoints.baseUrl}/auth/refresh-token';
-  static const String sendOtp = '${Endpoints.baseUrl}/auth/send-otp';
-  static const String verifyOtp = '${Endpoints.baseUrl}/auth/verify-otp';
-  static const String sendVerificationEmail =
+  final String signIn = '${Endpoints.baseUrl}/auth/signin';
+  final String signUp = '${Endpoints.baseUrl}/auth/signup';
+  final String signOut = '${Endpoints.baseUrl}/auth/signout';
+  final String refreshToken = '${Endpoints.baseUrl}/auth/refresh-token';
+  final String sendOtp = '${Endpoints.baseUrl}/auth/send-otp';
+  final String verifyOtp = '${Endpoints.baseUrl}/auth/verify-otp';
+  final String sendVerificationEmail =
       '${Endpoints.baseUrl}/auth/send-verification-email';
-  static const String verifyEmail = '${Endpoints.baseUrl}/auth/verify-email';
-}
-
-class _ProfileEndpoints {
-  static const String getProfile = '${Endpoints.baseUrl}/profile';
-  static const String updateProfile = '${Endpoints.baseUrl}/profile';
-  static const String uploadAvatar = '${Endpoints.baseUrl}/profile/avatar';
-}
-
-class _AttendanceEndpoints {
-  static const String startSession = '${Endpoints.baseUrl}/attendance/sessions';
-  static const String endSession =
-      '${Endpoints.baseUrl}/attendance/sessions/:sessionId/end';
-  static const String checkIn = '${Endpoints.baseUrl}/attendance/check-in';
-  static const String getSessionAttendance =
-      '${Endpoints.baseUrl}/attendance/sessions/:sessionId';
-  static const String getStudentAttendanceHistory =
-      '${Endpoints.baseUrl}/attendance/students/:studentId/classes/:classId';
-  static const String autoCheckIn =
-      '${Endpoints.baseUrl}/attendance/auto-checkin';
-
-  static String endSessionUrl(String sessionId) =>
-      endSession.replaceAll(':sessionId', sessionId);
-  static String getSessionAttendanceUrl(String sessionId) =>
-      getSessionAttendance.replaceAll(':sessionId', sessionId);
-  static String getStudentAttendanceHistoryUrl(
-          String studentId, String classId) =>
-      getStudentAttendanceHistory
-          .replaceAll(':studentId', studentId)
-          .replaceAll(':classId', classId);
+  final String verifyEmail = '${Endpoints.baseUrl}/auth/verify-email';
 }
 
 class _UserEndpoints {
   final String profile = '${Endpoints.baseUrl}/users/profile';
   final String updateProfile = '${Endpoints.baseUrl}/users/profile';
   final String uploadAvatar = '${Endpoints.baseUrl}/users/upload-avatar';
+}
+
+class _AttendanceEndpoints {
+  final String startSession = '${Endpoints.baseUrl}/attendance/sessions';
+  final String endSession =
+      '${Endpoints.baseUrl}/attendance/sessions/:sessionId/end';
+  final String checkIn = '${Endpoints.baseUrl}/attendance/check-in';
+  final String getSessionAttendance =
+      '${Endpoints.baseUrl}/attendance/sessions/:sessionId';
+  final String getStudentAttendanceHistory =
+      '${Endpoints.baseUrl}/attendance/students/:studentId/classes/:classId';
+  final String autoCheckIn = '${Endpoints.baseUrl}/attendance/auto-checkin';
+
+  String endSessionUrl(String sessionId) =>
+      endSession.replaceAll(':sessionId', sessionId);
+  String getSessionAttendanceUrl(String sessionId) =>
+      getSessionAttendance.replaceAll(':sessionId', sessionId);
+  String getStudentAttendanceHistoryUrl(String studentId, String classId) =>
+      getStudentAttendanceHistory
+          .replaceAll(':studentId', studentId)
+          .replaceAll(':classId', classId);
 }
 
 class _CourseEndpoints {

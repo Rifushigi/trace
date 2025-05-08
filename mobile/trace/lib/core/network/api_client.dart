@@ -1,13 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'endpoints.dart';
+import 'package:flutter/foundation.dart';
 
 part 'api_client.g.dart';
 
 @riverpod
-ApiClient apiClient(ApiClientRef ref) {
+ApiClient apiClient(Ref ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: Endpoints.baseUrl,
@@ -43,10 +45,21 @@ class ApiClient {
         responseBody: true,
         responseHeader: true,
         error: true,
-        compact: true,
+        compact: false,
+        maxWidth: 120,
+        logPrint: (object) => debugPrint('🌐 $object'),
       ),
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          debugPrint(
+              '\n🔵 ━━━ Request ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          debugPrint('🌐 URL: ${options.baseUrl}${options.path}');
+          debugPrint('📝 Method: ${options.method}');
+          debugPrint('📦 Request Data: ${options.data}');
+          debugPrint('🔍 Query Parameters: ${options.queryParameters}');
+          debugPrint('🔑 Headers: ${options.headers}');
+          debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
           // Add device ID if available
           final deviceId = _prefs.getString(_deviceIdKey);
           if (deviceId != null) {
@@ -63,6 +76,15 @@ class ApiClient {
           return handler.next(options);
         },
         onResponse: (response, handler) async {
+          debugPrint(
+              '\n✅ ━━━ Response ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          debugPrint('🌐 URL: ${response.requestOptions.uri}');
+          debugPrint(
+              '📝 Status: ${response.statusCode} ${response.statusMessage}');
+          debugPrint('📦 Response Data: ${response.data}');
+          debugPrint('🔑 Headers: ${response.headers}');
+          debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
           // Extract and store cookies from response
           final cookies = response.headers['set-cookie'];
           if (cookies != null) {
@@ -82,6 +104,16 @@ class ApiClient {
           return handler.next(response);
         },
         onError: (DioException e, handler) async {
+          debugPrint('\n❌ ━━━ Error ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          debugPrint('🌐 URL: ${e.requestOptions.uri}');
+          debugPrint('📝 Status: ${e.response?.statusCode ?? "No Status"}');
+          debugPrint('❗ Error Type: ${e.type}');
+          debugPrint('❗ Error Message: ${e.message}');
+          debugPrint('📦 Error Response: ${e.response?.data}');
+          debugPrint('🔍 Request Data: ${e.requestOptions.data}');
+          debugPrint('🔑 Headers: ${e.requestOptions.headers}');
+          debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
           if (e.response?.statusCode == 401) {
             // Token expired, try to refresh
             final refreshToken = _prefs.getString(_refreshTokenKey);
@@ -170,6 +202,6 @@ class ApiClient {
 }
 
 @riverpod
-SharedPreferences sharedPreferences(SharedPreferencesRef ref) {
+SharedPreferences sharedPreferences(Ref ref) {
   throw UnimplementedError('Initialize SharedPreferences in main.dart');
 }
