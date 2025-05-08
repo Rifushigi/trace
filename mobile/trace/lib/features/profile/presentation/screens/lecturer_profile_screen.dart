@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/validation_constants.dart';
 import '../providers/profile_provider.dart';
-import '../../data/models/profile_model.dart';
 import '../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
@@ -152,7 +151,7 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text('Profile not found'),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
                     ElevatedButton(
                       onPressed: () =>
                           ref.read(profileProvider.notifier).refreshProfile(),
@@ -163,7 +162,7 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
               );
             }
             return SingleChildScrollView(
-              padding: EdgeInsets.all(AppConstants.defaultPadding),
+              padding: const EdgeInsets.all(AppConstants.defaultPadding),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -195,7 +194,7 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
                           ),
                       ],
                     ),
-                    SizedBox(height: AppConstants.defaultPadding * 2),
+                    const SizedBox(height: AppConstants.defaultPadding * 2),
                     TextFormField(
                       controller: _firstNameController,
                       decoration: const InputDecoration(
@@ -213,7 +212,7 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
                     TextFormField(
                       controller: _lastNameController,
                       decoration: const InputDecoration(
@@ -231,7 +230,7 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
                     TextFormField(
                       controller: _staffIdController,
                       decoration: const InputDecoration(
@@ -249,7 +248,7 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
                     TextFormField(
                       controller: _collegeController,
                       decoration: const InputDecoration(
@@ -264,7 +263,7 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
                     TextFormField(
                       controller: _departmentController,
                       decoration: const InputDecoration(
@@ -285,7 +284,7 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
             );
           },
           loading: () => SingleChildScrollView(
-            padding: EdgeInsets.all(AppConstants.defaultPadding),
+            padding: const EdgeInsets.all(AppConstants.defaultPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -294,8 +293,8 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
                   height: 100,
                   borderRadius: BorderRadius.circular(50),
                 ),
-                SizedBox(height: AppConstants.defaultPadding * 2),
-                SkeletonList(
+                const SizedBox(height: AppConstants.defaultPadding * 2),
+                const SkeletonList(
                   itemCount: 5,
                   itemHeight: 60,
                   spacing: AppConstants.defaultPadding,
@@ -308,7 +307,7 @@ class _LecturerProfileScreenState extends ConsumerState<LecturerProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('Error: $error'),
-                SizedBox(height: AppConstants.defaultPadding),
+                const SizedBox(height: AppConstants.defaultPadding),
                 ElevatedButton(
                   onPressed: () =>
                       ref.read(profileProvider.notifier).refreshProfile(),

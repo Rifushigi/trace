@@ -3,7 +3,6 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/network/endpoints.dart';
 import '../models/profile_model.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 part 'profile_repository.g.dart';
 
