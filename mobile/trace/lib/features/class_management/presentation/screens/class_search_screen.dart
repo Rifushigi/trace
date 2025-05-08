@@ -217,10 +217,10 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
                           onPressed: () async {
                             final user = ref.read(authProvider).value;
                             if (user != null) {
-                              LoadingOverlay(
+                              const LoadingOverlay(
                                 isLoading: true,
                                 message: 'Enrolling in class...',
-                                child: const SizedBox(),
+                                child: SizedBox(),
                               );
 
                               try {

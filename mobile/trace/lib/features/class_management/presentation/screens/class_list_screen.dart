@@ -71,9 +71,9 @@ class ClassListScreen extends ConsumerWidget {
         ),
         loading: () => ListView.builder(
           itemCount: 5,
-          itemBuilder: (context, index) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: const SkeletonLoading(
+          itemBuilder: (context, index) => const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: SkeletonLoading(
               width: double.infinity,
               height: 100,
             ),
@@ -177,10 +177,10 @@ class ClassListScreen extends ConsumerWidget {
                 );
 
                 if (confirmed == true && context.mounted) {
-                  LoadingOverlay(
+                  const LoadingOverlay(
                     isLoading: true,
                     message: 'Deleting class...',
-                    child: const SizedBox(),
+                    child: SizedBox(),
                   );
 
                   try {

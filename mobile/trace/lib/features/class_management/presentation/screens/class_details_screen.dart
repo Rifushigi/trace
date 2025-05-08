@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/class_provider.dart';
-import '../../data/models/class_model.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../../core/constants/role_constants.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
 import '../../../../common/shared_widgets/refresh_wrapper.dart';
@@ -85,7 +83,7 @@ class ClassDetailsScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text('Class not found'),
-                      SizedBox(height: AppConstants.defaultPadding),
+                      const SizedBox(height: AppConstants.defaultPadding),
                       ElevatedButton(
                         onPressed: () {
                           ref.invalidate(classDetailsProvider(classId));
@@ -114,13 +112,13 @@ class ClassDetailsScreen extends ConsumerWidget {
               final endDate = schedule['endDate'] as String?;
 
               return Padding(
-                padding: EdgeInsets.all(AppConstants.defaultPadding),
+                padding: const EdgeInsets.all(AppConstants.defaultPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Card(
                       child: Padding(
-                        padding: EdgeInsets.all(AppConstants.defaultPadding),
+                        padding: const EdgeInsets.all(AppConstants.defaultPadding),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -128,29 +126,29 @@ class ClassDetailsScreen extends ConsumerWidget {
                               classModel.name,
                               style: Theme.of(context).textTheme.headlineSmall,
                             ),
-                            SizedBox(height: AppConstants.defaultSpacing),
+                            const SizedBox(height: AppConstants.defaultSpacing),
                             Text(
                               'Code: ${classModel.code}',
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
-                            SizedBox(height: AppConstants.defaultPadding),
+                            const SizedBox(height: AppConstants.defaultPadding),
                             Text(
                               'Schedule:',
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
-                            SizedBox(height: AppConstants.defaultSpacing),
+                            const SizedBox(height: AppConstants.defaultSpacing),
                             Text(
                               '$day $startTime - $endTime',
                               style: Theme.of(context).textTheme.bodyLarge,
                             ),
                             if (isRecurring) ...[
-                              SizedBox(height: AppConstants.defaultSpacing),
+                              const SizedBox(height: AppConstants.defaultSpacing),
                               Text(
                                 'Recurring Days: ${recurringDays.join(", ")}',
                                 style: Theme.of(context).textTheme.bodyLarge,
                               ),
                               if (endDate != null) ...[
-                                SizedBox(height: AppConstants.defaultSpacing),
+                                const SizedBox(height: AppConstants.defaultSpacing),
                                 Text(
                                   'End Date: $endDate',
                                   style: Theme.of(context).textTheme.bodyLarge,
@@ -161,12 +159,12 @@ class ClassDetailsScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
                     // Attendance Section
                     if (isLecturerOrAdmin) ...[
                       Card(
                         child: Padding(
-                          padding: EdgeInsets.all(AppConstants.defaultPadding),
+                          padding: const EdgeInsets.all(AppConstants.defaultPadding),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -174,7 +172,7 @@ class ClassDetailsScreen extends ConsumerWidget {
                                 'Attendance Management',
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
-                              SizedBox(height: AppConstants.defaultPadding),
+                              const SizedBox(height: AppConstants.defaultPadding),
                               Row(
                                 children: [
                                   Expanded(
@@ -194,7 +192,7 @@ class ClassDetailsScreen extends ConsumerWidget {
                                       label: const Text('Manage Attendance'),
                                     ),
                                   ),
-                                  SizedBox(width: AppConstants.defaultSpacing),
+                                  const SizedBox(width: AppConstants.defaultSpacing),
                                   Expanded(
                                     child: ElevatedButton.icon(
                                       onPressed: () {
@@ -220,7 +218,7 @@ class ClassDetailsScreen extends ConsumerWidget {
                     ] else if (isStudent) ...[
                       Card(
                         child: Padding(
-                          padding: EdgeInsets.all(AppConstants.defaultPadding),
+                          padding: const EdgeInsets.all(AppConstants.defaultPadding),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -228,7 +226,7 @@ class ClassDetailsScreen extends ConsumerWidget {
                                 'My Attendance',
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
-                              SizedBox(height: AppConstants.defaultPadding),
+                              const SizedBox(height: AppConstants.defaultPadding),
                               ElevatedButton.icon(
                                 onPressed: () {
                                   Navigator.pushNamed(
@@ -252,39 +250,39 @@ class ClassDetailsScreen extends ConsumerWidget {
                 ),
               );
             },
-            loading: () => Padding(
+            loading: () => const Padding(
               padding: EdgeInsets.all(AppConstants.defaultPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SkeletonLoading(
+                  SkeletonLoading(
                     width: 200,
                     height: 32,
                   ),
                   SizedBox(height: AppConstants.defaultPadding),
-                  const SkeletonLoading(
+                  SkeletonLoading(
                     width: 150,
                     height: 24,
                   ),
                   SizedBox(height: AppConstants.defaultPadding),
-                  const SkeletonLoading(
+                  SkeletonLoading(
                     width: 180,
                     height: 24,
                   ),
                   SizedBox(height: AppConstants.defaultPadding),
-                  const SkeletonLoading(
+                  SkeletonLoading(
                     width: 250,
                     height: 24,
                   ),
                   SizedBox(height: AppConstants.defaultPadding * 2),
-                  const SkeletonLoading(
+                  SkeletonLoading(
                     width: 200,
                     height: 32,
                   ),
                   SizedBox(height: AppConstants.defaultPadding),
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: SkeletonLoading(
                           width: double.infinity,
                           height: 48,
@@ -292,7 +290,7 @@ class ClassDetailsScreen extends ConsumerWidget {
                         ),
                       ),
                       SizedBox(width: AppConstants.defaultSpacing),
-                      const Expanded(
+                      Expanded(
                         child: SkeletonLoading(
                           width: double.infinity,
                           height: 48,
@@ -309,7 +307,7 @@ class ClassDetailsScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Error: $error'),
-                  SizedBox(height: AppConstants.defaultPadding),
+                  const SizedBox(height: AppConstants.defaultPadding),
                   ElevatedButton(
                     onPressed: () {
                       ref.invalidate(classDetailsProvider(classId));
