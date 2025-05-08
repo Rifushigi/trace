@@ -50,22 +50,22 @@ class NotificationServiceImpl implements NotificationService {
             throw new NotFoundError("session data is missing");
         }
 
-        // For each student, either send Socket.IO or FCM notification
+        // Send notifications to all students
         for (const student of students) {
+            // Send FCM notification
+            await fcmService.sendToUser(student._id.toString(), {
+                title: 'Attendance Session Started',
+                body: `An attendance session has started for ${classData.className}`,
+                data: {
+                    type: 'session_start',
+                    sessionId: session._id.toString(),
+                    classId: session.classId.toString(),
+                }
+            });
+
+            // If student has active connection, also send Socket.IO notification
             if (this.isUserActive(student._id.toString())) {
-                // Student has active connection - use Socket.IO
                 this.io.to(`student_${student._id}`).emit('attendance:session_start', notification);
-            } else {
-                // Student has no active connection - use FCM
-                await fcmService.sendToUser(student._id.toString(), {
-                    title: 'Attendance Session Started',
-                    body: `An attendance session has started for ${classData.className}`,
-                    data: {
-                        type: 'session_start',
-                        sessionId: session._id.toString(),
-                        classId: session.classId.toString(),
-                    }
-                });
             }
         }
     }
@@ -84,20 +84,20 @@ class NotificationServiceImpl implements NotificationService {
         const classData = await Class.findById(session.classId);
         if (!classData) throw new NotFoundError("Class not found");
 
+        // Send FCM notification to lecturer
+        await fcmService.sendToUser(classData.lecturerId.toString(), {
+            title: 'Attendance Session Ended',
+            body: `The attendance session for ${classData.className} has ended`,
+            data: {
+                type: 'session_end',
+                sessionId: session._id.toString(),
+                classId: session.classId.toString(),
+            }
+        });
+
+        // If lecturer has active connection, also send Socket.IO notification
         if (this.isUserActive(classData.lecturerId.toString())) {
-            // Lecturer has active connection - use Socket.IO
             this.io.to(`class_${session.classId}`).emit('attendance:session_end', notification);
-        } else {
-            // Lecturer has no active connection - use FCM
-            await fcmService.sendToUser(classData.lecturerId.toString(), {
-                title: 'Attendance Session Ended',
-                body: `The attendance session for ${classData.className} has ended`,
-                data: {
-                    type: 'session_end',
-                    sessionId: session._id.toString(),
-                    classId: session.classId.toString(),
-                }
-            });
         }
     }
 
@@ -110,13 +110,36 @@ class NotificationServiceImpl implements NotificationService {
         const session = await AttendanceSession.findById(log.sessionId);
         if (!session) throw new SessionError("Session not found");
 
-
         const classData = await Class.findById(session.classId);
         if (!classData) throw new NotFoundError("Class not found");
 
         const studentId = log.studentId.toString();
 
-        // Always notify student about their check-in via Socket.IO if active
+        // Send FCM notification to student
+        await fcmService.sendToUser(studentId, {
+            title: 'Check-in Confirmed',
+            body: 'Your attendance has been recorded',
+            data: {
+                type: 'check_in_confirmation',
+                sessionId: log.sessionId.toString(),
+                method: log.method,
+                confidenceScore: log.confidenceScore.toString(),
+            }
+        });
+
+        // Send FCM notification to lecturer
+        await fcmService.sendToUser(classData.lecturerId.toString(), {
+            title: 'Student Checked In',
+            body: `A student has checked in for ${classData.className}`,
+            data: {
+                type: 'check_in',
+                sessionId: log.sessionId.toString(),
+                studentId: studentId,
+                isAnomaly: log.isAnomaly.toString(),
+            }
+        });
+
+        // If student has active connection, also send Socket.IO notification
         if (this.isUserActive(studentId)) {
             const studentNotification: CheckInConfirmationNotification = {
                 sessionId: log.sessionId.toString(),
@@ -127,9 +150,8 @@ class NotificationServiceImpl implements NotificationService {
             this.io.to(`student_${studentId}`).emit('attendance:check_in_confirmation', studentNotification);
         }
 
-        // Notify lecturer based on their connection status
+        // If lecturer has active connection, also send Socket.IO notification
         if (this.isUserActive(classData.lecturerId.toString())) {
-            // Lecturer has active connection - use Socket.IO
             const classNotification: CheckInNotification = {
                 studentId: studentId,
                 method: log.method,
@@ -137,18 +159,6 @@ class NotificationServiceImpl implements NotificationService {
                 isAnomaly: log.isAnomaly
             };
             this.io.to(`class_${log.sessionId}`).emit('attendance:check_in', classNotification);
-        } else {
-            // Lecturer has no active connection - use FCM
-            await fcmService.sendToUser(classData.lecturerId.toString(), {
-                title: 'Student Checked In',
-                body: `A student has checked in for ${classData.className}`,
-                data: {
-                    type: 'check_in',
-                    sessionId: log.sessionId.toString(),
-                    studentId: studentId,
-                    isAnomaly: log.isAnomaly.toString(),
-                }
-            });
         }
     }
 
@@ -164,9 +174,20 @@ class NotificationServiceImpl implements NotificationService {
         const classData = await Class.findById(session.classId);
         if (!classData) throw new NotFoundError("Class not found");
 
+        // Send FCM notification to lecturer
+        await fcmService.sendToUser(classData.lecturerId.toString(), {
+            title: 'Anomaly Detected',
+            body: 'An anomaly was detected during student check-in',
+            data: {
+                type: 'anomaly',
+                sessionId: log.sessionId.toString(),
+                studentId: log.studentId.toString(),
+                confidenceScore: log.confidenceScore.toString(),
+            }
+        });
 
+        // If lecturer has active connection, also send Socket.IO notification
         if (this.isUserActive(classData.lecturerId.toString())) {
-            // Lecturer has active connection - use Socket.IO
             const notification: AnomalyNotification = {
                 studentId: log.studentId.toString(),
                 method: log.method,
@@ -174,18 +195,6 @@ class NotificationServiceImpl implements NotificationService {
                 confidenceScore: log.confidenceScore
             };
             this.io.to(`class_${log.sessionId}`).emit('attendance:anomaly', notification);
-        } else {
-            // Lecturer has no active connection - use FCM
-            await fcmService.sendToUser(classData.lecturerId.toString(), {
-                title: 'Anomaly Detected',
-                body: 'An anomaly was detected during student check-in',
-                data: {
-                    type: 'anomaly',
-                    sessionId: log.sessionId.toString(),
-                    studentId: log.studentId.toString(),
-                    confidenceScore: log.confidenceScore.toString(),
-                }
-            });
         }
     }
 
