@@ -64,13 +64,13 @@ class _AttendanceHistoryScreenState
           : RefreshIndicator(
               onRefresh: _loadAttendanceHistory,
               child: Padding(
-                padding: EdgeInsets.all(AppConstants.defaultPadding),
+                padding: const EdgeInsets.all(AppConstants.defaultPadding),
                 child: ListView.builder(
                   itemCount: _attendanceList.length,
                   itemBuilder: (context, index) {
                     final attendance = _attendanceList[index];
                     return Card(
-                      margin: EdgeInsets.symmetric(
+                      margin: const EdgeInsets.symmetric(
                           vertical: AppConstants.defaultSpacing / 2),
                       child: ListTile(
                         title: Text(

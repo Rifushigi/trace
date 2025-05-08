@@ -79,18 +79,18 @@ class _AttendanceReportScreenState
           : RefreshIndicator(
               onRefresh: _loadAttendanceData,
               child: SingleChildScrollView(
-                padding: EdgeInsets.all(AppConstants.defaultPadding),
+                padding: const EdgeInsets.all(AppConstants.defaultPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Attendance Statistics',
                       style: AppStyles.titleLarge,
                     ),
-                    SizedBox(height: AppConstants.defaultSpacing),
+                    const SizedBox(height: AppConstants.defaultSpacing),
                     Card(
                       child: Padding(
-                        padding: EdgeInsets.all(AppConstants.defaultPadding),
+                        padding: const EdgeInsets.all(AppConstants.defaultPadding),
                         child: Column(
                           children: [
                             _buildStatRow(
@@ -105,12 +105,12 @@ class _AttendanceReportScreenState
                         ),
                       ),
                     ),
-                    SizedBox(height: AppConstants.defaultPadding * 1.5),
-                    Text(
+                    const SizedBox(height: AppConstants.defaultPadding * 1.5),
+                    const Text(
                       'Recent Attendance',
                       style: AppStyles.titleLarge,
                     ),
-                    SizedBox(height: AppConstants.defaultSpacing),
+                    const SizedBox(height: AppConstants.defaultSpacing),
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -133,7 +133,7 @@ class _AttendanceReportScreenState
 
   Widget _buildStatRow(String label, int count) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: AppConstants.defaultSpacing),
+      padding: const EdgeInsets.symmetric(vertical: AppConstants.defaultSpacing),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

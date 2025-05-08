@@ -55,9 +55,13 @@ class _StudentAttendanceScreenState
     return history.where((record) {
       // Apply status filter
       if (_currentFilter == StudentAttendanceFilter.present &&
-          record.status != 'present') return false;
+          record.status != 'present') {
+        return false;
+      }
       if (_currentFilter == StudentAttendanceFilter.absent &&
-          record.status != 'absent') return false;
+          record.status != 'absent') {
+        return false;
+      }
 
       // Apply search query
       if (_searchQuery.isEmpty) return true;
@@ -108,7 +112,7 @@ class _StudentAttendanceScreenState
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.all(AppConstants.defaultPadding),
+          padding: const EdgeInsets.all(AppConstants.defaultPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -121,7 +125,7 @@ class _StudentAttendanceScreenState
                       widget.className,
                       style: AppStyles.titleLarge,
                     ),
-                    SizedBox(height: AppConstants.defaultSpacing),
+                    const SizedBox(height: AppConstants.defaultSpacing),
                     Text(
                       'Class ID: ${widget.classId}',
                       style: AppStyles.bodyMedium,
@@ -129,13 +133,13 @@ class _StudentAttendanceScreenState
                   ],
                 ),
               ),
-              SizedBox(height: AppConstants.defaultPadding * 1.5),
+              const SizedBox(height: AppConstants.defaultPadding * 1.5),
 
               // Active Session Section
               activeSessionAsync.when(
                 data: (session) {
                   if (session == null) {
-                    return EmptyState(
+                    return const EmptyState(
                       message: 'No active attendance session',
                       icon: Icons.event_busy,
                     );
@@ -148,7 +152,7 @@ class _StudentAttendanceScreenState
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
+                            const Text(
                               'Active Session',
                               style: AppStyles.titleLarge,
                             ),
@@ -158,7 +162,7 @@ class _StudentAttendanceScreenState
                             ),
                           ],
                         ),
-                        SizedBox(height: AppConstants.defaultPadding),
+                        const SizedBox(height: AppConstants.defaultPadding),
                         Row(
                           children: [
                             Expanded(
@@ -197,7 +201,7 @@ class _StudentAttendanceScreenState
                 },
               ),
 
-              SizedBox(height: AppConstants.defaultPadding * 1.5),
+              const SizedBox(height: AppConstants.defaultPadding * 1.5),
 
               // Attendance History Section
               Column(
@@ -206,7 +210,7 @@ class _StudentAttendanceScreenState
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         'My Attendance History',
                         style: AppStyles.titleLarge,
                       ),
@@ -265,7 +269,7 @@ class _StudentAttendanceScreenState
                       ),
                     ],
                   ),
-                  SizedBox(height: AppConstants.defaultSpacing),
+                  const SizedBox(height: AppConstants.defaultSpacing),
 
                   // Search and Filter Bar
                   Row(
@@ -300,7 +304,7 @@ class _StudentAttendanceScreenState
                           },
                         ),
                       ),
-                      SizedBox(width: AppConstants.defaultSpacing),
+                      const SizedBox(width: AppConstants.defaultSpacing),
                       PopupMenuButton<StudentAttendanceFilter>(
                         icon: const Icon(Icons.filter_list),
                         tooltip: 'Filter by status',
@@ -345,7 +349,7 @@ class _StudentAttendanceScreenState
                       ),
                     ],
                   ),
-                  SizedBox(height: AppConstants.defaultSpacing),
+                  const SizedBox(height: AppConstants.defaultSpacing),
 
                   // Filter indicator
                   if (_currentFilter != StudentAttendanceFilter.all ||
@@ -388,7 +392,7 @@ class _StudentAttendanceScreenState
                   studentAttendanceAsync.when(
                     data: (attendance) {
                       if (attendance.isEmpty) {
-                        return EmptyState(
+                        return const EmptyState(
                           message: 'No attendance history available',
                           icon: Icons.history,
                         );
@@ -397,7 +401,7 @@ class _StudentAttendanceScreenState
                       final filteredAttendance = _filterAndSearchHistory(
                           attendance.cast<AttendanceModel>());
                       if (filteredAttendance.isEmpty) {
-                        return EmptyState(
+                        return const EmptyState(
                           message: 'No records match your search criteria',
                           icon: Icons.search_off,
                         );

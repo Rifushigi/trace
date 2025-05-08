@@ -7,7 +7,7 @@ part of 'attendance_cache_service.dart';
 // **************************************************************************
 
 String _$attendanceCacheServiceHash() =>
-    r'9ae64e80a63b02f221d4afd331386358c2b870ac';
+    r'313a7d7609c46ee88636ffc0a011c5f532e9a389';
 
 /// See also [attendanceCacheService].
 @ProviderFor(attendanceCacheService)

@@ -217,7 +217,7 @@ class _AttendanceManagementScreenState
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Start New Session',
                             style: AppStyles.titleLarge,
                           ),
@@ -240,7 +240,7 @@ class _AttendanceManagementScreenState
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
+                              const Text(
                                 'Active Session',
                                 style: AppStyles.titleLarge,
                               ),
@@ -250,7 +250,7 @@ class _AttendanceManagementScreenState
                               ),
                             ],
                           ),
-                          SizedBox(height: AppConstants.defaultPadding),
+                          const SizedBox(height: AppConstants.defaultPadding),
                           Row(
                             children: [
                               Expanded(
@@ -271,7 +271,7 @@ class _AttendanceManagementScreenState
                               ),
                             ],
                           ),
-                          SizedBox(height: AppConstants.defaultPadding),
+                          const SizedBox(height: AppConstants.defaultPadding),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -283,7 +283,7 @@ class _AttendanceManagementScreenState
                                 icon: const Icon(Icons.person_add),
                                 label: const Text('Manual Check-in'),
                               ),
-                              SizedBox(width: AppConstants.defaultSpacing),
+                              const SizedBox(width: AppConstants.defaultSpacing),
                               ElevatedButton.icon(
                                 onPressed: () {
                                   _showEndSessionDialog(
@@ -298,7 +298,7 @@ class _AttendanceManagementScreenState
                       ),
                     );
                   },
-                  loading: () => SkeletonList(
+                  loading: () => const SkeletonList(
                     itemCount: 3,
                     itemHeight: 80,
                     spacing: AppConstants.defaultPadding,
@@ -316,7 +316,7 @@ class _AttendanceManagementScreenState
                   },
                 ),
 
-                SizedBox(height: AppConstants.defaultPadding * 1.5),
+                const SizedBox(height: AppConstants.defaultPadding * 1.5),
 
                 // Attendance History Section
                 Column(
@@ -325,7 +325,7 @@ class _AttendanceManagementScreenState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           'Attendance History',
                           style: AppStyles.titleLarge,
                         ),
@@ -380,7 +380,7 @@ class _AttendanceManagementScreenState
                         ),
                       ],
                     ),
-                    SizedBox(height: AppConstants.defaultSpacing),
+                    const SizedBox(height: AppConstants.defaultSpacing),
 
                     // Search and Filter Bar
                     Row(
@@ -415,7 +415,7 @@ class _AttendanceManagementScreenState
                             },
                           ),
                         ),
-                        SizedBox(width: AppConstants.defaultSpacing),
+                        const SizedBox(width: AppConstants.defaultSpacing),
                         PopupMenuButton<AttendanceHistoryFilter>(
                           icon: const Icon(Icons.filter_list),
                           tooltip: 'Filter by status',
@@ -460,7 +460,7 @@ class _AttendanceManagementScreenState
                         ),
                       ],
                     ),
-                    SizedBox(height: AppConstants.defaultSpacing),
+                    const SizedBox(height: AppConstants.defaultSpacing),
 
                     // Filter indicator
                     if (_currentFilter != AttendanceHistoryFilter.all ||
@@ -504,7 +504,7 @@ class _AttendanceManagementScreenState
                     attendanceHistoryAsync.when(
                       data: (history) {
                         if (history.isEmpty) {
-                          return EmptyState(
+                          return const EmptyState(
                             message: 'No attendance history available',
                             icon: Icons.history,
                           );
@@ -538,7 +538,7 @@ class _AttendanceManagementScreenState
                         final filteredHistory =
                             _filterAndSearchHistory(sessions);
                         if (filteredHistory.isEmpty) {
-                          return EmptyState(
+                          return const EmptyState(
                             message: 'No matching attendance records found',
                             icon: Icons.search_off,
                           );
@@ -598,7 +598,7 @@ class _AttendanceManagementScreenState
                           },
                         );
                       },
-                      loading: () => SkeletonList(
+                      loading: () => const SkeletonList(
                         itemCount: 3,
                         itemHeight: 80,
                         spacing: AppConstants.defaultPadding,
@@ -847,7 +847,7 @@ class _StatItem extends StatelessWidget {
     return Column(
       children: [
         Icon(icon, color: color, size: 32),
-        SizedBox(height: AppConstants.defaultSpacing),
+        const SizedBox(height: AppConstants.defaultSpacing),
         Text(
           value,
           style: AppStyles.titleLarge.copyWith(color: color),

@@ -4,7 +4,6 @@ import '../../data/repositories/attendance_repository.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../data/services/attendance_local_storage.dart';
 import '../../data/services/attendance_cache_service.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/attendance_session.dart';
 
 part 'attendance_provider.g.dart';

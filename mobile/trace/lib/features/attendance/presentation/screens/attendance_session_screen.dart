@@ -119,7 +119,7 @@ class _AttendanceSessionScreenState
         title: const Text('Attendance Session'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(AppConstants.defaultPadding),
+        padding: const EdgeInsets.all(AppConstants.defaultPadding),
         child: Column(
           children: [
             if (_sessionId == null)
@@ -142,7 +142,7 @@ class _AttendanceSessionScreenState
                       : const Text('End Session'),
                 ),
               ),
-            SizedBox(height: AppConstants.defaultSpacing),
+            const SizedBox(height: AppConstants.defaultSpacing),
             if (_sessionId != null)
               SizedBox(
                 width: double.infinity,
@@ -153,14 +153,14 @@ class _AttendanceSessionScreenState
                       : const Text('Load Attendance'),
                 ),
               ),
-            SizedBox(height: AppConstants.defaultSpacing),
+            const SizedBox(height: AppConstants.defaultSpacing),
             Expanded(
               child: ListView.builder(
                 itemCount: _attendanceList.length,
                 itemBuilder: (context, index) {
                   final attendance = _attendanceList[index];
                   return Card(
-                    margin: EdgeInsets.symmetric(
+                    margin: const EdgeInsets.symmetric(
                         vertical: AppConstants.defaultSpacing / 2),
                     child: ListTile(
                       title: Text(

@@ -7,7 +7,7 @@ part of 'attendance_local_storage.dart';
 // **************************************************************************
 
 String _$attendanceLocalStorageHash() =>
-    r'2b21215df7f02f0c77d766b0a4a25e682b0ab0ad';
+    r'af33ca3cfe04909b51ec7401279d1ad7c9bfe798';
 
 /// See also [attendanceLocalStorage].
 @ProviderFor(attendanceLocalStorage)
