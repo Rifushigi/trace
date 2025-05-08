@@ -3,14 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/role_constants.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../profile/data/models/profile_model.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/home_provider.dart';
 import '../../../../utils/logger.dart';
 import '../../../../common/appbar/role_app_bar.dart';
 import '../../../../common/shared_widgets/app_card.dart';
 import '../../../../common/styles/app_styles.dart';
-import '../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
 import '../../../../common/shared_widgets/refresh_wrapper.dart';
@@ -25,9 +23,9 @@ class StudentHomeScreen extends ConsumerStatefulWidget {
 
 class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
   final PageController _pageController = PageController();
-  int _currentSection = 0;
+  final int _currentSection = 0;
   double _dragStartX = 0;
-  double _dragStartY = 0;
+  final double _dragStartY = 0;
   DateTime? _lastTapTime;
 
   @override
@@ -198,7 +196,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: AppConstants.defaultPadding * 1.5),
+                    const SizedBox(height: AppConstants.defaultPadding * 1.5),
 
                     // Section indicator
                     AppAnimations.fadeIn(
@@ -222,7 +220,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: AppConstants.defaultPadding),
 
                     // Dashboard Items with animation
                     AppAnimations.slideIn(
@@ -265,7 +263,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Text('Failed to load dashboard items'),
-                                SizedBox(height: AppConstants.defaultSpacing),
+                                const SizedBox(height: AppConstants.defaultSpacing),
                                 ElevatedButton(
                                   onPressed: () {
                                     ref.invalidate(dashboardItemsProvider);
@@ -285,7 +283,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                       ),
                     ),
 
-                    SizedBox(height: AppConstants.defaultPadding * 1.5),
+                    const SizedBox(height: AppConstants.defaultPadding * 1.5),
 
                     // Student-specific Statistics Section with animation
                     if (preferences['showAttendanceStats'] == true)
@@ -322,7 +320,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: AppConstants.defaultPadding),
+                                const SizedBox(height: AppConstants.defaultPadding),
                                 _StatItem(
                                   label: 'Overall Attendance',
                                   value: '${stats['overallAttendance']}%',
@@ -349,15 +347,15 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                   width: 200,
                                   height: 32,
                                 ),
-                                SizedBox(height: AppConstants.defaultPadding),
+                                const SizedBox(height: AppConstants.defaultPadding),
                                 ListView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemCount: 3,
-                                  itemBuilder: (context, index) => Padding(
+                                  itemBuilder: (context, index) => const Padding(
                                     padding: EdgeInsets.only(
                                         bottom: AppConstants.defaultSpacing),
-                                    child: const SkeletonLoading(
+                                    child: SkeletonLoading(
                                       width: double.infinity,
                                       height: 48,
                                       borderRadius:
@@ -376,7 +374,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const Text('Failed to load statistics'),
-                                  SizedBox(height: AppConstants.defaultSpacing),
+                                  const SizedBox(height: AppConstants.defaultSpacing),
                                   ElevatedButton(
                                     onPressed: () {
                                       ref.invalidate(dashboardStatsProvider);
@@ -484,7 +482,7 @@ class _DashboardCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: AppStyles.iconXLarge),
-          SizedBox(height: AppConstants.defaultSpacing),
+          const SizedBox(height: AppConstants.defaultSpacing),
           Text(
             title,
             textAlign: TextAlign.center,
@@ -510,11 +508,11 @@ class _StatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: AppConstants.defaultSpacing),
+      padding: const EdgeInsets.only(bottom: AppConstants.defaultSpacing),
       child: Row(
         children: [
           Icon(icon, size: AppStyles.iconLarge),
-          SizedBox(width: AppConstants.defaultSpacing),
+          const SizedBox(width: AppConstants.defaultSpacing),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

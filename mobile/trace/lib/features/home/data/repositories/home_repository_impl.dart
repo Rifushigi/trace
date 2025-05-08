@@ -2,7 +2,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/dashboard_item.dart';
 import '../../domain/repositories/home_repository.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../../core/network/endpoints.dart';
 import '../../../../utils/logger.dart';
 
 part 'home_repository_impl.g.dart';

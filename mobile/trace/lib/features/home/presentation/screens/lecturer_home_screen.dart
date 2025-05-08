@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/role_constants.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../profile/data/models/profile_model.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/home_provider.dart';
 import '../../../../utils/logger.dart';
@@ -13,7 +12,6 @@ import '../../../../common/styles/app_styles.dart';
 import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
 import '../../../../common/shared_widgets/refresh_wrapper.dart';
-import '../../../../common/animations/app_animations.dart';
 
 class LecturerHomeScreen extends ConsumerStatefulWidget {
   const LecturerHomeScreen({super.key});
@@ -24,9 +22,9 @@ class LecturerHomeScreen extends ConsumerStatefulWidget {
 
 class _LecturerHomeScreenState extends ConsumerState<LecturerHomeScreen> {
   final PageController _pageController = PageController();
-  int _currentSection = 0;
+  final int _currentSection = 0;
   double _dragStartX = 0;
-  double _dragStartY = 0;
+  final double _dragStartY = 0;
   DateTime? _lastTapTime;
 
   @override

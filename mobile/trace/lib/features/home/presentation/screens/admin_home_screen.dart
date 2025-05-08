@@ -3,14 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/role_constants.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../profile/data/models/profile_model.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/home_provider.dart';
 import '../../../../utils/logger.dart';
 import '../../../../common/appbar/role_app_bar.dart';
 import '../../../../common/shared_widgets/app_card.dart';
 import '../../../../common/styles/app_styles.dart';
-import '../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
 import '../../../../common/shared_widgets/refresh_wrapper.dart';
@@ -192,7 +190,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                               'Welcome, ${profile?.firstName ?? 'User'} ${profile?.lastName ?? ''}',
                               style: AppStyles.headlineSmall,
                             ),
-                            SizedBox(height: AppConstants.defaultSpacing),
+                            const SizedBox(height: AppConstants.defaultSpacing),
                             Text(
                               'Staff ID: ${profile?.staffId ?? 'N/A'}',
                               style: AppStyles.bodyLarge,
@@ -205,7 +203,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: AppConstants.defaultPadding * 1.5),
+                    const SizedBox(height: AppConstants.defaultPadding * 1.5),
 
                     // Section indicator
                     AppAnimations.fadeIn(
@@ -230,7 +228,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                       ),
                     ),
 
-                    SizedBox(height: AppConstants.defaultPadding * 1.5),
+                    const SizedBox(height: AppConstants.defaultPadding * 1.5),
 
                     // Dashboard items grid
                     AppAnimations.slideIn(
@@ -273,7 +271,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Text('Failed to load dashboard items'),
-                                SizedBox(height: AppConstants.defaultSpacing),
+                                const SizedBox(height: AppConstants.defaultSpacing),
                                 ElevatedButton(
                                   onPressed: () {
                                     ref.invalidate(dashboardItemsProvider);
@@ -293,7 +291,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                       ),
                     ),
 
-                    SizedBox(height: AppConstants.defaultPadding * 1.5),
+                    const SizedBox(height: AppConstants.defaultPadding * 1.5),
 
                     // System statistics
                     if (preferences['showSystemStats'] == true)
@@ -330,7 +328,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: AppConstants.defaultPadding),
+                                const SizedBox(height: AppConstants.defaultPadding),
                                 _StatItem(
                                   label: 'Total Users',
                                   value: stats['totalUsers'].toString(),
@@ -361,7 +359,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                                 children: [
                                   const Text(
                                       'Failed to load system statistics'),
-                                  SizedBox(height: AppConstants.defaultSpacing),
+                                  const SizedBox(height: AppConstants.defaultSpacing),
                                   ElevatedButton(
                                     onPressed: () {
                                       ref.invalidate(dashboardStatsProvider);
@@ -455,7 +453,7 @@ class _DashboardCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: AppStyles.iconXLarge),
-          SizedBox(height: AppConstants.defaultSpacing),
+          const SizedBox(height: AppConstants.defaultSpacing),
           Text(
             title,
             textAlign: TextAlign.center,
@@ -481,11 +479,11 @@ class _StatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: AppConstants.defaultSpacing),
+      padding: const EdgeInsets.only(bottom: AppConstants.defaultSpacing),
       child: Row(
         children: [
           Icon(icon, size: AppStyles.iconLarge),
-          SizedBox(width: AppConstants.defaultSpacing),
+          const SizedBox(width: AppConstants.defaultSpacing),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
