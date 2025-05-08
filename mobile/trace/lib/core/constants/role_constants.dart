@@ -15,20 +15,20 @@ class RoleConstants {
   // Role-based Features
   static const Map<String, List<String>> roleFeatures = {
     studentRole: [
-      'view_attendance',
-      'check_in',
-      'view_schedule',
+      'View your attendance records',
+      'Check in to classes',
+      'Access your class schedule',
     ],
     lecturerRole: [
-      'manage_attendance',
-      'view_reports',
-      'manage_classes',
+      'Manage class attendance',
+      'View attendance reports',
+      'Create and manage classes',
     ],
     adminRole: [
-      'manage_users',
-      'manage_roles',
-      'view_all_reports',
-      'system_settings',
+      'Manage user accounts',
+      'Manage user roles',
+      'Access all reports',
+      'Configure system settings',
     ],
   };
 

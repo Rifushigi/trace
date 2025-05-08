@@ -1,12 +1,9 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'dart:convert';
-import '../network/api_client.dart';
 import '../network/endpoints.dart';
-import '../routes/app_router.dart';
 import 'package:flutter/material.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -16,8 +13,6 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 });
 
 class NotificationService {
-  final FlutterLocalNotificationsPlugin _localNotifications =
-      FlutterLocalNotificationsPlugin();
   IO.Socket? _socket;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   bool _isSocketConnected = false;
@@ -26,23 +21,6 @@ class NotificationService {
   Future<void> initialize() async {
     // Initialize Firebase
     await Firebase.initializeApp();
-
-    // Initialize local notifications
-    const initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initializationSettingsIOS = DarwinInitializationSettings();
-    const initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
-    await _localNotifications.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        if (response.payload != null) {
-          _handleNotificationTap(json.decode(response.payload!));
-        }
-      },
-    );
 
     // Request notification permissions
     await _firebaseMessaging.requestPermission(
@@ -115,44 +93,14 @@ class NotificationService {
   }
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
-    // Show local notification for foreground messages
-    await _showNotification(
-      title: message.notification?.title ?? 'New Notification',
-      body: message.notification?.body ?? '',
-      payload: json.encode(message.data),
-    );
+    // The notification will be shown automatically by Firebase
+    // We can handle any additional logic here if needed
+    print('Handling foreground message: ${message.messageId}');
   }
 
   Future<void> _handleMessageOpenedApp(RemoteMessage message) async {
     // Handle notification tap when app is in background
     _handleNotificationTap(message.data);
-  }
-
-  Future<void> _showNotification({
-    required String title,
-    required String body,
-    String? payload,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'attendance_channel',
-      'Attendance Notifications',
-      channelDescription: 'Notifications for attendance events',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-    const iosDetails = DarwinNotificationDetails();
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _localNotifications.show(
-      DateTime.now().millisecond,
-      title,
-      body,
-      details,
-      payload: payload,
-    );
   }
 
   void _handleNotificationTap(Map<String, dynamic> data) {
@@ -162,62 +110,59 @@ class NotificationService {
 
     switch (type) {
       case 'session_start':
-        Navigator.pushNamed(context, '/class/details',
-            arguments: data['classId']);
+        Navigator.pushNamed(
+          context,
+          '/class/details',
+          arguments: data['classId'],
+        );
         break;
       case 'session_end':
-        Navigator.pushNamed(context, '/class/details',
-            arguments: data['classId']);
+        Navigator.pushNamed(
+          context,
+          '/class/details',
+          arguments: data['classId'],
+        );
         break;
       case 'check_in':
-        Navigator.pushNamed(context, '/attendance/details',
-            arguments: data['attendanceId']);
+        Navigator.pushNamed(
+          context,
+          '/attendance/details',
+          arguments: data['attendanceId'],
+        );
         break;
       case 'anomaly':
-        Navigator.pushNamed(context, '/attendance/anomaly',
-            arguments: data['anomalyId']);
+        Navigator.pushNamed(
+          context,
+          '/attendance/anomaly',
+          arguments: data['anomalyId'],
+        );
         break;
     }
   }
 
   // Socket.IO event handlers
   void _handleSessionStart(dynamic data) {
-    _showNotification(
-      title: 'Attendance Session Started',
-      body: 'A new attendance session has started',
-      payload: json.encode(data),
-    );
+    // The server will send FCM notifications directly
+    print('Session started: $data');
   }
 
   void _handleSessionEnd(dynamic data) {
-    _showNotification(
-      title: 'Attendance Session Ended',
-      body: 'The attendance session has ended',
-      payload: json.encode(data),
-    );
+    // The server will send FCM notifications directly
+    print('Session ended: $data');
   }
 
   void _handleCheckIn(dynamic data) {
-    _showNotification(
-      title: 'Student Checked In',
-      body: 'A student has checked in to the class',
-      payload: json.encode(data),
-    );
+    // The server will send FCM notifications directly
+    print('Check-in received: $data');
   }
 
   void _handleCheckInConfirmation(dynamic data) {
-    _showNotification(
-      title: 'Check-in Confirmed',
-      body: 'Your attendance has been recorded',
-      payload: json.encode(data),
-    );
+    // The server will send FCM notifications directly
+    print('Check-in confirmed: $data');
   }
 
   void _handleAnomaly(dynamic data) {
-    _showNotification(
-      title: 'Anomaly Detected',
-      body: 'An anomaly was detected during check-in',
-      payload: json.encode(data),
-    );
+    // The server will send FCM notifications directly
+    print('Anomaly detected: $data');
   }
 }

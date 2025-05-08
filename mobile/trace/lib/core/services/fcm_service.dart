@@ -1,28 +1,33 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class FCMService {
-  final FlutterLocalNotificationsPlugin _localNotifications =
-      FlutterLocalNotificationsPlugin();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future<void> initialize() async {
-    const initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initializationSettingsIOS = DarwinInitializationSettings();
-    const initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
+    // Request notification permissions
+    await _firebaseMessaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
     );
 
-    await _localNotifications.initialize(initializationSettings);
+    // Get FCM token
+    final token = await _firebaseMessaging.getToken();
+    if (token != null) {
+      print('FCM Token: $token');
+      // You can send this token to your server
+    }
+
+    // Listen for FCM token refresh
+    _firebaseMessaging.onTokenRefresh.listen((token) {
+      print('FCM Token refreshed: $token');
+      // You can send the new token to your server
+    });
   }
 
   Future<void> onMessageReceived(RemoteMessage message) async {
-    await _showNotification(
-      title: message.notification?.title ?? 'New Notification',
-      body: message.notification?.body ?? '',
-      payload: message.data.toString(),
-    );
+    // The notification will be shown automatically by Firebase
+    print('Handling foreground message: ${message.messageId}');
   }
 
   Future<void> onMessageOpenedApp(RemoteMessage message) async {
@@ -52,34 +57,5 @@ class FCMService {
   }) async {
     // This will be implemented to send notifications through Firebase Cloud Messaging
     // The actual implementation will depend on your backend setup
-  }
-
-  Future<void> _showNotification({
-    required String title,
-    required String body,
-    String? payload,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'default_channel',
-      'Default Channel',
-      channelDescription: 'Default notification channel',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    const iosDetails = DarwinNotificationDetails();
-
-    const notificationDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _localNotifications.show(
-      0,
-      title,
-      body,
-      notificationDetails,
-      payload: payload,
-    );
   }
 }
