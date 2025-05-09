@@ -154,29 +154,6 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
             child: Column(
               children: [
                 const SizedBox(height: AppConstants.defaultPadding * 2),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme.primaryContainer,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Text(
-                    'TRACE',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppConstants.defaultPadding),
                 Expanded(
                   child: Stepper(
                     currentStep: _currentStep,
