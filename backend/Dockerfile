@@ -1,26 +1,24 @@
 # Use Node.js LTS version
 FROM node:20-alpine
 
-# Install pnpm
-RUN npm install -g pnpm
 
 # Set working directory
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json ./
 
 # Install dependencies
-RUN pnpm install
+RUN npm install
 
 # Copy source code
 COPY . .
 
 # Build TypeScript
-RUN pnpm build
+RUN npm run build
 
 # Expose port
-EXPOSE 3000
+EXPOSE 10000
 
 # Start the application
-CMD ["pnpm", "serve"] 
+CMD ["npm", "run", "serve"] 
