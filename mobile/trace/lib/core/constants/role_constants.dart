@@ -12,26 +12,6 @@ class RoleConstants {
     adminRole: '/admin/home',
   };
 
-  // Role-based Features
-  static const Map<String, List<String>> roleFeatures = {
-    studentRole: [
-      'View your attendance records',
-      'Check in to classes',
-      'Access your class schedule',
-    ],
-    lecturerRole: [
-      'Manage class attendance',
-      'View attendance reports',
-      'Create and manage classes',
-    ],
-    adminRole: [
-      'Manage user accounts',
-      'Manage user roles',
-      'Access all reports',
-      'Configure system settings',
-    ],
-  };
-
   // Role-based Permissions
   static const Map<String, List<String>> rolePermissions = {
     studentRole: [
