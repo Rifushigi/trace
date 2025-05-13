@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/route_constants.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../providers/splash_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -43,7 +43,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (!mounted) return;
 
     Navigator.of(context).pushReplacementNamed(
-      isAuthenticated ? RouteConstants.home : RouteConstants.onboarding,
+      isAuthenticated ? AppConstants.homeRoute : AppConstants.onboardingRoute,
     );
   }
 
