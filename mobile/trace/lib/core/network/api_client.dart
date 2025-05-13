@@ -52,7 +52,7 @@ class ApiClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           debugPrint(
-              '\n🔵 ---Request---');
+              '\n---Request---');
           debugPrint('URL: ${options.baseUrl}${options.path}');
           debugPrint('Method: ${options.method}');
           debugPrint('Request Data: ${options.data}');
