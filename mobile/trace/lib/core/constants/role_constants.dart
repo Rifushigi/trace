@@ -1,4 +1,3 @@
-/// Constants related to user roles and permissions
 class RoleConstants {
   // User Roles
   static const String studentRole = 'student';
