@@ -9,7 +9,7 @@
     "dev": "nodemon src/app.ts || exit 1",
     "start": "tsx src/app.ts",
     "build": "tsc && cp -R src/views dist/views",
-    "serve": "pnpm run build && node dist/app.js",
+    "serve": "npm run build && node dist/app.js",
     "clean": "rm -rf dist"
   },
   "author": "Rifushigi",
