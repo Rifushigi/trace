@@ -1,19 +1,28 @@
 import admin from "firebase-admin";
 import { User } from "../models/index.js"
+import {
+    AppError,
+    NotFoundError,
+    DatabaseError
+} from "../middlewares/error_handler.js";
+import { firebaseClientEmail, firebasePrivateKey, firebaseProjectId } from "../config/index.js";
 
 class FCMService {
     private static instance: FCMService;
 
     private constructor() {
-        // Initialize Firebase Admin SDK
         if (!admin.apps.length) {
-            admin.initializeApp({
-                credential: admin.credential.cert({
-                    projectId: process.env.FIREBASE_PROJECT_ID,
-                    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-                }),
-            });
+            try {
+                admin.initializeApp({
+                    credential: admin.credential.cert({
+                        projectId: firebaseProjectId,
+                        clientEmail: firebaseClientEmail,
+                        privateKey: firebasePrivateKey?.replace(/\\n/g, '\n'),
+                    }),
+                });
+            } catch (error) {
+                throw new AppError(500, "Failed to initialize Firebase Admin SDK", true, error);
+            }
         }
     }
 
@@ -29,11 +38,13 @@ class FCMService {
      */
     async storeToken(userId: string, token: string): Promise<void> {
         try {
-            // Store token in your database
-            await User.findByIdAndUpdate(userId, { fcmToken: token });
+            const user = await User.findByIdAndUpdate(userId, { fcmToken: token });
+            if (!user) {
+                throw new NotFoundError(`User not found for storing FCM token: ${userId}`);
+            }
         } catch (error) {
-            console.error('Error storing FCM token:', error);
-            throw error;
+            if (error instanceof AppError) throw error;
+            throw new DatabaseError('Error storing FCM token', error);
         }
     }
 
@@ -42,10 +53,13 @@ class FCMService {
      */
     async removeToken(userId: string): Promise<void> {
         try {
-            await User.findByIdAndUpdate(userId, { $unset: { fcmToken: 1 } });
+            const user = await User.findByIdAndUpdate(userId, { $unset: { fcmToken: 1 } });
+            if (!user) {
+                throw new NotFoundError(`User not found for removing FCM token: ${userId}`);
+            }
         } catch (error) {
-            console.error('Error removing FCM token:', error);
-            throw error;
+            if (error instanceof AppError) throw error;
+            throw new DatabaseError('Error removing FCM token', error);
         }
     }
 
@@ -59,15 +73,16 @@ class FCMService {
     }): Promise<void> {
         try {
             const user = await User.findById(userId);
-            if (!user?.fcmToken) {
-                console.warn(`No FCM token found for user ${userId}`);
-                return;
+            if (!user) {
+                throw new NotFoundError(`User not found: ${userId}`);
             }
-
+            if (!user.fcmToken) {
+                throw new NotFoundError(`No FCM token found for user ${userId}`);
+            }
             await this.sendToToken(user.fcmToken, notification);
         } catch (error) {
-            console.error('Error sending notification to user:', error);
-            throw error;
+            if (error instanceof AppError) throw error;
+            throw new AppError(500, 'Error sending notification to user', true, error);
         }
     }
 
@@ -89,15 +104,14 @@ class FCMService {
                 .map(user => user.fcmToken);
 
             if (tokens.length === 0) {
-                console.warn('No FCM tokens found for the specified users');
-                return;
+                throw new NotFoundError('No FCM tokens found for the specified users');
             } else {
                 await this.sendToTokens(tokens, notification);
             }
 
         } catch (error) {
-            console.error('Error sending notification to users:', error);
-            throw error;
+            if (error instanceof AppError) throw error;
+            throw new AppError(500, 'Error sending notification to users', true, error);
         }
     }
 
@@ -136,8 +150,7 @@ class FCMService {
 
             await admin.messaging().send(message);
         } catch (error) {
-            console.error('Error sending notification to token:', error);
-            throw error;
+            throw new AppError(500, 'Error sending notification to token', true, error);
         }
     }
 
@@ -176,10 +189,9 @@ class FCMService {
 
             await admin.messaging().sendEach(messages);
         } catch (error) {
-            console.error('Error sending notification to tokens:', error);
-            throw error;
+            throw new AppError(500, 'Error sending notification to tokens', true, error);
         }
     }
 }
 
-export const fcmService = FCMService.getInstance(); 
+export const fcmService = FCMService.getInstance();

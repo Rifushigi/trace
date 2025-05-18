@@ -4,6 +4,9 @@ dotenv.config();
 
 // TODO
 // add the firebase env variables
+const firebaseProjectId: string = process.env.FIREBASE_PROJECT_ID!;
+const firebaseClientEmail: string = process.env.FIREBASE_CLIENT_EMAIL!;
+const firebasePrivateKey: string = process.env.FIREBASE_PRIVATE_KEY!;
 const baseUrl: string = process.env.BASE_URL!;
 const emailFrom: string = process.env.EMAIL_FROM!;
 const emailExp: number = parseInt(process.env.EMAIL_EXP || "86400000");//time-ms
@@ -45,6 +48,9 @@ const requiredEnvVars = [
     'REFRESH_TOKEN_SECRET',
     'ACCESS_TOKEN_DURATION',
     'REFRESH_TOKEN_DURATION',
+    'FIREBASE_PROJECT_ID',
+    'FIREBASE_CLIENT_EMAIL',
+    'FIREBASE_PRIVATE_KEY'
 ];
 
 export {
@@ -70,4 +76,7 @@ export {
     accessTokenSecret,
     refreshTokenSecret,
     requiredEnvVars,
+    firebaseClientEmail,
+    firebaseProjectId,
+    firebasePrivateKey
 }
