@@ -6,12 +6,12 @@ part of 'profile_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$profileHash() => r'4411d87fca37a1221da40c19e8d3e426bb6f0226';
+String _$profileHash() => r'a5f63e4ea3002fc0ba174d74812d0e401833ecd5';
 
 /// See also [Profile].
 @ProviderFor(Profile)
 final profileProvider =
-    AutoDisposeAsyncNotifierProvider<Profile, ProfileModel?>.internal(
+    AutoDisposeAsyncNotifierProvider<Profile, ProfileEntity?>.internal(
   Profile.new,
   name: r'profileProvider',
   debugGetCreateSourceHash:
@@ -20,6 +20,6 @@ final profileProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$Profile = AutoDisposeAsyncNotifier<ProfileModel?>;
+typedef _$Profile = AutoDisposeAsyncNotifier<ProfileEntity?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
