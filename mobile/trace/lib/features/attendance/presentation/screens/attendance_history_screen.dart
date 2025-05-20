@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../providers/attendance_provider.dart';
-import '../../data/models/attendance_model.dart';
+import '../../domain/entities/attendance_entity.dart';
 import '../../../../common/styles/app_styles.dart';
 
 class AttendanceHistoryScreen extends ConsumerStatefulWidget {
@@ -17,7 +17,7 @@ class AttendanceHistoryScreen extends ConsumerStatefulWidget {
 
 class _AttendanceHistoryScreenState
     extends ConsumerState<AttendanceHistoryScreen> {
-  List<AttendanceModel> _attendanceList = [];
+  List<AttendanceEntity> _attendanceList = [];
   bool _isLoading = false;
 
   @override

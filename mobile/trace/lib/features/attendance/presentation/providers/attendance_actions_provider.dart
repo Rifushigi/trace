@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/repositories/attendance_repository.dart';
+import '../../domain/repositories/attendance_repository.dart';
+import '../../data/repositories/attendance_repository_impl.dart';
 
 class AttendanceActions extends StateNotifier<AsyncValue<void>> {
   final AttendanceRepository _repository;

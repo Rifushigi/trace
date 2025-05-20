@@ -40,7 +40,8 @@ class AttendanceDetailsScreen extends ConsumerWidget {
               child: Text('Please log in to view attendance details'));
         }
 
-        if (user.role != 'teacher' && user.role != 'admin') {
+        final userEntity = user;
+        if (userEntity.role != 'teacher' && userEntity.role != 'admin') {
           return const Center(child: Text('Unauthorized access'));
         }
 

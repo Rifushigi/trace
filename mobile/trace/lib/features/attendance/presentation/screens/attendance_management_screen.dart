@@ -6,13 +6,13 @@ import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../providers/attendance_provider.dart';
 import '../providers/attendance_actions_provider.dart' as actions;
 import '../../data/models/attendance_session.dart';
-import '../../../../utils/logger.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../common/shared_widgets/app_card.dart';
 import '../../../../common/shared_widgets/empty_state.dart';
 import '../../../../common/styles/app_styles.dart';
 import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
-import '../../../../common/providers/connectivity_service_provider.dart';
+import '../../../../core/network/connectivity_checker.dart';
 
 enum AttendanceHistorySortOption {
   dateDesc,
@@ -86,7 +86,7 @@ class _AttendanceManagementScreenState
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final syncState = ref.watch(attendanceSyncProvider);
-    final isOnline = ref.watch(connectivityServiceProvider).isConnected;
+    final connectivityState = ref.watch(connectivityCheckerProvider);
 
     return authState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -97,9 +97,10 @@ class _AttendanceManagementScreenState
           );
         }
 
+        final userEntity = user;
         // Ensure only lecturers and admins can access
-        if (user.role != RoleConstants.lecturerRole &&
-            user.role != RoleConstants.adminRole) {
+        if (userEntity.role != RoleConstants.lecturerRole &&
+            userEntity.role != RoleConstants.adminRole) {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Access Denied'),
@@ -115,6 +116,12 @@ class _AttendanceManagementScreenState
             ref.watch(activeSessionProvider(widget.classId));
         final attendanceHistoryAsync =
             ref.watch(attendanceHistoryProvider(widget.classId));
+
+        final isOnline = connectivityState.when(
+          data: (isConnected) => isConnected,
+          loading: () => false,
+          error: (_, __) => false,
+        );
 
         return Scaffold(
           appBar: AppBar(
@@ -256,7 +263,8 @@ class _AttendanceManagementScreenState
                               Expanded(
                                 child: _StatItem(
                                   label: 'Present',
-                                  value: session.presentCount.toString(),
+                                  value: (session.checkedInStudents.length)
+                                      .toString(),
                                   icon: Icons.check_circle,
                                   color: Colors.green,
                                 ),
@@ -264,7 +272,7 @@ class _AttendanceManagementScreenState
                               Expanded(
                                 child: _StatItem(
                                   label: 'Absent',
-                                  value: session.absentCount.toString(),
+                                  value: (0).toString(),
                                   icon: Icons.cancel,
                                   color: Colors.red,
                                 ),
@@ -283,7 +291,8 @@ class _AttendanceManagementScreenState
                                 icon: const Icon(Icons.person_add),
                                 label: const Text('Manual Check-in'),
                               ),
-                              const SizedBox(width: AppConstants.defaultSpacing),
+                              const SizedBox(
+                                  width: AppConstants.defaultSpacing),
                               ElevatedButton.icon(
                                 onPressed: () {
                                   _showEndSessionDialog(
@@ -304,7 +313,7 @@ class _AttendanceManagementScreenState
                     spacing: AppConstants.defaultPadding,
                   ),
                   error: (error, stackTrace) {
-                    Logger.error(
+                    AppLogger.error(
                         'Failed to load active session', error, stackTrace);
                     return EmptyState(
                       message: 'Failed to load active session',
@@ -604,8 +613,8 @@ class _AttendanceManagementScreenState
                         spacing: AppConstants.defaultPadding,
                       ),
                       error: (error, stackTrace) {
-                        Logger.error('Failed to load attendance history', error,
-                            stackTrace);
+                        AppLogger.error('Failed to load attendance history',
+                            error, stackTrace);
                         return EmptyState(
                           message: 'Error loading attendance history: $error',
                           icon: Icons.error_outline,
@@ -624,7 +633,7 @@ class _AttendanceManagementScreenState
         );
       },
       error: (error, stackTrace) {
-        Logger.error(
+        AppLogger.error(
             'Failed to load attendance management screen', error, stackTrace);
         return Scaffold(
           body: Center(
@@ -728,7 +737,12 @@ class _AttendanceManagementScreenState
 
   void _showManualCheckInDialog(
       BuildContext context, WidgetRef ref, String sessionId) {
-    final isOnline = ref.read(connectivityServiceProvider).isConnected;
+    final connectivityState = ref.read(connectivityCheckerProvider);
+    final isOnline = connectivityState.when(
+      data: (isConnected) => isConnected,
+      loading: () => false,
+      error: (_, __) => false,
+    );
     final studentIdController = TextEditingController();
 
     showDialog(

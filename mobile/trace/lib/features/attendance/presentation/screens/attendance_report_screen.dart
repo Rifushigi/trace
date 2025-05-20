@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../providers/attendance_provider.dart';
-import '../../data/models/attendance_model.dart';
+import '../../domain/entities/attendance_entity.dart';
 import '../../../../common/styles/app_styles.dart';
 
 class AttendanceReportScreen extends ConsumerStatefulWidget {
@@ -17,7 +17,7 @@ class AttendanceReportScreen extends ConsumerStatefulWidget {
 
 class _AttendanceReportScreenState
     extends ConsumerState<AttendanceReportScreen> {
-  List<AttendanceModel> _attendanceList = [];
+  List<AttendanceEntity> _attendanceList = [];
   bool _isLoading = false;
   Map<String, int> _attendanceStats = {};
 
@@ -33,11 +33,10 @@ class _AttendanceReportScreenState
     });
 
     try {
-      final attendance = await ref
-          .read(attendanceActionsProvider.notifier)
-          .getAttendanceHistory(widget.classId);
+      final attendanceHistory =
+          await ref.read(attendanceHistoryProvider(widget.classId).future);
       setState(() {
-        _attendanceList = attendance;
+        _attendanceList = attendanceHistory;
         _calculateStats();
       });
     } catch (e) {
@@ -90,7 +89,8 @@ class _AttendanceReportScreenState
                     const SizedBox(height: AppConstants.defaultSpacing),
                     Card(
                       child: Padding(
-                        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+                        padding:
+                            const EdgeInsets.all(AppConstants.defaultPadding),
                         child: Column(
                           children: [
                             _buildStatRow(
@@ -133,7 +133,8 @@ class _AttendanceReportScreenState
 
   Widget _buildStatRow(String label, int count) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppConstants.defaultSpacing),
+      padding:
+          const EdgeInsets.symmetric(vertical: AppConstants.defaultSpacing),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

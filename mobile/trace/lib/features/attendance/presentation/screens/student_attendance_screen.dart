@@ -4,12 +4,12 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/role_constants.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../providers/attendance_provider.dart';
-import '../../../../utils/logger.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../common/appbar/role_app_bar.dart';
 import '../../../../common/shared_widgets/app_card.dart';
 import '../../../../common/shared_widgets/empty_state.dart';
 import '../../../../common/styles/app_styles.dart';
-import '../../data/models/attendance_model.dart';
+import '../../domain/entities/attendance_entity.dart';
 
 enum StudentAttendanceFilter {
   all,
@@ -51,7 +51,8 @@ class _StudentAttendanceScreenState
     super.dispose();
   }
 
-  List<AttendanceModel> _filterAndSearchHistory(List<AttendanceModel> history) {
+  List<AttendanceEntity> _filterAndSearchHistory(
+      List<AttendanceEntity> history) {
     return history.where((record) {
       // Apply status filter
       if (_currentFilter == StudentAttendanceFilter.present &&
@@ -168,7 +169,10 @@ class _StudentAttendanceScreenState
                             Expanded(
                               child: _buildStatItem(
                                 label: 'Present',
-                                value: session.status == 'present' ? '1' : '0',
+                                value:
+                                    session.checkedInStudents.contains(user?.id)
+                                        ? '1'
+                                        : '0',
                                 icon: Icons.check_circle,
                                 color: Colors.green,
                               ),
@@ -176,7 +180,10 @@ class _StudentAttendanceScreenState
                             Expanded(
                               child: _buildStatItem(
                                 label: 'Absent',
-                                value: session.status == 'absent' ? '1' : '0',
+                                value: !session.checkedInStudents
+                                        .contains(user?.id)
+                                    ? '1'
+                                    : '0',
                                 icon: Icons.cancel,
                                 color: Colors.red,
                               ),
@@ -189,7 +196,7 @@ class _StudentAttendanceScreenState
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, stackTrace) {
-                  Logger.error(
+                  AppLogger.error(
                       'Failed to load active session', error, stackTrace);
                   return EmptyState(
                     message: 'Failed to load active session',
@@ -222,7 +229,7 @@ class _StudentAttendanceScreenState
                           ref
                               .read(attendanceHistoryProvider(widget.classId)
                                   .notifier)
-                              .refresh();
+                              .refresh(widget.classId);
                         },
                         itemBuilder: (context) => [
                           const PopupMenuItem(
@@ -399,7 +406,7 @@ class _StudentAttendanceScreenState
                       }
 
                       final filteredAttendance = _filterAndSearchHistory(
-                          attendance.cast<AttendanceModel>());
+                          attendance.cast<AttendanceEntity>());
                       if (filteredAttendance.isEmpty) {
                         return const EmptyState(
                           message: 'No records match your search criteria',
@@ -451,8 +458,8 @@ class _StudentAttendanceScreenState
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (error, stackTrace) {
-                      Logger.error('Failed to load attendance history', error,
-                          stackTrace);
+                      AppLogger.error('Failed to load attendance history',
+                          error, stackTrace);
                       return EmptyState(
                         message: 'Failed to load attendance history',
                         icon: Icons.error_outline,

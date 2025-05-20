@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../providers/attendance_provider.dart';
-import '../../data/models/attendance_model.dart';
+import '../../domain/entities/attendance_entity.dart';
 import '../../../../common/styles/app_styles.dart';
 
 class AttendanceSessionScreen extends ConsumerStatefulWidget {
@@ -18,7 +18,7 @@ class AttendanceSessionScreen extends ConsumerStatefulWidget {
 class _AttendanceSessionScreenState
     extends ConsumerState<AttendanceSessionScreen> {
   String? _sessionId;
-  List<AttendanceModel> _attendanceList = [];
+  List<AttendanceEntity> _attendanceList = [];
   bool _isLoading = false;
 
   Future<void> _startSession() async {
@@ -27,16 +27,11 @@ class _AttendanceSessionScreenState
     });
 
     try {
-      final startTime = DateTime.now();
-      final endTime =
-          startTime.add(const Duration(hours: 2)); // Example: 2-hour session
-      await ref
+      final session = await ref
           .read(attendanceActionsProvider.notifier)
           .startSession(widget.classId);
-      // TODO: Store sessionId from response
       setState(() {
-        _sessionId =
-            'dummy_session_id'; // Replace with actual sessionId from API
+        _sessionId = session.id;
       });
     } catch (e) {
       if (mounted) {

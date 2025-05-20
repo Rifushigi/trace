@@ -6,7 +6,7 @@ part of 'attendance_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$attendanceActionsHash() => r'ded1b4aab45dba8fcc3a7a758bf758091d642555';
+String _$attendanceActionsHash() => r'd3fbed5f126e5e4cbfd821696bd6af12514b26ce';
 
 /// See also [AttendanceActions].
 @ProviderFor(AttendanceActions)
@@ -22,7 +22,7 @@ final attendanceActionsProvider =
 );
 
 typedef _$AttendanceActions = AutoDisposeAsyncNotifier<void>;
-String _$attendanceSyncHash() => r'5a69becf79068392ed1ac44a2b2a97a5ef41d513';
+String _$attendanceSyncHash() => r'd100a490bd814432af17a991a7ca25707a436d69';
 
 /// See also [AttendanceSync].
 @ProviderFor(AttendanceSync)
@@ -38,7 +38,7 @@ final attendanceSyncProvider =
 );
 
 typedef _$AttendanceSync = AutoDisposeAsyncNotifier<void>;
-String _$attendanceHistoryHash() => r'fa98bdf909ec68ad22543237c5f4c207a1719bdc';
+String _$attendanceHistoryHash() => r'f8b2ce0b8555f064c9b4b98380b88d4f21752ba0';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -62,10 +62,10 @@ class _SystemHash {
 }
 
 abstract class _$AttendanceHistory
-    extends BuildlessAutoDisposeAsyncNotifier<List<dynamic>> {
+    extends BuildlessAutoDisposeAsyncNotifier<List<AttendanceEntity>> {
   late final String classId;
 
-  FutureOr<List<dynamic>> build(
+  FutureOr<List<AttendanceEntity>> build(
     String classId,
   );
 }
@@ -75,7 +75,8 @@ abstract class _$AttendanceHistory
 const attendanceHistoryProvider = AttendanceHistoryFamily();
 
 /// See also [AttendanceHistory].
-class AttendanceHistoryFamily extends Family<AsyncValue<List<dynamic>>> {
+class AttendanceHistoryFamily
+    extends Family<AsyncValue<List<AttendanceEntity>>> {
   /// See also [AttendanceHistory].
   const AttendanceHistoryFamily();
 
@@ -114,7 +115,7 @@ class AttendanceHistoryFamily extends Family<AsyncValue<List<dynamic>>> {
 
 /// See also [AttendanceHistory].
 class AttendanceHistoryProvider extends AutoDisposeAsyncNotifierProviderImpl<
-    AttendanceHistory, List<dynamic>> {
+    AttendanceHistory, List<AttendanceEntity>> {
   /// See also [AttendanceHistory].
   AttendanceHistoryProvider(
     String classId,
@@ -145,7 +146,7 @@ class AttendanceHistoryProvider extends AutoDisposeAsyncNotifierProviderImpl<
   final String classId;
 
   @override
-  FutureOr<List<dynamic>> runNotifierBuild(
+  FutureOr<List<AttendanceEntity>> runNotifierBuild(
     covariant AttendanceHistory notifier,
   ) {
     return notifier.build(
@@ -170,8 +171,8 @@ class AttendanceHistoryProvider extends AutoDisposeAsyncNotifierProviderImpl<
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<AttendanceHistory, List<dynamic>>
-      createElement() {
+  AutoDisposeAsyncNotifierProviderElement<AttendanceHistory,
+      List<AttendanceEntity>> createElement() {
     return _AttendanceHistoryProviderElement(this);
   }
 
@@ -192,27 +193,27 @@ class AttendanceHistoryProvider extends AutoDisposeAsyncNotifierProviderImpl<
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin AttendanceHistoryRef
-    on AutoDisposeAsyncNotifierProviderRef<List<dynamic>> {
+    on AutoDisposeAsyncNotifierProviderRef<List<AttendanceEntity>> {
   /// The parameter `classId` of this provider.
   String get classId;
 }
 
 class _AttendanceHistoryProviderElement
     extends AutoDisposeAsyncNotifierProviderElement<AttendanceHistory,
-        List<dynamic>> with AttendanceHistoryRef {
+        List<AttendanceEntity>> with AttendanceHistoryRef {
   _AttendanceHistoryProviderElement(super.provider);
 
   @override
   String get classId => (origin as AttendanceHistoryProvider).classId;
 }
 
-String _$classInfoHash() => r'c5fc88f3a53ad9855a5cac1e5a97287cf8d6d042';
+String _$classInfoHash() => r'46abf2f478250e85d0ee747ec3a55f0a92e869af';
 
 abstract class _$ClassInfo
-    extends BuildlessAutoDisposeAsyncNotifier<Map<String, dynamic>> {
+    extends BuildlessAutoDisposeAsyncNotifier<ClassInfoEntity> {
   late final String classId;
 
-  FutureOr<Map<String, dynamic>> build(
+  FutureOr<ClassInfoEntity> build(
     String classId,
   );
 }
@@ -222,7 +223,7 @@ abstract class _$ClassInfo
 const classInfoProvider = ClassInfoFamily();
 
 /// See also [ClassInfo].
-class ClassInfoFamily extends Family<AsyncValue<Map<String, dynamic>>> {
+class ClassInfoFamily extends Family<AsyncValue<ClassInfoEntity>> {
   /// See also [ClassInfo].
   const ClassInfoFamily();
 
@@ -260,8 +261,8 @@ class ClassInfoFamily extends Family<AsyncValue<Map<String, dynamic>>> {
 }
 
 /// See also [ClassInfo].
-class ClassInfoProvider extends AutoDisposeAsyncNotifierProviderImpl<ClassInfo,
-    Map<String, dynamic>> {
+class ClassInfoProvider
+    extends AutoDisposeAsyncNotifierProviderImpl<ClassInfo, ClassInfoEntity> {
   /// See also [ClassInfo].
   ClassInfoProvider(
     String classId,
@@ -291,7 +292,7 @@ class ClassInfoProvider extends AutoDisposeAsyncNotifierProviderImpl<ClassInfo,
   final String classId;
 
   @override
-  FutureOr<Map<String, dynamic>> runNotifierBuild(
+  FutureOr<ClassInfoEntity> runNotifierBuild(
     covariant ClassInfo notifier,
   ) {
     return notifier.build(
@@ -316,7 +317,7 @@ class ClassInfoProvider extends AutoDisposeAsyncNotifierProviderImpl<ClassInfo,
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<ClassInfo, Map<String, dynamic>>
+  AutoDisposeAsyncNotifierProviderElement<ClassInfo, ClassInfoEntity>
       createElement() {
     return _ClassInfoProviderElement(this);
   }
@@ -337,26 +338,26 @@ class ClassInfoProvider extends AutoDisposeAsyncNotifierProviderImpl<ClassInfo,
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin ClassInfoRef
-    on AutoDisposeAsyncNotifierProviderRef<Map<String, dynamic>> {
+mixin ClassInfoRef on AutoDisposeAsyncNotifierProviderRef<ClassInfoEntity> {
   /// The parameter `classId` of this provider.
   String get classId;
 }
 
-class _ClassInfoProviderElement extends AutoDisposeAsyncNotifierProviderElement<
-    ClassInfo, Map<String, dynamic>> with ClassInfoRef {
+class _ClassInfoProviderElement
+    extends AutoDisposeAsyncNotifierProviderElement<ClassInfo, ClassInfoEntity>
+    with ClassInfoRef {
   _ClassInfoProviderElement(super.provider);
 
   @override
   String get classId => (origin as ClassInfoProvider).classId;
 }
 
-String _$activeSessionsHash() => r'dc82fbab2e6e44a790ebf5078b01db3b8ff45467';
+String _$activeSessionsHash() => r'3d50fa7bad66406c3e38369b3d9ff92f1f6c3729';
 
 /// See also [ActiveSessions].
 @ProviderFor(ActiveSessions)
 final activeSessionsProvider = AutoDisposeAsyncNotifierProvider<ActiveSessions,
-    List<AttendanceModel>>.internal(
+    List<AttendanceSessionEntity>>.internal(
   ActiveSessions.new,
   name: r'activeSessionsProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -366,16 +367,17 @@ final activeSessionsProvider = AutoDisposeAsyncNotifierProvider<ActiveSessions,
   allTransitiveDependencies: null,
 );
 
-typedef _$ActiveSessions = AutoDisposeAsyncNotifier<List<AttendanceModel>>;
+typedef _$ActiveSessions
+    = AutoDisposeAsyncNotifier<List<AttendanceSessionEntity>>;
 String _$studentAttendanceStatusHash() =>
-    r'a1ea42bee47933fad3e8a1bbe385a778e6b6a6aa';
+    r'b47957d09c56d7e9205469cc922851aae444f9e9';
 
 abstract class _$StudentAttendanceStatus
-    extends BuildlessAutoDisposeAsyncNotifier<Map<String, dynamic>> {
+    extends BuildlessAutoDisposeAsyncNotifier<StudentAttendanceStatusEntity> {
   late final String classId;
   late final String studentId;
 
-  FutureOr<Map<String, dynamic>> build(
+  FutureOr<StudentAttendanceStatusEntity> build(
     String classId,
     String studentId,
   );
@@ -387,7 +389,7 @@ const studentAttendanceStatusProvider = StudentAttendanceStatusFamily();
 
 /// See also [StudentAttendanceStatus].
 class StudentAttendanceStatusFamily
-    extends Family<AsyncValue<Map<String, dynamic>>> {
+    extends Family<AsyncValue<StudentAttendanceStatusEntity>> {
   /// See also [StudentAttendanceStatus].
   const StudentAttendanceStatusFamily();
 
@@ -430,7 +432,7 @@ class StudentAttendanceStatusFamily
 /// See also [StudentAttendanceStatus].
 class StudentAttendanceStatusProvider
     extends AutoDisposeAsyncNotifierProviderImpl<StudentAttendanceStatus,
-        Map<String, dynamic>> {
+        StudentAttendanceStatusEntity> {
   /// See also [StudentAttendanceStatus].
   StudentAttendanceStatusProvider(
     String classId,
@@ -467,7 +469,7 @@ class StudentAttendanceStatusProvider
   final String studentId;
 
   @override
-  FutureOr<Map<String, dynamic>> runNotifierBuild(
+  FutureOr<StudentAttendanceStatusEntity> runNotifierBuild(
     covariant StudentAttendanceStatus notifier,
   ) {
     return notifier.build(
@@ -497,7 +499,7 @@ class StudentAttendanceStatusProvider
 
   @override
   AutoDisposeAsyncNotifierProviderElement<StudentAttendanceStatus,
-      Map<String, dynamic>> createElement() {
+      StudentAttendanceStatusEntity> createElement() {
     return _StudentAttendanceStatusProviderElement(this);
   }
 
@@ -521,7 +523,7 @@ class StudentAttendanceStatusProvider
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin StudentAttendanceStatusRef
-    on AutoDisposeAsyncNotifierProviderRef<Map<String, dynamic>> {
+    on AutoDisposeAsyncNotifierProviderRef<StudentAttendanceStatusEntity> {
   /// The parameter `classId` of this provider.
   String get classId;
 
@@ -531,7 +533,7 @@ mixin StudentAttendanceStatusRef
 
 class _StudentAttendanceStatusProviderElement
     extends AutoDisposeAsyncNotifierProviderElement<StudentAttendanceStatus,
-        Map<String, dynamic>> with StudentAttendanceStatusRef {
+        StudentAttendanceStatusEntity> with StudentAttendanceStatusRef {
   _StudentAttendanceStatusProviderElement(super.provider);
 
   @override
@@ -540,7 +542,7 @@ class _StudentAttendanceStatusProviderElement
   String get studentId => (origin as StudentAttendanceStatusProvider).studentId;
 }
 
-String _$classScheduleHash() => r'b14d826cef33ade02c38039297741fc5ea222d0a';
+String _$classScheduleHash() => r'024550c5f86b286a62d38e2a6d30b5be894a5320';
 
 abstract class _$ClassSchedule
     extends BuildlessAutoDisposeAsyncNotifier<List<Map<String, dynamic>>> {
@@ -688,38 +690,38 @@ class _ClassScheduleProviderElement
   String get classId => (origin as ClassScheduleProvider).classId;
 }
 
-String _$classStatsHash() => r'2edb67ea3123e1f792d1c5d3982469229ab553b4';
+String _$activeSessionHash() => r'1fe879b3a1307e6f8c3c4b0ef677f8d32c6318f7';
 
-abstract class _$ClassStats
-    extends BuildlessAsyncNotifier<Map<String, dynamic>> {
+abstract class _$ActiveSession
+    extends BuildlessAutoDisposeAsyncNotifier<AttendanceSessionEntity?> {
   late final String classId;
 
-  FutureOr<Map<String, dynamic>> build(
+  FutureOr<AttendanceSessionEntity?> build(
     String classId,
   );
 }
 
-/// See also [ClassStats].
-@ProviderFor(ClassStats)
-const classStatsProvider = ClassStatsFamily();
+/// See also [ActiveSession].
+@ProviderFor(ActiveSession)
+const activeSessionProvider = ActiveSessionFamily();
 
-/// See also [ClassStats].
-class ClassStatsFamily extends Family<AsyncValue<Map<String, dynamic>>> {
-  /// See also [ClassStats].
-  const ClassStatsFamily();
+/// See also [ActiveSession].
+class ActiveSessionFamily extends Family<AsyncValue<AttendanceSessionEntity?>> {
+  /// See also [ActiveSession].
+  const ActiveSessionFamily();
 
-  /// See also [ClassStats].
-  ClassStatsProvider call(
+  /// See also [ActiveSession].
+  ActiveSessionProvider call(
     String classId,
   ) {
-    return ClassStatsProvider(
+    return ActiveSessionProvider(
       classId,
     );
   }
 
   @override
-  ClassStatsProvider getProviderOverride(
-    covariant ClassStatsProvider provider,
+  ActiveSessionProvider getProviderOverride(
+    covariant ActiveSessionProvider provider,
   ) {
     return call(
       provider.classId,
@@ -738,30 +740,30 @@ class ClassStatsFamily extends Family<AsyncValue<Map<String, dynamic>>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'classStatsProvider';
+  String? get name => r'activeSessionProvider';
 }
 
-/// See also [ClassStats].
-class ClassStatsProvider
-    extends AsyncNotifierProviderImpl<ClassStats, Map<String, dynamic>> {
-  /// See also [ClassStats].
-  ClassStatsProvider(
+/// See also [ActiveSession].
+class ActiveSessionProvider extends AutoDisposeAsyncNotifierProviderImpl<
+    ActiveSession, AttendanceSessionEntity?> {
+  /// See also [ActiveSession].
+  ActiveSessionProvider(
     String classId,
   ) : this._internal(
-          () => ClassStats()..classId = classId,
-          from: classStatsProvider,
-          name: r'classStatsProvider',
+          () => ActiveSession()..classId = classId,
+          from: activeSessionProvider,
+          name: r'activeSessionProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$classStatsHash,
-          dependencies: ClassStatsFamily._dependencies,
+                  : _$activeSessionHash,
+          dependencies: ActiveSessionFamily._dependencies,
           allTransitiveDependencies:
-              ClassStatsFamily._allTransitiveDependencies,
+              ActiveSessionFamily._allTransitiveDependencies,
           classId: classId,
         );
 
-  ClassStatsProvider._internal(
+  ActiveSessionProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -774,8 +776,8 @@ class ClassStatsProvider
   final String classId;
 
   @override
-  FutureOr<Map<String, dynamic>> runNotifierBuild(
-    covariant ClassStats notifier,
+  FutureOr<AttendanceSessionEntity?> runNotifierBuild(
+    covariant ActiveSession notifier,
   ) {
     return notifier.build(
       classId,
@@ -783,10 +785,10 @@ class ClassStatsProvider
   }
 
   @override
-  Override overrideWith(ClassStats Function() create) {
+  Override overrideWith(ActiveSession Function() create) {
     return ProviderOverride(
       origin: this,
-      override: ClassStatsProvider._internal(
+      override: ActiveSessionProvider._internal(
         () => create()..classId = classId,
         from: from,
         name: null,
@@ -799,14 +801,14 @@ class ClassStatsProvider
   }
 
   @override
-  AsyncNotifierProviderElement<ClassStats, Map<String, dynamic>>
-      createElement() {
-    return _ClassStatsProviderElement(this);
+  AutoDisposeAsyncNotifierProviderElement<ActiveSession,
+      AttendanceSessionEntity?> createElement() {
+    return _ActiveSessionProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is ClassStatsProvider && other.classId == classId;
+    return other is ActiveSessionProvider && other.classId == classId;
   }
 
   @override
@@ -820,18 +822,19 @@ class ClassStatsProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin ClassStatsRef on AsyncNotifierProviderRef<Map<String, dynamic>> {
+mixin ActiveSessionRef
+    on AutoDisposeAsyncNotifierProviderRef<AttendanceSessionEntity?> {
   /// The parameter `classId` of this provider.
   String get classId;
 }
 
-class _ClassStatsProviderElement
-    extends AsyncNotifierProviderElement<ClassStats, Map<String, dynamic>>
-    with ClassStatsRef {
-  _ClassStatsProviderElement(super.provider);
+class _ActiveSessionProviderElement
+    extends AutoDisposeAsyncNotifierProviderElement<ActiveSession,
+        AttendanceSessionEntity?> with ActiveSessionRef {
+  _ActiveSessionProviderElement(super.provider);
 
   @override
-  String get classId => (origin as ClassStatsProvider).classId;
+  String get classId => (origin as ActiveSessionProvider).classId;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
