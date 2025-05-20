@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/class_provider.dart';
-import '../../data/models/class_model.dart';
+import '../../domain/entities/class_entity.dart';
+import '../../../class_management/domain/entities/class_schedule.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 
 class CreateClassScreen extends ConsumerStatefulWidget {
@@ -22,7 +23,7 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
   final List<String> _selectedDays = [];
   final _endDateController = TextEditingController();
 
-  final List<String> _weekDays = [
+  static const List<String> _weekDays = [
     'Monday',
     'Tuesday',
     'Wednesday',
@@ -49,6 +50,7 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
       context: context,
       initialTime: TimeOfDay.now(),
     );
+    if (!mounted) return;
     if (time != null) {
       controller.text = time.format(context);
     }
@@ -61,6 +63,7 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
+    if (!mounted) return;
     if (date != null) {
       _endDateController.text = date.toIso8601String().split('T')[0];
     }
@@ -70,6 +73,7 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       final user = ref.read(authProvider).value;
       if (user == null) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('You must be logged in to create a class')),
@@ -87,6 +91,7 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
       );
 
       if (!schedule.isValid) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Invalid schedule configuration')),
         );
@@ -98,6 +103,7 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
       for (final existingClass in existingClasses) {
         final existingSchedule = ClassSchedule.fromJson(existingClass.schedule);
         if (schedule.hasConflict(existingSchedule)) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
                 content: Text('Schedule conflicts with ${existingClass.name}')),
@@ -106,7 +112,7 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
         }
       }
 
-      final newClass = ClassModel(
+      final newClass = ClassEntity(
         id: '', // Will be set by the server
         name: _nameController.text,
         code: _codeController.text,

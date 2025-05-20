@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/class_provider.dart';
-import '../../data/models/class_model.dart';
+import '../../domain/entities/class_entity.dart';
 
 class UpdateClassScreen extends ConsumerStatefulWidget {
-  final ClassModel classModel;
+  final ClassEntity classModel;
 
   const UpdateClassScreen({super.key, required this.classModel});
 
@@ -57,7 +57,7 @@ class _UpdateClassScreenState extends ConsumerState<UpdateClassScreen> {
         'endDate': widget.classModel.schedule['endDate'] as String?,
       };
 
-      final updatedClass = ClassModel(
+      final updatedClass = ClassEntity(
         id: widget.classModel.id,
         name: _nameController.text,
         code: _codeController.text,

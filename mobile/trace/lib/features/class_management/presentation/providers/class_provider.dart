@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/class_model.dart';
-import '../../data/models/class_statistics.dart';
-import '../../data/repositories/class_repository.dart';
+import '../../domain/entities/class_entity.dart';
+import '../../domain/entities/class_statistics.dart';
+import '../../data/repositories/class_repository_impl.dart';
+import '../../domain/repositories/class_repository.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../../core/network/api_client.dart';
 
@@ -9,24 +10,24 @@ final classRepositoryProvider = Provider<ClassRepository>((ref) {
   return ClassRepositoryImpl(ref.watch(apiClientProvider));
 });
 
-final classListProvider = FutureProvider<List<ClassModel>>((ref) async {
+final classListProvider = FutureProvider<List<ClassEntity>>((ref) async {
   final repository = ref.watch(classRepositoryProvider);
   return repository.getLecturerClasses();
 });
 
-final enrolledClassesProvider = FutureProvider<List<ClassModel>>((ref) async {
+final enrolledClassesProvider = FutureProvider<List<ClassEntity>>((ref) async {
   final repository = ref.watch(classRepositoryProvider);
   return repository.getEnrolledClasses();
 });
 
 final searchClassesProvider =
-    FutureProvider.family<List<ClassModel>, String>((ref, query) async {
+    FutureProvider.family<List<ClassEntity>, String>((ref, query) async {
   final repository = ref.watch(classRepositoryProvider);
   return repository.searchClasses(query);
 });
 
 final classDetailsProvider =
-    FutureProvider.family<ClassModel?, String>((ref, classId) async {
+    FutureProvider.family<ClassEntity?, String>((ref, classId) async {
   final repository = ref.watch(classRepositoryProvider);
   return repository.getClassDetails(classId);
 });
@@ -54,7 +55,7 @@ class ClassActionsNotifier extends StateNotifier<AsyncValue<void>> {
 
   ClassActionsNotifier(this._repository) : super(const AsyncValue.data(null));
 
-  Future<void> createClass(ClassModel classModel) async {
+  Future<void> createClass(ClassEntity classModel) async {
     state = const AsyncValue.loading();
     try {
       await _repository.createClass(classModel);
@@ -64,7 +65,7 @@ class ClassActionsNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  Future<void> updateClass(String classId, ClassModel classModel) async {
+  Future<void> updateClass(String classId, ClassEntity classModel) async {
     state = const AsyncValue.loading();
     try {
       await _repository.updateClass(classId, classModel);

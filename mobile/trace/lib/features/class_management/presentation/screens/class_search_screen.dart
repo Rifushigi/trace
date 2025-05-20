@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/class_provider.dart';
-import '../../data/models/class_model.dart';
+import '../../domain/entities/class_entity.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../common/shared_widgets/toast.dart';
@@ -62,7 +62,7 @@ class _ClassSearchScreenState extends ConsumerState<ClassSearchScreen> {
     }
   }
 
-  bool _matchesFilters(ClassModel classModel) {
+  bool _matchesFilters(ClassEntity classModel) {
     final schedule = classModel.schedule;
     final day = schedule['day'] as String? ?? 'N/A';
     final startTime = schedule['startTime'] as String? ?? 'N/A';

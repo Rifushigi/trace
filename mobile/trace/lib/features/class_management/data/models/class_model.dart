@@ -1,76 +1,42 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class ClassModel {
+  final String id;
+  final String name;
+  final String code;
+  final String lecturerId;
+  final Map<String, dynamic> schedule;
+  final List<String> students;
 
-part 'class_model.freezed.dart';
-part 'class_model.g.dart';
+  ClassModel({
+    required this.id,
+    required this.name,
+    required this.code,
+    required this.lecturerId,
+    required this.schedule,
+    required this.students,
+  });
 
-@freezed
-class ClassSchedule with _$ClassSchedule {
-  const factory ClassSchedule({
-    required String day,
-    required String startTime,
-    required String endTime,
-    @Default(false) bool isRecurring,
-    @Default([]) List<String> recurringDays,
-    String? endDate,
-  }) = _ClassSchedule;
-
-  const ClassSchedule._();
-
-  factory ClassSchedule.fromJson(Map<String, dynamic> json) =>
-      _$ClassScheduleFromJson(json);
-
-  bool get isValid {
-    if (startTime.isEmpty || endTime.isEmpty) return false;
-
-    final start = DateTime.parse('2000-01-01 $startTime');
-    final end = DateTime.parse('2000-01-01 $endTime');
-
-    if (end.isBefore(start)) return false;
-
-    if (isRecurring) {
-      if (recurringDays.isEmpty) return false;
-      if (endDate != null) {
-        final endDateObj = DateTime.parse(endDate!);
-        if (endDateObj.isBefore(DateTime.now())) return false;
-      }
-    }
-
-    return true;
+  factory ClassModel.fromJson(Map<String, dynamic> json) {
+    return ClassModel(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      code: json['code'] as String,
+      lecturerId: json['lecturerId'] as String,
+      schedule: json['schedule'] as Map<String, dynamic>,
+      students: (json['students'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+    );
   }
 
-  bool hasConflict(ClassSchedule other) {
-    if (day != other.day) return false;
-
-    final thisStart = DateTime.parse('2000-01-01 $startTime');
-    final thisEnd = DateTime.parse('2000-01-01 $endTime');
-    final otherStart = DateTime.parse('2000-01-01 ${other.startTime}');
-    final otherEnd = DateTime.parse('2000-01-01 ${other.endTime}');
-
-    return (thisStart.isBefore(otherEnd) && thisEnd.isAfter(otherStart));
-  }
-}
-
-@freezed
-class ClassModel with _$ClassModel {
-  const factory ClassModel({
-    required String id,
-    required String name,
-    required String code,
-    required String lecturerId,
-    required Map<String, dynamic> schedule,
-    @Default([]) List<String> students,
-  }) = _ClassModel;
-
-  factory ClassModel.fromJson(Map<String, dynamic> json) =>
-      _$ClassModelFromJson(json);
-
-  const ClassModel._();
-
-  bool get isValid {
-    return id.isNotEmpty &&
-        name.isNotEmpty &&
-        code.isNotEmpty &&
-        lecturerId.isNotEmpty &&
-        schedule.isNotEmpty;
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'code': code,
+      'lecturerId': lecturerId,
+      'schedule': schedule,
+      'students': students,
+    };
   }
 }

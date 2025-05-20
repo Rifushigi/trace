@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/class_provider.dart';
-import '../../data/models/class_statistics.dart';
+import '../../domain/entities/class_statistics.dart';
 
 class ClassStatisticsScreen extends ConsumerWidget {
   final String classId;
@@ -32,10 +32,6 @@ class ClassStatisticsScreen extends ConsumerWidget {
                 _buildSummaryCards(statistics),
                 const SizedBox(height: 24),
                 _buildAttendanceChart(context, statistics),
-                const SizedBox(height: 24),
-                _buildStudentAttendanceList(statistics),
-                const SizedBox(height: 24),
-                _buildRecentSessionsList(statistics),
               ],
             ),
           );
@@ -92,21 +88,19 @@ class ClassStatisticsScreen extends ConsumerWidget {
           icon: Icons.people,
         ),
         _SummaryCard(
-          title: 'Total Sessions',
-          value: statistics.totalSessions.toString(),
-          icon: Icons.event,
+          title: 'Present',
+          value: statistics.presentCount.toString(),
+          icon: Icons.check_circle,
         ),
         _SummaryCard(
-          title: 'Average Attendance',
-          value: '${(statistics.averageAttendance * 100).toStringAsFixed(1)}%',
-          icon: Icons.analytics,
+          title: 'Absent',
+          value: statistics.absentCount.toString(),
+          icon: Icons.cancel,
         ),
         _SummaryCard(
-          title: 'Recent Rate',
-          value: statistics.recentSessions.isNotEmpty
-              ? '${(statistics.recentSessions.first.attendanceRate * 100).toStringAsFixed(1)}%'
-              : 'N/A',
-          icon: Icons.trending_up,
+          title: 'Late',
+          value: statistics.lateCount.toString(),
+          icon: Icons.timer,
         ),
       ],
     );
@@ -114,7 +108,7 @@ class ClassStatisticsScreen extends ConsumerWidget {
 
   Widget _buildAttendanceChart(
       BuildContext context, ClassStatistics statistics) {
-    if (statistics.attendanceByDay.isEmpty) {
+    if (statistics.attendanceByDate.isEmpty) {
       return const Card(
         child: Padding(
           padding: EdgeInsets.all(16.0),
@@ -125,10 +119,10 @@ class ClassStatisticsScreen extends ConsumerWidget {
       );
     }
 
-    final maxAttendance = statistics.attendanceByDay.values
+    final maxAttendance = statistics.attendanceByDate.values
         .reduce((a, b) => a > b ? a : b)
         .toDouble();
-    final days = statistics.attendanceByDay.keys.toList();
+    final dates = statistics.attendanceByDate.keys.toList();
 
     return Card(
       child: Padding(
@@ -137,7 +131,7 @@ class ClassStatisticsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Attendance by Day',
+              'Attendance by Date',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -150,9 +144,9 @@ class ClassStatisticsScreen extends ConsumerWidget {
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
                   maxY: maxAttendance,
-                  barGroups: statistics.attendanceByDay.entries.map((entry) {
+                  barGroups: statistics.attendanceByDate.entries.map((entry) {
                     return BarChartGroupData(
-                      x: days.indexOf(entry.key),
+                      x: dates.indexOf(entry.key),
                       barRods: [
                         BarChartRodData(
                           toY: entry.value.toDouble(),
@@ -168,9 +162,9 @@ class ClassStatisticsScreen extends ConsumerWidget {
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
                           final index = value.toInt();
-                          if (index >= 0 && index < days.length) {
+                          if (index >= 0 && index < dates.length) {
                             return Text(
-                              days[index],
+                              dates[index],
                               style: const TextStyle(fontSize: 10),
                             );
                           }
@@ -198,119 +192,8 @@ class ClassStatisticsScreen extends ConsumerWidget {
                     ),
                   ),
                   gridData: const FlGridData(show: false),
-                  borderData: FlBorderData(show: false),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStudentAttendanceList(ClassStatistics statistics) {
-    if (statistics.attendanceByStudent.isEmpty) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Center(
-            child: Text('No student attendance data available'),
-          ),
-        ),
-      );
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Student Attendance',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: statistics.attendanceByStudent.length,
-              itemBuilder: (context, index) {
-                final entry =
-                    statistics.attendanceByStudent.entries.elementAt(index);
-                return ListTile(
-                  title: Text(entry.key),
-                  trailing: Text(
-                    '${(entry.value * 100).toStringAsFixed(1)}%',
-                    style: TextStyle(
-                      color: entry.value >= 0.75
-                          ? Colors.green
-                          : entry.value >= 0.5
-                              ? Colors.orange
-                              : Colors.red,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecentSessionsList(ClassStatistics statistics) {
-    if (statistics.recentSessions.isEmpty) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Center(
-            child: Text('No recent sessions available'),
-          ),
-        ),
-      );
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Recent Sessions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: statistics.recentSessions.length,
-              itemBuilder: (context, index) {
-                final session = statistics.recentSessions[index];
-                return ListTile(
-                  title: Text(session.date.toString().split(' ')[0]),
-                  subtitle: Text(
-                    'Present: ${session.presentCount} | Total: ${session.totalCount}',
-                  ),
-                  trailing: Text(
-                    '${(session.attendanceRate * 100).toStringAsFixed(1)}%',
-                    style: TextStyle(
-                      color: session.attendanceRate >= 0.75
-                          ? Colors.green
-                          : session.attendanceRate >= 0.5
-                              ? Colors.orange
-                              : Colors.red,
-                    ),
-                  ),
-                );
-              },
             ),
           ],
         ),
@@ -342,19 +225,14 @@ class _SummaryCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.titleSmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
             ),
           ],
         ),
