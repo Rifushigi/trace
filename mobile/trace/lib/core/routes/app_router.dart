@@ -20,10 +20,13 @@ import '../../features/class_management/presentation/screens/update_class_screen
 import '../../features/class_management/presentation/screens/class_statistics_screen.dart';
 import '../../features/notifications/presentation/screens/notification_list_screen.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
-import '../../features/class_management/data/models/class_model.dart';
+import '../../features/class_management/domain/entities/class_entity.dart';
 import '../../features/attendance/presentation/screens/attendance_management_screen.dart';
 import '../../features/attendance/presentation/screens/attendance_details_screen.dart';
 import '../../features/attendance/presentation/screens/student_attendance_screen.dart';
+import '../../features/attendance/presentation/screens/attendance_history_screen.dart';
+import '../../features/attendance/presentation/screens/attendance_session_screen.dart';
+import '../../features/class_management/presentation/screens/class_search_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings, WidgetRef ref) {
@@ -50,19 +53,19 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const StudentProfileScreen());
       case '/lecturer/profile':
         return MaterialPageRoute(builder: (_) => const LecturerProfileScreen());
-      case '/student/classes':
+      case '/student-classes':
         return MaterialPageRoute(
             builder: (_) => const StudentClassListScreen());
       case '/lecturer/classes':
         return MaterialPageRoute(builder: (_) => const ClassListScreen());
-      case '/class/create':
+      case '/create-class':
         return MaterialPageRoute(builder: (_) => const CreateClassScreen());
-      case '/class/details':
+      case '/class-details':
         final classId = settings.arguments as String;
         return MaterialPageRoute(
             builder: (_) => ClassDetailsScreen(classId: classId));
-      case '/class/update':
-        final classModel = settings.arguments as ClassModel;
+      case '/update-class':
+        final classModel = settings.arguments as ClassEntity;
         return MaterialPageRoute(
             builder: (_) => UpdateClassScreen(classModel: classModel));
       case '/class-statistics':
@@ -72,18 +75,19 @@ class AppRouter {
             builder: (context, ref, child) {
               return ref.watch(authProvider).when(
                     data: (user) {
-                      if (user?.role != 'lecturer' && user?.role != 'admin') {
-                        return Scaffold(
-                          appBar: AppBar(
-                            title: const Text('Access Denied'),
-                          ),
-                          body: const Center(
-                            child: Text(
-                                'Only lecturers and administrators can view class statistics'),
-                          ),
-                        );
+                      if (user != null &&
+                          (user.role == 'lecturer' || user.role == 'admin')) {
+                        return ClassStatisticsScreen(classId: classId);
                       }
-                      return ClassStatisticsScreen(classId: classId);
+                      return Scaffold(
+                        appBar: AppBar(
+                          title: const Text('Access Denied'),
+                        ),
+                        body: const Center(
+                          child: Text(
+                              'Only lecturers and administrators can view class statistics'),
+                        ),
+                      );
                     },
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
@@ -128,6 +132,18 @@ class AppRouter {
             className: className,
           ),
         );
+      case '/class-search':
+        return MaterialPageRoute(builder: (_) => const ClassSearchScreen());
+      case '/attendance-session':
+        final args = settings.arguments as Map<String, String>;
+        return MaterialPageRoute(
+            builder: (_) => AttendanceSessionScreen(
+                  classId: args['classId']!,
+                ));
+      case '/attendance-history':
+        final classId = settings.arguments as String;
+        return MaterialPageRoute(
+            builder: (_) => AttendanceHistoryScreen(classId: classId));
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

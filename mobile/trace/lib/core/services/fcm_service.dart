@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import '../utils/logger.dart';
 
 class FCMService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -14,20 +15,20 @@ class FCMService {
     // Get FCM token
     final token = await _firebaseMessaging.getToken();
     if (token != null) {
-      print('FCM Token: $token');
+      AppLogger.info('FCM Token: $token');
       // You can send this token to your server
     }
 
     // Listen for FCM token refresh
     _firebaseMessaging.onTokenRefresh.listen((token) {
-      print('FCM Token refreshed: $token');
+      AppLogger.info('FCM Token refreshed: $token');
       // You can send the new token to your server
     });
   }
 
   Future<void> onMessageReceived(RemoteMessage message) async {
     // The notification will be shown automatically by Firebase
-    print('Handling foreground message: ${message.messageId}');
+    AppLogger.info('Handling foreground message: ${message.messageId}');
   }
 
   Future<void> onMessageOpenedApp(RemoteMessage message) async {
@@ -57,5 +58,24 @@ class FCMService {
   }) async {
     // This will be implemented to send notifications through Firebase Cloud Messaging
     // The actual implementation will depend on your backend setup
+  }
+
+  Future<String?> getToken() async {
+    final token = await _firebaseMessaging.getToken();
+    AppLogger.info('FCM Token: $token');
+    return token;
+  }
+
+  Future<void> onTokenRefresh() async {
+    _firebaseMessaging.onTokenRefresh.listen((token) {
+      AppLogger.info('FCM Token refreshed: $token');
+    });
+  }
+
+  Future<void> onMessage() async {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      AppLogger.info('Handling foreground message: ${message.messageId}');
+      // Handle foreground messages
+    });
   }
 }

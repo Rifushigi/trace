@@ -1,10 +1,10 @@
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'dart:convert';
 import '../network/endpoints.dart';
 import 'package:flutter/material.dart';
+import '../utils/logger.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -13,7 +13,7 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 });
 
 class NotificationService {
-  IO.Socket? _socket;
+  io.Socket? _socket;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   bool _isSocketConnected = false;
   String? _currentUserId;
@@ -53,7 +53,7 @@ class NotificationService {
     if (_isSocketConnected) return;
     _currentUserId = userId;
 
-    _socket = IO.io(Endpoints.baseUrl, <String, dynamic>{
+    _socket = io.io(Endpoints.baseUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
       'path': '/socket.io',
@@ -93,9 +93,9 @@ class NotificationService {
   }
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
+    AppLogger.info('Handling foreground message: ${message.messageId}');
     // The notification will be shown automatically by Firebase
     // We can handle any additional logic here if needed
-    print('Handling foreground message: ${message.messageId}');
   }
 
   Future<void> _handleMessageOpenedApp(RemoteMessage message) async {
@@ -141,28 +141,28 @@ class NotificationService {
   }
 
   // Socket.IO event handlers
-  void _handleSessionStart(dynamic data) {
+  Future<void> _handleSessionStart(dynamic data) async {
+    AppLogger.info('Session started: $data');
     // The server will send FCM notifications directly
-    print('Session started: $data');
   }
 
-  void _handleSessionEnd(dynamic data) {
+  Future<void> _handleSessionEnd(dynamic data) async {
+    AppLogger.info('Session ended: $data');
     // The server will send FCM notifications directly
-    print('Session ended: $data');
   }
 
-  void _handleCheckIn(dynamic data) {
+  Future<void> _handleCheckIn(dynamic data) async {
+    AppLogger.info('Check-in received: $data');
     // The server will send FCM notifications directly
-    print('Check-in received: $data');
   }
 
-  void _handleCheckInConfirmation(dynamic data) {
+  Future<void> _handleCheckInConfirmation(dynamic data) async {
+    AppLogger.info('Check-in confirmed: $data');
     // The server will send FCM notifications directly
-    print('Check-in confirmed: $data');
   }
 
-  void _handleAnomaly(dynamic data) {
+  Future<void> _handleAnomaly(dynamic data) async {
+    AppLogger.info('Anomaly detected: $data');
     // The server will send FCM notifications directly
-    print('Anomaly detected: $data');
   }
 }
