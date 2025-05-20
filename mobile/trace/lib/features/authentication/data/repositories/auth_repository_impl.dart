@@ -4,6 +4,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/network/endpoints.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'package:trace/features/authentication/domain/entities/user_entity.dart';
+import '../../../../core/utils/logger.dart';
 
 part 'auth_repository_impl.g.dart';
 
@@ -21,19 +22,48 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<UserEntity?> getCurrentUser() async {
     try {
       final response = await _apiClient.get(Endpoints.user.profile);
-      return UserEntity.fromJson(response.data['response']['data']['user']);
-    } catch (e) {
+      AppLogger.info('Profile response: ${response.data}');
+
+      if (response.data['response']['status'] == true) {
+        final userData = response.data['response']['data']['profile'];
+        AppLogger.info('User data from profile: $userData');
+        return UserEntity.fromJson(userData);
+      }
+
+      AppLogger.warning('Profile response status is false');
+      return null;
+    } catch (e, stackTrace) {
+      AppLogger.error('Error getting current user', e, stackTrace);
       return null;
     }
   }
 
   @override
   Future<UserEntity> signIn(String email, String password) async {
-    final response = await _apiClient.post(Endpoints.auth.signIn, data: {
-      'email': email,
-      'password': password,
-    });
-    return UserEntity.fromJson(response.data['response']['data']['user']);
+    try {
+      final response = await _apiClient.post(Endpoints.auth.signIn, data: {
+        'email': email,
+        'password': password,
+      });
+
+      AppLogger.info('Sign in response: ${response.data}');
+
+      if (response.data['response']['status'] == false) {
+        throw Exception(
+            response.data['response']['message'] ?? 'Sign in failed');
+      }
+
+      // The user data is in response.data.response.data.user
+      final userData = response.data['response']['data']['user'];
+      AppLogger.info('User data from sign in: $userData');
+      return UserEntity.fromJson(userData);
+    } catch (e, stackTrace) {
+      AppLogger.error('Error during sign in', e, stackTrace);
+      if (e is Exception) {
+        rethrow;
+      }
+      throw Exception('Failed to sign in: ${e.toString()}');
+    }
   }
 
   @override

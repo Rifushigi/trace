@@ -25,6 +25,5 @@ abstract class AuthRepository {
   });
 }
 
-// TODO
 // The abstract class should be in the domain while the implementation will be in the data directory
 ///
