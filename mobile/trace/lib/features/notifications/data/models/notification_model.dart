@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../domain/entities/notification.dart';
+import 'package:trace/features/notifications/domain/entities/notification.dart';
 
 part 'notification_model.freezed.dart';
 part 'notification_model.g.dart';
@@ -17,9 +17,6 @@ class NotificationModel with _$NotificationModel {
     Map<String, dynamic>? data,
   }) = _NotificationModel;
 
-  factory NotificationModel.fromJson(Map<String, dynamic> json) =>
-      _$NotificationModelFromJson(json);
-
   factory NotificationModel.fromEntity(NotificationEntity entity) {
     return NotificationModel(
       id: entity.id,
@@ -32,4 +29,7 @@ class NotificationModel with _$NotificationModel {
       data: entity.data,
     );
   }
+
+  factory NotificationModel.fromJson(Map<String, dynamic> json) =>
+      _$NotificationModelFromJson(json);
 }

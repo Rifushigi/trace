@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/entities/notification.dart';
 import '../providers/notification_provider.dart';
-import '../../data/models/notification_model.dart';
 
 class NotificationListScreen extends ConsumerWidget {
   const NotificationListScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notificationsAsync = ref.watch(notificationsProvider);
+    final notificationsAsync = ref.watch(notificationProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -17,7 +17,13 @@ class NotificationListScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.done_all),
             onPressed: () {
-              ref.read(notificationsProvider.notifier).markAllAsRead();
+              ref.read(notificationProvider.notifier).markAllAsRead();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              ref.read(notificationProvider.notifier).deleteAllNotifications();
             },
           ),
         ],
@@ -30,23 +36,12 @@ class NotificationListScreen extends ConsumerWidget {
             );
           }
 
-          return RefreshIndicator(
-            onRefresh: () =>
-                ref.read(notificationsProvider.notifier).loadNotifications(),
-            child: ListView.builder(
-              itemCount: notifications.length,
-              itemBuilder: (context, index) {
-                final notification = notifications[index];
-                return NotificationTile(
-                  notification: notification,
-                  onTap: () =>
-                      _handleNotificationTap(context, ref, notification),
-                  onDelete: () => ref
-                      .read(notificationsProvider.notifier)
-                      .deleteNotification(notification.id),
-                );
-              },
-            ),
+          return ListView.builder(
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notification = notifications[index];
+              return _buildNotificationTile(context, ref, notification);
+            },
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -57,104 +52,29 @@ class NotificationListScreen extends ConsumerWidget {
     );
   }
 
-  void _handleNotificationTap(
-      BuildContext context, WidgetRef ref, NotificationModel notification) {
-    if (!notification.isRead) {
-      ref.read(notificationsProvider.notifier).markAsRead(notification.id);
-    }
-
-    // Navigate based on notification type
-    if (notification.route != null) {
-      Navigator.pushNamed(context, notification.route!,
-          arguments: notification.data);
-    }
-  }
-}
-
-class NotificationTile extends StatelessWidget {
-  final NotificationModel notification;
-  final VoidCallback onTap;
-  final VoidCallback onDelete;
-
-  const NotificationTile({
-    super.key,
-    required this.notification,
-    required this.onTap,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Dismissible(
-      key: Key(notification.id),
-      direction: DismissDirection.endToStart,
-      onDismissed: (_) => onDelete(),
-      background: Container(
-        color: Colors.red,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 16),
-        child: const Icon(Icons.delete, color: Colors.white),
+  Widget _buildNotificationTile(
+      BuildContext context, WidgetRef ref, NotificationEntity notification) {
+    return ListTile(
+      leading: Icon(
+        notification.isRead ? Icons.mark_email_read : Icons.mark_email_unread,
+        color: notification.isRead ? Colors.grey : Colors.blue,
       ),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: notification.isRead
-              ? Colors.grey
-              : Theme.of(context).primaryColor,
-          child: Icon(
-            _getNotificationIcon(notification.type),
-            color: Colors.white,
-          ),
-        ),
-        title: Text(
-          notification.title,
-          style: TextStyle(
-            fontWeight:
-                notification.isRead ? FontWeight.normal : FontWeight.bold,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(notification.body),
-            const SizedBox(height: 4),
-            Text(
-              _formatDate(notification.createdAt),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-        onTap: onTap,
+      title: Text(notification.title),
+      subtitle: Text(notification.body),
+      trailing: IconButton(
+        icon: const Icon(Icons.delete),
+        onPressed: () {
+          ref
+              .read(notificationProvider.notifier)
+              .deleteNotification(notification.id);
+        },
       ),
+      onTap: () {
+        if (!notification.isRead) {
+          ref.read(notificationProvider.notifier).markAsRead(notification.id);
+        }
+        // TODO: Handle notification tap based on type and data
+      },
     );
-  }
-
-  IconData _getNotificationIcon(String type) {
-    switch (type) {
-      case 'session_start':
-        return Icons.play_circle_outline;
-      case 'session_end':
-        return Icons.stop_circle;
-      case 'check_in':
-        return Icons.check_circle_outline;
-      case 'anomaly':
-        return Icons.warning_amber_outlined;
-      default:
-        return Icons.notifications_outlined;
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
-    } else {
-      return 'Just now';
-    }
   }
 }

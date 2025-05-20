@@ -1,74 +1,52 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/notification_model.dart';
-import '../../data/repositories/notification_repository.dart';
+import '../../domain/entities/notification.dart';
+import '../../domain/repositories/notification_repository.dart';
 
-final notificationsProvider = StateNotifierProvider<NotificationsNotifier,
-    AsyncValue<List<NotificationModel>>>((ref) {
-  final repository = ref.watch(notificationRepositoryProvider);
-  return NotificationsNotifier(repository);
+final notificationProvider = StateNotifierProvider<NotificationNotifier,
+    AsyncValue<List<NotificationEntity>>>((ref) {
+  return NotificationNotifier(ref.watch(notificationRepositoryProvider));
 });
 
-class NotificationsNotifier
-    extends StateNotifier<AsyncValue<List<NotificationModel>>> {
+class NotificationNotifier
+    extends StateNotifier<AsyncValue<List<NotificationEntity>>> {
   final NotificationRepository _repository;
 
-  NotificationsNotifier(this._repository) : super(const AsyncValue.loading()) {
+  NotificationNotifier(this._repository) : super(const AsyncValue.loading()) {
     loadNotifications();
   }
 
   Future<void> loadNotifications() async {
+    state = const AsyncValue.loading();
     try {
-      state = const AsyncValue.loading();
       final notifications = await _repository.getNotifications();
-      state = AsyncValue.data(
-          notifications.map(NotificationModel.fromEntity).toList());
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
+      state = AsyncValue.data(notifications);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
     }
+  }
+
+  Future<void> saveNotification(NotificationEntity notification) async {
+    await _repository.saveNotification(notification);
+    await loadNotifications();
   }
 
   Future<void> markAsRead(String notificationId) async {
-    try {
-      await _repository.markAsRead(notificationId);
-      state.whenData((notifications) {
-        final updatedNotifications = notifications.map((notification) {
-          if (notification.id == notificationId) {
-            return notification.copyWith(isRead: true);
-          }
-          return notification;
-        }).toList();
-        state = AsyncValue.data(updatedNotifications);
-      });
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
+    await _repository.markAsRead(notificationId);
+    await loadNotifications();
   }
 
   Future<void> markAllAsRead() async {
-    try {
-      await _repository.markAllAsRead();
-      state.whenData((notifications) {
-        final updatedNotifications = notifications.map((notification) {
-          return notification.copyWith(isRead: true);
-        }).toList();
-        state = AsyncValue.data(updatedNotifications);
-      });
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
+    await _repository.markAllAsRead();
+    await loadNotifications();
   }
 
   Future<void> deleteNotification(String notificationId) async {
-    try {
-      await _repository.deleteNotification(notificationId);
-      state.whenData((notifications) {
-        final updatedNotifications = notifications.where((notification) {
-          return notification.id != notificationId;
-        }).toList();
-        state = AsyncValue.data(updatedNotifications);
-      });
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
+    await _repository.deleteNotification(notificationId);
+    await loadNotifications();
+  }
+
+  Future<void> deleteAllNotifications() async {
+    await _repository.deleteAllNotifications();
+    await loadNotifications();
   }
 }
