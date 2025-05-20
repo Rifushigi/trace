@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/app_constants.dart';
-import '../../../../../core/constants/role_constants.dart';
 import '../../../../../core/constants/validation_constants.dart';
 import '../../../../../core/utils/logger.dart';
 import '../../providers/auth_provider.dart';
@@ -10,7 +8,12 @@ import '../../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../../common/shared_widgets/toast.dart';
 
 class LecturerSignUpScreen extends ConsumerStatefulWidget {
-  const LecturerSignUpScreen({super.key});
+  final String role;
+
+  const LecturerSignUpScreen({
+    super.key,
+    required this.role,
+  });
 
   @override
   ConsumerState<LecturerSignUpScreen> createState() =>
@@ -81,7 +84,7 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
               password: _passwordController.text,
               firstName: _firstNameController.text,
               lastName: _lastNameController.text,
-              role: RoleConstants.lecturerRole,
+              role: widget.role,
               staffId: _staffIdController.text,
               college: _collegeController.text,
             );
