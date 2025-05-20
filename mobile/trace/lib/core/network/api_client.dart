@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'endpoints.dart';
-import 'package:flutter/foundation.dart';
+import '../utils/logger.dart';
 
 part 'api_client.g.dart';
 
@@ -13,12 +13,29 @@ ApiClient apiClient(Ref ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: Endpoints.baseUrl,
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 3),
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
       headers: const {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
+      validateStatus: (status) {
+        return status != null && status < 500;
+      },
+    ),
+  );
+
+  // Add logger before creating the client
+  dio.interceptors.add(
+    PrettyDioLogger(
+      requestHeader: true,
+      requestBody: true,
+      responseBody: true,
+      responseHeader: true,
+      error: true,
+      compact: false,
+      maxWidth: 100,
+      logPrint: (object) => AppLogger.debug('DIO: $object'),
     ),
   );
 
@@ -38,27 +55,19 @@ class ApiClient {
   const ApiClient(this._dio, this._prefs);
 
   void _setupInterceptors() {
-    _dio.interceptors.addAll([
-      PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: true,
-        error: true,
-        compact: false,
-        maxWidth: 120,
-        logPrint: (object) => debugPrint('$object'),
-      ),
+    _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          debugPrint(
-              '\n---Request---');
-          debugPrint('URL: ${options.baseUrl}${options.path}');
-          debugPrint('Method: ${options.method}');
-          debugPrint('Request Data: ${options.data}');
-          debugPrint('Query Parameters: ${options.queryParameters}');
-          debugPrint('Headers: ${options.headers}');
-          debugPrint('---------------------\n');
+          AppLogger.info('=== REQUEST ===');
+          AppLogger.info('URL: ${options.baseUrl}${options.path}');
+          AppLogger.info('Method: ${options.method}');
+          if (options.data != null) {
+            AppLogger.info('Request Body: ${options.data}');
+          }
+          if (options.queryParameters.isNotEmpty) {
+            AppLogger.info('Query Parameters: ${options.queryParameters}');
+          }
+          AppLogger.info('Headers: ${options.headers}');
 
           // Add device ID if available
           final deviceId = _prefs.getString(_deviceIdKey);
@@ -73,15 +82,18 @@ class ApiClient {
                 '${options.headers['Cookie'] ?? ''}; accessToken=$accessToken';
           }
 
+          // Add withCredentials to all requests
+          options.extra['withCredentials'] = true;
+
           return handler.next(options);
         },
         onResponse: (response, handler) async {
-          debugPrint('\n ---Response---');
-          debugPrint('URL: ${response.requestOptions.uri}');
-          debugPrint('Status: ${response.statusCode} ${response.statusMessage}');
-          debugPrint('Response Data: ${response.data}');
-          debugPrint('Headers: ${response.headers}');
-          debugPrint('---------------------\n');
+          AppLogger.info('=== RESPONSE ===');
+          AppLogger.info('URL: ${response.requestOptions.uri}');
+          AppLogger.info(
+              'Status: ${response.statusCode} ${response.statusMessage}');
+          AppLogger.info('Response Data: ${response.data}');
+          AppLogger.info('Response Headers: ${response.headers}');
 
           // Extract and store cookies from response
           final cookies = response.headers['set-cookie'];
@@ -102,21 +114,24 @@ class ApiClient {
           return handler.next(response);
         },
         onError: (DioException e, handler) async {
-          debugPrint('---Error---');
-          debugPrint('URL: ${e.requestOptions.uri}');
-          debugPrint('Status: ${e.response?.statusCode ?? "No Status"}');
-          debugPrint('Error Type: ${e.type}');
-          debugPrint('Error Message: ${e.message}');
-          debugPrint('Error Response: ${e.response?.data}');
-          debugPrint('Request Data: ${e.requestOptions.data}');
-          debugPrint('Headers: ${e.requestOptions.headers}');
-          debugPrint('--------------------\n');
+          AppLogger.error('=== ERROR ===');
+          AppLogger.error('URL: ${e.requestOptions.uri}');
+          AppLogger.error('Status: ${e.response?.statusCode ?? "No Status"}');
+          AppLogger.error('Error Type: ${e.type}');
+          AppLogger.error('Error Message: ${e.message}');
+          if (e.response != null) {
+            AppLogger.error('Error Response Data: ${e.response?.data}');
+            AppLogger.error('Error Response Headers: ${e.response?.headers}');
+          }
+          AppLogger.error('Request Data: ${e.requestOptions.data}');
+          AppLogger.error('Request Headers: ${e.requestOptions.headers}');
 
           if (e.response?.statusCode == 401) {
             // Token expired, try to refresh
             final refreshToken = _prefs.getString(_refreshTokenKey);
             if (refreshToken != null) {
               try {
+                AppLogger.info('Attempting to refresh token');
                 final response = await _dio.get(
                   '/auth/refresh-token',
                   options: Options(
@@ -139,6 +154,7 @@ class ApiClient {
                 }
 
                 // Retry the original request
+                AppLogger.info('Retrying original request after token refresh');
                 final opts = Options(
                   method: e.requestOptions.method,
                   headers: e.requestOptions.headers,
@@ -151,6 +167,7 @@ class ApiClient {
                 );
                 return handler.resolve(retryResponse);
               } catch (e) {
+                AppLogger.error('Token refresh failed', e);
                 // If refresh fails, clear tokens and throw error
                 await _clearTokens();
                 return handler.reject(e as DioException);
@@ -160,13 +177,14 @@ class ApiClient {
           return handler.next(e);
         },
       ),
-    ]);
+    );
   }
 
   Future<void> _clearTokens() async {
     await _prefs.remove(_deviceIdKey);
     await _prefs.remove(_accessTokenKey);
     await _prefs.remove(_refreshTokenKey);
+    AppLogger.info('Cleared all tokens');
   }
 
   // Public method to handle logout
@@ -177,23 +195,27 @@ class ApiClient {
   // HTTP Methods
   Future<Response> get(String path,
       {Map<String, dynamic>? queryParameters, Options? options}) {
+    AppLogger.info('Making GET request to: $path');
     return _dio.get(path, queryParameters: queryParameters, options: options);
   }
 
   Future<Response> post(String path,
       {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
+    AppLogger.info('Making POST request to: $path');
     return _dio.post(path,
         data: data, queryParameters: queryParameters, options: options);
   }
 
   Future<Response> put(String path,
       {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
+    AppLogger.info('Making PUT request to: $path');
     return _dio.put(path,
         data: data, queryParameters: queryParameters, options: options);
   }
 
   Future<Response> delete(String path,
       {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
+    AppLogger.info('Making DELETE request to: $path');
     return _dio.delete(path,
         data: data, queryParameters: queryParameters, options: options);
   }

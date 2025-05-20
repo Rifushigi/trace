@@ -1,5 +1,7 @@
 class Endpoints {
-  static const String baseUrl = 'http://localhost:3000/api/v1';
+  // Using the machine's IP address for wireless testing on physical devices
+  // Replace 192.168.1.100 with your actual development machine's IP address
+  static const String baseUrl = 'http://192.168.1.133:3000/api/v1';
 
   // Auth endpoints
   static final auth = _AuthEndpoints();
@@ -15,33 +17,29 @@ class Endpoints {
 
   // Class endpoints
   static final classes = _ClassEndpoints();
+
+  // Admin endpoints
+  static final admin = _AdminEndpoints();
+
+  // Dashboard endpoints
+  static final dashboard = _DashboardEndpoints();
 }
 
 class _ClassEndpoints {
-  String get getLecturerClasses => '${Endpoints.baseUrl}/class/lecturer';
-  String get getEnrolledClasses => '${Endpoints.baseUrl}/class/enrolled';
-  String get getClassDetails => '${Endpoints.baseUrl}/class/:classId';
-  String get createClass => '${Endpoints.baseUrl}/class';
-  String get updateClass => '${Endpoints.baseUrl}/class/:classId';
-  String get deleteClass => '${Endpoints.baseUrl}/class/:classId';
-  String get searchClasses => '${Endpoints.baseUrl}/class/search';
-  String get enrollStudent =>
-      '${Endpoints.baseUrl}/class/:classId/students/:studentId';
-  String get unenrollStudent =>
-      '${Endpoints.baseUrl}/class/:classId/students/:studentId';
+  String get lecturerClasses => '${Endpoints.baseUrl}/class/lecturer';
+  String get enrolledClasses => '${Endpoints.baseUrl}/class/enrolled';
+  String get search => '${Endpoints.baseUrl}/class/search';
+  String get create => '${Endpoints.baseUrl}/class';
 
-  String getClassDetailsUrl(String classId) =>
-      getClassDetails.replaceAll(':classId', classId);
-  String updateClassUrl(String classId) =>
-      updateClass.replaceAll(':classId', classId);
-  String deleteClassUrl(String classId) =>
-      deleteClass.replaceAll(':classId', classId);
-  String enrollStudentUrl(String classId, String studentId) => enrollStudent
-      .replaceAll(':classId', classId)
-      .replaceAll(':studentId', studentId);
-  String unenrollStudentUrl(String classId, String studentId) => unenrollStudent
-      .replaceAll(':classId', classId)
-      .replaceAll(':studentId', studentId);
+  String details(String classId) => '${Endpoints.baseUrl}/class/$classId';
+  String update(String classId) => '${Endpoints.baseUrl}/class/$classId';
+  String delete(String classId) => '${Endpoints.baseUrl}/class/$classId';
+  String statistics(String classId) =>
+      '${Endpoints.baseUrl}/class/$classId/statistics';
+  String enroll(String classId) =>
+      '${Endpoints.baseUrl}/class/$classId/students';
+  String unenroll(String classId) =>
+      '${Endpoints.baseUrl}/class/$classId/students';
 }
 
 class _AuthEndpoints {
@@ -86,4 +84,21 @@ class _AttendanceEndpoints {
 class _CourseEndpoints {
   final String list = '${Endpoints.baseUrl}/courses';
   final String details = '${Endpoints.baseUrl}/courses/:id';
+}
+
+class _AdminEndpoints {
+  final String classes = '${Endpoints.baseUrl}/admin/classes';
+  final String lecturers = '${Endpoints.baseUrl}/admin/users/lecturers';
+  final String createClass = '${Endpoints.baseUrl}/admin/class';
+}
+
+class _DashboardEndpoints {
+  final String items = '${Endpoints.baseUrl}/dashboard/items';
+  final String stats = '${Endpoints.baseUrl}/dashboard/stats/:userId';
+  final String preferences =
+      '${Endpoints.baseUrl}/dashboard/preferences/:userId';
+
+  String statsUrl(String userId) => stats.replaceAll(':userId', userId);
+  String preferencesUrl(String userId) =>
+      preferences.replaceAll(':userId', userId);
 }

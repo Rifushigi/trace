@@ -6,7 +6,7 @@ part of 'api_client.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$apiClientHash() => r'66dc74563bc8d9b618d5becd60142292c80a869e';
+String _$apiClientHash() => r'9b44bd4babd75c30ed41419736871c967f514f3a';
 
 /// See also [apiClient].
 @ProviderFor(apiClient)
@@ -22,7 +22,7 @@ final apiClientProvider = AutoDisposeProvider<ApiClient>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ApiClientRef = AutoDisposeProviderRef<ApiClient>;
-String _$sharedPreferencesHash() => r'dc255d20752be3a583616def92fbeebfee0f4936';
+String _$sharedPreferencesHash() => r'044fced5e191b8c0453447a05801e1078f6f4d55';
 
 /// See also [sharedPreferences].
 @ProviderFor(sharedPreferences)
