@@ -39,7 +39,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(authProvider.notifier).sendOTP(_emailController.text);
+      await ref.read(authProvider.notifier).sendOtp(_emailController.text);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('OTP sent successfully')),
@@ -65,7 +65,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(authProvider.notifier).verifyOTP(
+      await ref.read(authProvider.notifier).verifyOtp(
             _emailController.text,
             _otpController.text,
           );
@@ -92,18 +92,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-        elevation: 2,
-        centerTitle: true,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        title: Text(
-          'Forgot Password',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: AppStyles.paddingMedium,
@@ -113,9 +101,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Reset your password',
-                  style: AppStyles.headlineSmall,
+                const SizedBox(height: AppStyles.spacing24),
+                Text(
+                  'Reset Password',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppStyles.spacing16),
                 const Text(

@@ -1,33 +1,30 @@
-import '../models/user_model.dart';
+import 'package:trace/features/authentication/domain/entities/user_entity.dart';
 
 abstract class AuthRepository {
-  Future<UserModel?> signIn(String email, String password);
-  Future<UserModel?> signUp(String email, String password, String role);
+  Future<UserEntity?> getCurrentUser();
+  Future<UserEntity> signIn(String email, String password);
+  Future<UserEntity> signUp({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String role,
+    String? staffId,
+    String? college,
+    Map<String, dynamic>? additionalInfo,
+  });
   Future<void> signOut();
-  Future<UserModel?> getCurrentUser();
+  Future<void> sendOtp(String email);
+  Future<void> verifyOtp(String email, String otp);
+  Future<void> sendVerificationEmail(String email);
+  Future<void> verifyEmail(String token);
+  Future<UserEntity> updateProfile({
+    String? name,
+    String? email,
+    String? avatar,
+  });
 }
 
-class AuthRepositoryImpl implements AuthRepository {
-  @override
-  Future<UserModel?> signIn(String email, String password) async {
-    // TODO: Implement actual sign in logic
-    return null;
-  }
-
-  @override
-  Future<UserModel?> signUp(String email, String password, String role) async {
-    // TODO: Implement actual sign up logic
-    return null;
-  }
-
-  @override
-  Future<void> signOut() async {
-    // TODO: Implement actual sign out logic
-  }
-
-  @override
-  Future<UserModel?> getCurrentUser() async {
-    // TODO: Implement actual get current user logic
-    return null;
-  }
-}
+// TODO
+// The abstract class should be in the domain while the implementation will be in the data directory
+///

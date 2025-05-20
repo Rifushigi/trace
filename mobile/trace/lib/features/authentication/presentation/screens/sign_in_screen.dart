@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/app_constants.dart';
-import '../../../../../core/constants/role_constants.dart';
 import '../../../../../core/constants/validation_constants.dart';
 import '../../../../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../../../../common/shared_widgets/loading_overlay.dart';
 import '../../../../../common/shared_widgets/toast.dart';
 import 'package:trace/core/services/haptic_service.dart';
+import '../../../../../core/utils/logger.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
@@ -21,8 +21,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
-  bool _validateEmail = false;
-  bool _validatePassword = false;
+  final bool _validateEmail = false;
+  final bool _validatePassword = false;
 
   @override
   void dispose() {
@@ -32,26 +32,23 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 
   Future<void> _signIn() async {
-    setState(() {
-      _validateEmail = true;
-      _validatePassword = true;
-    });
     if (_formKey.currentState?.validate() ?? false) {
-      await HapticService.actionFeedback();
       try {
-        debugPrint(
-            '🔐 Attempting to sign in with email: ${_emailController.text}');
+        AppLogger.info(
+            'Attempting to sign in with email: ${_emailController.text}');
         await ref.read(authProvider.notifier).signIn(
               _emailController.text,
               _passwordController.text,
             );
 
-        final user = ref.read(authProvider).value;
-        debugPrint('✅ Sign in successful for user: ${user?.email}');
+        // Check if the sign-in was successful by checking the auth state
+        final authState = ref.read(authProvider);
+        if (authState.hasValue && authState.value != null) {
+          final user = authState.value;
+          AppLogger.info('Sign in successful for user: ${user?.email}');
 
-        if (user != null) {
-          if (!user.isVerified) {
-            debugPrint('⚠️ User email not verified: ${user.email}');
+          if (!user!.isVerified) {
+            AppLogger.warning('User email not verified: ${user.email}');
             if (!context.mounted) return;
             await showDialog(
               context: context,
@@ -72,11 +69,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     onPressed: () async {
                       Navigator.pop(context);
                       try {
-                        debugPrint(
-                            '📧 Sending verification email to: ${user.email}');
+                        AppLogger.info(
+                            'Sending verification email to: ${user.email}');
                         await ref
                             .read(authProvider.notifier)
-                            .verifyEmail(user.email);
+                            .sendVerificationEmail(user.email);
                         if (!context.mounted) return;
                         Toast.show(
                           context,
@@ -84,7 +81,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                           type: ToastType.success,
                         );
                       } catch (e) {
-                        debugPrint('❌ Failed to send verification email: $e');
+                        AppLogger.error('Failed to send verification email', e);
                         if (!context.mounted) return;
                         Toast.show(
                           context,
@@ -100,29 +97,48 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             );
             return;
           }
-          if (!context.mounted) return;
-          final route = RoleConstants.roleHomeRoutes[user.role] ??
-              AppConstants.signInRoute;
-          debugPrint('🔄 Navigating to: $route');
-          Navigator.of(context).pushReplacementNamed(route);
+
+          if (mounted) {
+            Toast.show(
+              context,
+              message: 'Welcome back!',
+              type: ToastType.success,
+            );
+          }
+
+          // Navigate to the appropriate screen based on user role
+          String route = AppConstants.homeRoute;
+          if (user.role == 'student') {
+            route = AppConstants.studentHomeRoute;
+          } else if (user.role == 'lecturer') {
+            route = AppConstants.lecturerHomeRoute;
+          }
+          AppLogger.info('Navigating to: $route');
+          if (mounted) {
+            Navigator.of(context).pushReplacementNamed(route);
+          }
+        } else {
+          throw Exception('Sign in failed: No user data received');
         }
       } catch (e) {
-        debugPrint('❌ Sign in failed: $e');
-        if (!context.mounted) return;
+        AppLogger.error('Sign in failed', e);
+        if (mounted) {
+          Toast.show(
+            context,
+            message: e.toString(),
+            type: ToastType.error,
+          );
+        }
+      }
+    } else {
+      AppLogger.warning('Form validation failed');
+      if (mounted) {
         Toast.show(
           context,
-          message: e.toString(),
+          message: 'Please fill in all fields correctly',
           type: ToastType.error,
         );
       }
-    } else {
-      debugPrint('❌ Form validation failed');
-      if (!context.mounted) return;
-      Toast.show(
-        context,
-        message: 'Please check your email and password',
-        type: ToastType.error,
-      );
     }
   }
 
