@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/app_constants.dart';
-import '../../../../../core/constants/role_constants.dart';
 import 'student_sign_up_screen.dart';
 import 'lecturer_sign_up_screen.dart';
-import '../../../../../common/shared_widgets/toast.dart';
 
 class RoleSelectionScreen extends ConsumerWidget {
   const RoleSelectionScreen({super.key});

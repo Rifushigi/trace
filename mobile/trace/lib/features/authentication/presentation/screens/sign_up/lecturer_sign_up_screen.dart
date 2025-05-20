@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:trace/core/constants/app_constants.dart';
-import 'package:trace/core/constants/role_constants.dart';
-import 'package:trace/core/constants/validation_constants.dart';
+import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/constants/role_constants.dart';
+import '../../../../../core/constants/validation_constants.dart';
+import '../../../../../core/utils/logger.dart';
 import '../../providers/auth_provider.dart';
-import 'package:trace/common/shared_widgets/loading_overlay.dart';
-import 'package:trace/common/shared_widgets/toast.dart';
+import '../../../../../common/shared_widgets/loading_overlay.dart';
+import '../../../../../common/shared_widgets/toast.dart';
 
 class LecturerSignUpScreen extends ConsumerStatefulWidget {
   const LecturerSignUpScreen({super.key});
@@ -73,8 +74,8 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
 
     if (isPersonalInfoValid && isProfessionalInfoValid) {
       try {
-        debugPrint(
-            '📝 Attempting to sign up with email: ${_emailController.text}');
+        AppLogger.info(
+            'Attempting to sign up with email: ${_emailController.text}');
         await ref.read(authProvider.notifier).signUp(
               email: _emailController.text,
               password: _passwordController.text,
@@ -88,7 +89,7 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
         // Check if the sign-up was successful by checking the auth state
         final authState = ref.read(authProvider);
         if (authState.hasValue && authState.value != null) {
-          debugPrint('✅ Sign up successful for: ${_emailController.text}');
+          AppLogger.info('Sign up successful for: ${_emailController.text}');
           if (mounted) {
             Toast.show(
               context,
@@ -104,7 +105,7 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
           throw Exception('Sign up failed: No user data received');
         }
       } catch (e) {
-        debugPrint('❌ Sign up failed: $e');
+        AppLogger.error('Sign up failed', e);
         if (mounted) {
           Toast.show(
             context,
@@ -114,7 +115,7 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
         }
       }
     } else {
-      debugPrint('❌ Form validation failed');
+      AppLogger.warning('Form validation failed');
       if (mounted) {
         Toast.show(
           context,
@@ -134,19 +135,6 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
       message: 'Creating your account...',
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor:
-              Theme.of(context).colorScheme.surfaceContainerHighest,
-          elevation: 2,
-          centerTitle: true,
-          systemOverlayStyle: SystemUiOverlayStyle.dark,
-          title: Text(
-            'Lecturer Sign Up',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-        ),
         body: SafeArea(
           child: Form(
             key: _formKey,
@@ -154,21 +142,47 @@ class _LecturerSignUpScreenState extends ConsumerState<LecturerSignUpScreen> {
             child: Column(
               children: [
                 const SizedBox(height: AppConstants.defaultPadding * 2),
+                Text(
+                  'Lecturer Registration',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppConstants.defaultPadding),
                 Expanded(
                   child: Stepper(
                     currentStep: _currentStep,
                     margin: const EdgeInsets.symmetric(vertical: 16),
                     onStepContinue: () {
                       if (_currentStep < 1) {
-                        // Validate current step before proceeding
-                        if (_formKey.currentState?.validate() ?? false) {
+                        // Validate only personal info fields
+                        bool isPersonalInfoValid =
+                            _firstNameController.text.isNotEmpty &&
+                                _lastNameController.text.isNotEmpty &&
+                                _emailController.text.isNotEmpty &&
+                                _passwordController.text.isNotEmpty &&
+                                ValidationConstants.isValidName(
+                                    _firstNameController.text) &&
+                                ValidationConstants.isValidName(
+                                    _lastNameController.text) &&
+                                ValidationConstants.isValidEmail(
+                                    _emailController.text) &&
+                                ValidationConstants.isValidPassword(
+                                    _passwordController.text);
+
+                        if (isPersonalInfoValid) {
                           setState(() {
                             _currentStep += 1;
                           });
                         } else {
+                          // Force validation of personal info fields
+                          _formKey.currentState?.validate();
                           Toast.show(
                             context,
-                            message: 'Please fill in all fields correctly',
+                            message:
+                                'Please fill in all personal information fields correctly',
                             type: ToastType.error,
                           );
                         }
