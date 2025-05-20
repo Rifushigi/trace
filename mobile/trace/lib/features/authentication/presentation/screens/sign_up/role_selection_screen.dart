@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/constants/role_constants.dart';
 import 'student_sign_up_screen.dart';
 import 'lecturer_sign_up_screen.dart';
 
@@ -53,7 +54,9 @@ class RoleSelectionScreen extends ConsumerWidget {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const StudentSignUpScreen(),
+                        builder: (context) => const StudentSignUpScreen(
+                          role: RoleConstants.studentRole,
+                        ),
                       ),
                     );
                   },
@@ -65,7 +68,9 @@ class RoleSelectionScreen extends ConsumerWidget {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const LecturerSignUpScreen(),
+                        builder: (context) => const LecturerSignUpScreen(
+                          role: RoleConstants.lecturerRole,
+                        ),
                       ),
                     );
                   },
