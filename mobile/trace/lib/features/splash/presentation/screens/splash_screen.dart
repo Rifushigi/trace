@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../providers/splash_provider.dart';
+import '../../../../features/authentication/presentation/providers/auth_provider.dart';
+import '../../../../core/utils/logger.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -20,31 +21,51 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Delay initialization slightly to ensure the splash screen is visible
-    Future.delayed(const Duration(milliseconds: 100), _initialize);
+    _initialize();
   }
 
   Future<void> _initialize() async {
     if (!mounted) return;
 
-    // Start auth check
-    final authCheck = ref.read(splashProvider.notifier).checkAuth();
+    try {
+      // Start auth check
+      final authCheck = ref.read(splashProvider.notifier).checkAuth();
+      final results = await Future.wait([authCheck]);
+      if (!mounted) return;
 
-    // Wait for both auth check and minimum display time
-    final results = await Future.wait([
-      authCheck,
-      Future.delayed(const Duration(milliseconds: 500)), // Minimum display time
-    ]);
+      final isAuthenticated = results[0];
+      AppLogger.info('Auth check result: $isAuthenticated');
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    final isAuthenticated = results[0] as bool;
+      if (isAuthenticated) {
+        final authState = await ref.read(authProvider.future);
+        if (!mounted) return;
 
-    if (!mounted) return;
+        AppLogger.info('Auth state: ${authState?.toJson()}');
 
-    Navigator.of(context).pushReplacementNamed(
-      isAuthenticated ? AppConstants.homeRoute : AppConstants.onboardingRoute,
-    );
+        String route;
+        if (authState?.role == 'student') {
+          route = AppConstants.studentHomeRoute;
+        } else if (authState?.role == 'lecturer') {
+          route = AppConstants.lecturerHomeRoute;
+        } else if (authState?.role == 'admin') {
+          route = AppConstants.adminHomeRoute;
+        } else {
+          route = AppConstants.signInRoute;
+        }
+
+        AppLogger.info('Navigating to route: $route');
+        Navigator.of(context).pushReplacementNamed(route);
+      } else {
+        AppLogger.info('User not authenticated, navigating to sign in');
+        Navigator.of(context).pushReplacementNamed(AppConstants.signInRoute);
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Error during initialization', e, stackTrace);
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(AppConstants.signInRoute);
+    }
   }
 
   @override
@@ -58,7 +79,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.background,
+              Theme.of(context).colorScheme.surface,
               Theme.of(context).colorScheme.surface,
             ],
           ),
@@ -68,7 +89,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ShaderMask(
-                shaderCallback: (bounds) => LinearGradient(
+                shaderCallback: (bounds) => const LinearGradient(
                   colors: _gradientColors,
                 ).createShader(bounds),
                 child: const Text(

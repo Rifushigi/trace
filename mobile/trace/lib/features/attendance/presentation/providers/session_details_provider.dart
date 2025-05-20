@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/student_model.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../../core/network/endpoints.dart';
 
 class SessionDetails {
   final List<Student> students;
@@ -26,20 +28,35 @@ class SessionDetails {
 }
 
 class SessionDetailsNotifier extends StateNotifier<SessionDetails> {
-  SessionDetailsNotifier() : super(SessionDetails(students: []));
+  final ApiClient _apiClient;
+
+  SessionDetailsNotifier(this._apiClient) : super(SessionDetails(students: []));
 
   Future<void> loadSessionDetails(String sessionId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // TODO: Implement actual API call to load session details
-      await Future.delayed(const Duration(seconds: 1)); // Simulated delay
-      state = state.copyWith(
-        students: [
-          Student(id: '1', name: 'John Doe', isPresent: true),
-          Student(id: '2', name: 'Jane Smith', isPresent: false),
-        ],
-        isLoading: false,
+      final response = await _apiClient.get(
+        Endpoints.attendance.getSessionAttendanceUrl(sessionId),
       );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> studentsData = response.data['data']['students'];
+        final students = studentsData
+            .map((data) => Student(
+                  id: data['id'],
+                  name: data['name'],
+                  isPresent: data['isPresent'] ?? false,
+                ))
+            .toList();
+
+        state = state.copyWith(
+          students: students,
+          isLoading: false,
+        );
+      } else {
+        throw Exception(
+            response.data['message'] ?? 'Failed to load session details');
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -51,5 +68,6 @@ class SessionDetailsNotifier extends StateNotifier<SessionDetails> {
 
 final sessionDetailsProvider =
     StateNotifierProvider<SessionDetailsNotifier, SessionDetails>((ref) {
-  return SessionDetailsNotifier();
+  final apiClient = ref.watch(apiClientProvider);
+  return SessionDetailsNotifier(apiClient);
 });

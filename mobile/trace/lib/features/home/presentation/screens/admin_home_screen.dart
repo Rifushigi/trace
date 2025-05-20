@@ -87,10 +87,18 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
     _lastTapTime = now;
   }
 
+  void handleNavigation(String route) {
+    AppLogger.info('Navigating to route: $route');
+    Navigator.of(context).pushNamed(route);
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final profileState = ref.watch(profileProvider);
+    final dashboardItemsAsync = ref.watch(dashboardItemsProvider);
+    final dashboardStatsAsync = ref.watch(dashboardStatsProvider);
+    final preferences = ref.watch(homePreferencesProvider);
 
     return authState.when(
       data: (user) {
@@ -124,26 +132,15 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
 
         return profileState.when(
           data: (profile) {
-            final typedProfile = profile as ProfileEntity;
-            final dashboardItemsAsync = ref.watch(dashboardItemsProvider);
-            final dashboardStatsAsync = ref.watch(dashboardStatsProvider);
-            final preferences = ref.watch(homePreferencesProvider);
-
-            void handleNavigation(String route) {
-              try {
-                AppLogger.info('Navigating to $route');
-                Navigator.of(context).pushNamed(route);
-              } catch (e, stackTrace) {
-                AppLogger.error('Failed to navigate to $route', e, stackTrace);
-                if (context.mounted) {
-                  Toast.show(
-                    context,
-                    message: 'Failed to navigate to $route',
-                    type: ToastType.error,
-                  );
-                }
-              }
+            if (profile == null) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
             }
+
+            final typedProfile = profile;
 
             return Scaffold(
               appBar: AdminAppBar(
@@ -196,42 +193,13 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                             ),
                             const SizedBox(height: AppConstants.defaultSpacing),
                             Text(
-                              'Staff ID: ${typedProfile.staffId}',
-                              style: AppStyles.bodyLarge,
-                            ),
-                            Text(
-                              'Department: ${typedProfile.department}',
+                              'Email: ${typedProfile.email}',
                               style: AppStyles.bodyLarge,
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppConstants.defaultPadding * 1.5),
-
-                    // Section indicator
-                    AppAnimations.fadeIn(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          3,
-                          (index) => Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _currentSection == index
-                                  ? Theme.of(context).primaryColor
-                                  : Theme.of(context)
-                                      .primaryColor
-                                      .withAlpha(77),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
                     const SizedBox(height: AppConstants.defaultPadding * 1.5),
 
                     // Dashboard items grid
@@ -295,96 +263,6 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                         },
                       ),
                     ),
-
-                    const SizedBox(height: AppConstants.defaultPadding * 1.5),
-
-                    // System statistics
-                    if (preferences['showSystemStats'] == true)
-                      AppAnimations.scaleIn(
-                        child: dashboardStatsAsync.when(
-                          data: (stats) => AppCard(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'System Statistics',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge,
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.close),
-                                      onPressed: () {
-                                        ref
-                                            .read(homePreferencesProvider
-                                                .notifier)
-                                            .togglePreference(
-                                                'showSystemStats');
-                                        Toast.show(
-                                          context,
-                                          message: 'System stats hidden',
-                                          type: ToastType.info,
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(
-                                    height: AppConstants.defaultPadding),
-                                _StatItem(
-                                  label: 'Total Users',
-                                  value: stats['totalUsers'].toString(),
-                                  icon: Icons.people,
-                                ),
-                                _StatItem(
-                                  label: 'Active Classes',
-                                  value: stats['totalClasses'].toString(),
-                                  icon: Icons.class_,
-                                ),
-                                _StatItem(
-                                  label: 'Active Sessions',
-                                  value: stats['activeSessions'].toString(),
-                                  icon: Icons.checklist,
-                                ),
-                              ],
-                            ),
-                          ),
-                          loading: () => const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                          error: (error, stackTrace) {
-                            AppLogger.error('Failed to load system statistics',
-                                error, stackTrace);
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                      'Failed to load system statistics'),
-                                  const SizedBox(
-                                      height: AppConstants.defaultSpacing),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      ref.invalidate(dashboardStatsProvider);
-                                      Toast.show(
-                                        context,
-                                        message:
-                                            'Retrying to load system statistics...',
-                                        type: ToastType.info,
-                                      );
-                                    },
-                                    child: const Text('Retry'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
                   ],
                 ),
               ),

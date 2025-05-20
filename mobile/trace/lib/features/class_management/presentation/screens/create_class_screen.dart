@@ -4,6 +4,10 @@ import '../providers/class_provider.dart';
 import '../../domain/entities/class_entity.dart';
 import '../../../class_management/domain/entities/class_schedule.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../profile/domain/entities/profile_entity.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../../core/network/endpoints.dart';
+import '../../../../core/constants/validation_constants.dart';
 
 class CreateClassScreen extends ConsumerStatefulWidget {
   const CreateClassScreen({super.key});
@@ -22,6 +26,8 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
   bool _isRecurring = false;
   final List<String> _selectedDays = [];
   final _endDateController = TextEditingController();
+  String? _selectedLecturerId;
+  List<ProfileEntity> _lecturers = [];
 
   static const List<String> _weekDays = [
     'Monday',
@@ -32,6 +38,31 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
     'Saturday',
     'Sunday'
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLecturers();
+  }
+
+  Future<void> _loadLecturers() async {
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.get(Endpoints.admin.lecturers);
+
+      if (response.data['response']['status'] == true) {
+        final List<dynamic> usersJson =
+            response.data['response']['data']['lecturers'];
+        setState(() {
+          _lecturers =
+              usersJson.map((json) => ProfileEntity.fromJson(json)).toList();
+        });
+      }
+    } catch (e) {
+      // Handle error
+      debugPrint('Error loading lecturers: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -57,73 +88,43 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? date = await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (!mounted) return;
-    if (date != null) {
-      _endDateController.text = date.toIso8601String().split('T')[0];
+    if (picked != null) {
+      _endDateController.text = picked.toString().split(' ')[0];
     }
   }
 
   Future<void> _createClass() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      final user = ref.read(authProvider).value;
-      if (user == null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('You must be logged in to create a class')),
-        );
-        return;
-      }
+    if (!_formKey.currentState!.validate()) return;
 
-      final schedule = ClassSchedule(
-        day: _isRecurring ? _selectedDays.first : _dayController.text,
-        startTime: _startTimeController.text,
-        endTime: _endTimeController.text,
-        isRecurring: _isRecurring,
-        recurringDays: _selectedDays,
-        endDate: _isRecurring ? _endDateController.text : null,
-      );
+    final user = ref.read(authProvider).value;
+    if (user == null) return;
 
-      if (!schedule.isValid) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid schedule configuration')),
-        );
-        return;
-      }
+    final schedule = ClassSchedule(
+      day: _dayController.text,
+      startTime: _startTimeController.text,
+      endTime: _endTimeController.text,
+      isRecurring: _isRecurring,
+      recurringDays: _selectedDays,
+      endDate: _endDateController.text.isEmpty ? null : _endDateController.text,
+    );
 
-      // Check for schedule conflicts
-      final existingClasses = await ref.read(classListProvider.future);
-      for (final existingClass in existingClasses) {
-        final existingSchedule = ClassSchedule.fromJson(existingClass.schedule);
-        if (schedule.hasConflict(existingSchedule)) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text('Schedule conflicts with ${existingClass.name}')),
-          );
-          return;
-        }
-      }
+    final newClass = ClassEntity(
+      id: '', // Will be set by the server
+      name: _nameController.text,
+      code: _codeController.text,
+      lecturerId: _selectedLecturerId ?? user.id,
+      schedule: schedule.toJson(),
+    );
 
-      final newClass = ClassEntity(
-        id: '', // Will be set by the server
-        name: _nameController.text,
-        code: _codeController.text,
-        lecturerId: user.id,
-        schedule: schedule.toJson(),
-      );
-
-      await ref.read(classActionsProvider.notifier).createClass(newClass);
-      if (mounted) {
-        Navigator.pop(context);
-      }
+    await ref.read(classActionsProvider.notifier).createClass(newClass);
+    if (mounted) {
+      Navigator.pop(context);
     }
   }
 
@@ -141,43 +142,68 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
+                ),
                 validator: (value) =>
                     value?.isEmpty ?? true ? 'Please enter a name' : null,
               ),
+              const SizedBox(height: 24),
               TextFormField(
                 controller: _codeController,
-                decoration: const InputDecoration(labelText: 'Code'),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Please enter a code' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Code',
+                  border: OutlineInputBorder(),
+                  hintText: 'e.g., CSC 401',
+                ),
+                textCapitalization: TextCapitalization.characters,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return ValidationConstants.requiredField;
+                  }
+                  if (!ValidationConstants.isValidClassCode(value)) {
+                    return ValidationConstants.invalidClassCode;
+                  }
+                  return null;
+                },
               ),
+              const SizedBox(height: 24),
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  labelText: 'Select Lecturer',
+                  border: OutlineInputBorder(),
+                ),
+                value: _selectedLecturerId,
+                items: _lecturers.map((lecturer) {
+                  return DropdownMenuItem(
+                    value: lecturer.id,
+                    child: Text('${lecturer.firstName} ${lecturer.lastName}'),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedLecturerId = value;
+                  });
+                },
+                validator: (value) =>
+                    value == null ? 'Please select a lecturer' : null,
+              ),
+              const SizedBox(height: 24),
               SwitchListTile(
                 title: const Text('Recurring Schedule'),
                 value: _isRecurring,
                 onChanged: (value) => setState(() => _isRecurring = value),
               ),
-              if (!_isRecurring) ...[
-                TextFormField(
-                  controller: _dayController,
-                  decoration: const InputDecoration(labelText: 'Day'),
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return 'Please enter a day';
-                    }
-                    if (!_weekDays.contains(value)) {
-                      return 'Please enter a valid day of the week';
-                    }
-                    return null;
-                  },
-                ),
-              ] else ...[
-                const Text('Select Days:'),
+              if (_isRecurring) ...[
+                const SizedBox(height: 16),
                 Wrap(
                   spacing: 8,
                   children: _weekDays.map((day) {
+                    final isSelected = _selectedDays.contains(day);
                     return FilterChip(
                       label: Text(day),
-                      selected: _selectedDays.contains(day),
+                      selected: isSelected,
                       onSelected: (selected) {
                         setState(() {
                           if (selected) {
@@ -190,19 +216,12 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
                     );
                   }).toList(),
                 ),
-                if (_selectedDays.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      'Please select at least one day',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _endDateController,
                   decoration: const InputDecoration(
                     labelText: 'End Date (Optional)',
+                    border: OutlineInputBorder(),
                     suffixIcon: Icon(Icons.calendar_today),
                   ),
                   readOnly: true,
@@ -215,10 +234,12 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
                   },
                 ),
               ],
+              const SizedBox(height: 24),
               TextFormField(
                 controller: _startTimeController,
                 decoration: const InputDecoration(
                   labelText: 'Start Time',
+                  border: OutlineInputBorder(),
                   suffixIcon: Icon(Icons.access_time),
                 ),
                 readOnly: true,
@@ -226,10 +247,12 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
                 validator: (value) =>
                     value?.isEmpty ?? true ? 'Please select start time' : null,
               ),
+              const SizedBox(height: 24),
               TextFormField(
                 controller: _endTimeController,
                 decoration: const InputDecoration(
                   labelText: 'End Time',
+                  border: OutlineInputBorder(),
                   suffixIcon: Icon(Icons.access_time),
                 ),
                 readOnly: true,
@@ -237,9 +260,12 @@ class _CreateClassScreenState extends ConsumerState<CreateClassScreen> {
                 validator: (value) =>
                     value?.isEmpty ?? true ? 'Please select end time' : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _createClass,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
                 child: const Text('Create Class'),
               ),
             ],

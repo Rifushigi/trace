@@ -107,25 +107,29 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           }
 
           // Navigate to the appropriate screen based on user role
-          String route = AppConstants.homeRoute;
+          String route;
           if (user.role == 'student') {
             route = AppConstants.studentHomeRoute;
           } else if (user.role == 'lecturer') {
             route = AppConstants.lecturerHomeRoute;
+          } else if (user.role == 'admin') {
+            route = AppConstants.adminHomeRoute;
+          } else {
+            route = AppConstants.signInRoute;
           }
-          AppLogger.info('Navigating to: $route');
+          AppLogger.info('Navigating to route: $route');
           if (mounted) {
             Navigator.of(context).pushReplacementNamed(route);
           }
         } else {
-          throw Exception('Sign in failed: No user data received');
+          throw Exception();
         }
       } catch (e) {
         AppLogger.error('Sign in failed', e);
         if (mounted) {
           Toast.show(
             context,
-            message: e.toString(),
+            message: "Sign in failed",
             type: ToastType.error,
           );
         }

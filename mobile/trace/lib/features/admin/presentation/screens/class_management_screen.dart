@@ -137,6 +137,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    const SizedBox(height: 24),
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(
@@ -150,7 +151,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     TextFormField(
                       controller: _codeController,
                       decoration: const InputDecoration(
@@ -164,7 +165,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     DropdownButtonFormField<String>(
                       value: _selectedLecturerId,
                       decoration: const InputDecoration(
@@ -189,7 +190,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     DropdownButtonFormField<String>(
                       value: _selectedDay,
                       decoration: const InputDecoration(
@@ -206,7 +207,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
                         setState(() => _selectedDay = value!);
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     Row(
                       children: [
                         Expanded(
