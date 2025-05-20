@@ -8,6 +8,7 @@ import 'core/services/notification_service.dart';
 import 'common/theme/theme_provider.dart';
 import 'common/theme/app_theme.dart';
 import 'core/utils/logger.dart';
+import 'core/network/api_client.dart';
 
 /// Handles background messages from Firebase Cloud Messaging.
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -20,7 +21,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize SharedPreferences
-  await SharedPreferences.getInstance();
+  final prefs = await SharedPreferences.getInstance();
 
   // Initialize Firebase
   await Firebase.initializeApp();
@@ -33,8 +34,11 @@ Future<void> main() async {
   await notificationService.initialize();
 
   runApp(
-    const ProviderScope(
-      child: TraceApp(),
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const TraceApp(),
     ),
   );
 }
@@ -50,7 +54,7 @@ class TraceApp extends ConsumerWidget {
     final themeMode = ThemeMode.values[appThemeMode.index];
 
     return MaterialApp(
-      title: 'Trace',
+      title: 'trace',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
