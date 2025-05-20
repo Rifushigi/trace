@@ -50,7 +50,7 @@ router.get(
 );
 
 router.get(
-    '/:id/profile',
+    '/profile',
     sessionMiddleware,
     getUserProfile
 );

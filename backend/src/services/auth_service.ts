@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { comparePayload } from "../utils/index.js";
-import { AuthenticationError, ValueError, JWTError, SessionError } from "../middlewares/index.js";
+import { AuthenticationError, ValueError, JWTError, SessionError, NotFoundError } from "../middlewares/index.js";
 import {
     IAuthResult,
     IAuthTokens,
@@ -19,7 +19,7 @@ export const login = async (payload: IUserLoginDTO, req: IAuthenticatedRequest, 
     const { email, password } = payload;
     const user: IUser | null = await getUserByEmail(email);
 
-    if (!user) throw new ValueError("User not found");
+    if (!user) throw new NotFoundError("User not found");
     if (!user.password) throw new ValueError("User password is not set");
     if (!user.isVerified) throw new AuthenticationError("User email is not verified");
 

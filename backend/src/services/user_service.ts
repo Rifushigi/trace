@@ -5,7 +5,8 @@ import {
     IUser,
     TUserCreateDTO,
     IUserDTO,
-    TUserUpdateDTO
+    TUserUpdateDTO,
+    TAdminCreateDTO
 } from "../types/index.js"
 import {
     AppError,
@@ -64,7 +65,7 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
         await student.save();
         sendVerificationEmail(userDTO.email);
 
-    } else if (userDTO.role === "lecturer" && "college" in userDTO && "staffId") {
+    } else if (userDTO.role === "lecturer" && "college" in userDTO && "staffId" in userDTO) {
         const staffIdExists = await lecturerModel.findOne({ staffId: userDTO.staffId });
         if (staffIdExists) throw new ValidationError("StaffId is already in use");
         const newUser = new userModel(userDTO);
@@ -79,8 +80,12 @@ export async function create(userDTO: TUserCreateDTO): Promise<boolean> {
         const lecturer = new lecturerModel(lecturerData);
         await lecturer.save();
         sendVerificationEmail(userDTO.email);
+    } else if (userDTO.role === "admin") {
+        const newUser = new userModel(userDTO);
+        await newUser.save();
+        sendVerificationEmail(userDTO.email);
     } else {
-        throw new ValidationError(`Missing required field(s) for selected role: ${userDTO.role}`);
+        throw new ValidationError("Invalid role or missing required fields");
     }
 
     return true;
@@ -140,7 +145,34 @@ export async function getDeletedUsers(): Promise<IUser[]> {
 }
 
 export async function getProfile(id: string): Promise<IUserDTO | null> {
-    return await getUserById(id);
+    const user = await getUserById(id);
+    if (!user) return null;
+
+    let additionalInfo = {};
+
+    if (user.role === 'student') {
+        const student = await studentModel.findOne({ userId: user._id });
+        if (student) {
+            additionalInfo = {
+                matricNo: student.matricNo,
+                program: student.program,
+                level: student.level,
+            };
+        }
+    } else if (user.role === 'lecturer') {
+        const lecturer = await lecturerModel.findOne({ userId: user._id });
+        if (lecturer) {
+            additionalInfo = {
+                staffId: lecturer.staffId,
+                college: lecturer.college,
+            };
+        }
+    }
+
+    return {
+        ...user.toObject(),
+        ...additionalInfo
+    };
 }
 
 export async function update(id: string, updateDTO: TUserUpdateDTO): Promise<TUserUpdateDTO | null> {
@@ -213,5 +245,32 @@ export const uploadAvatar = async (file: Express.Multer.File, userId: string): P
         throw new AppError(500, "failed to upload avatar", true, err.message);
     } finally {
         setTimeout(() => delete uploadLocks[userId], 5000);
+    }
+}
+
+export async function createDefaultAdmin(): Promise<void> {
+    const defaultAdminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@trace.com';
+    const defaultAdminPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'admin123';
+
+    try {
+        const existingAdmin = await getUserByEmail(defaultAdminEmail);
+        if (existingAdmin) {
+            console.log('Default admin user already exists');
+            return;
+        }
+
+        const adminData: TAdminCreateDTO = {
+            email: defaultAdminEmail,
+            password: defaultAdminPassword,
+            firstName: 'Admin',
+            lastName: 'User',
+            role: 'admin',
+            isVerified: true
+        };
+
+        await create(adminData);
+        console.log('Default admin user created successfully');
+    } catch (error) {
+        console.error('Failed to create default admin user:', error);
     }
 }

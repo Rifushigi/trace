@@ -26,15 +26,21 @@ export type TUserUpdateDTO = {
     updatedAt: Date;
 } | Partial<TStudentCreateDTO> | Partial<TLecturerCreateDTO>
 
-export interface IUserDTO {
+export type IUserDTO = {
     _id: mongoose.Types.ObjectId;
     firstName?: string;
     lastName?: string;
-    avatar?: string;
     email: string;
-    role: "admin" | "lecturer" | "student";
+    role: 'admin' | 'lecturer' | 'student';
     isVerified: boolean;
-}
+    avatar?: string;
+    // Role-specific fields
+    matricNo?: string;
+    program?: string;
+    level?: string;
+    staffId?: string;
+    college?: string;
+};
 
 type TBaseUserCreateDTO = {
     firstName?: string;

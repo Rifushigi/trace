@@ -79,15 +79,14 @@ export const getDeleted = asyncErrorHandler(async (_req: Request, res: Response)
     return res.status(200).json({ response });
 });
 
-export const getUserProfile = asyncErrorHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const user = await getProfile(id);
+export const getUserProfile = asyncErrorHandler(async (req: IAuthenticatedRequest, res: Response) => {
+    const user = await getProfile(req.user._id.toString());
 
     if (!user) {
         throw new NotFoundError("User not found");
     }
 
-    const responseData: IUserProfileResponseDTO = {
+    const responseData = {
         id: user._id.toString(),
         firstName: user.firstName,
         lastName: user.lastName,
@@ -95,11 +94,20 @@ export const getUserProfile = asyncErrorHandler(async (req: Request, res: Respon
         avatar: user.avatar,
         role: user.role,
         isVerified: user.isVerified,
-    }
+        ...(user.role === 'student' && {
+            matricNo: user.matricNo,
+            program: user.program,
+            level: user.level,
+        }),
+        ...(user.role === 'lecturer' && {
+            staffId: user.staffId,
+            college: user.college,
+        }),
+    };
 
     const response: IResponseDTO = {
         status: true,
-        data: responseData,
+        data: { profile: responseData },
         message: "User profile retrieved successfully",
     };
 
