@@ -18,20 +18,19 @@ class Toast {
 
     switch (type) {
       case ToastType.success:
-        backgroundColor = Colors.green;
+        backgroundColor = theme.colorScheme.tertiary;
         icon = Icons.check_circle;
         break;
       case ToastType.error:
-        backgroundColor = Colors.red;
+        backgroundColor = theme.colorScheme.error;
         icon = Icons.error;
         break;
       case ToastType.warning:
-        backgroundColor = Colors.orange;
+        backgroundColor = theme.colorScheme.tertiaryContainer;
         icon = Icons.warning;
         break;
       case ToastType.info:
-      default:
-        backgroundColor = theme.primaryColor;
+        backgroundColor = theme.colorScheme.primary;
         icon = Icons.info;
         break;
     }
