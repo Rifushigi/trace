@@ -42,7 +42,7 @@ final dashboardStatsProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef DashboardStatsRef = AutoDisposeFutureProviderRef<Map<String, dynamic>>;
-String _$homePreferencesHash() => r'd257d6e2b3dffa1cd8f846db70d3807687ebaa90';
+String _$homePreferencesHash() => r'e383697fe6dc93fe38501460efe1f57818cede67';
 
 /// See also [HomePreferences].
 @ProviderFor(HomePreferences)

@@ -5,7 +5,7 @@ import '../../../../core/constants/role_constants.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/home_provider.dart';
-import '../../../../utils/logger.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../common/appbar/role_app_bar.dart';
 import '../../../../common/shared_widgets/app_card.dart';
 import '../../../../common/styles/app_styles.dart';
@@ -13,6 +13,7 @@ import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
 import '../../../../common/shared_widgets/refresh_wrapper.dart';
 import '../../../../common/animations/app_animations.dart';
+import '../../../profile/domain/entities/profile_entity.dart';
 
 class AdminHomeScreen extends ConsumerStatefulWidget {
   const AdminHomeScreen({super.key});
@@ -101,13 +102,15 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
           );
         }
 
+        final typedUser = user;
+
         // Redirect non-admin users to their appropriate screens
-        if (user.role != RoleConstants.adminRole) {
+        if (typedUser.role != RoleConstants.adminRole) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (user.role == RoleConstants.lecturerRole) {
+            if (typedUser.role == RoleConstants.lecturerRole) {
               Navigator.of(context)
                   .pushReplacementNamed(AppConstants.lecturerHomeRoute);
-            } else if (user.role == RoleConstants.studentRole) {
+            } else if (typedUser.role == RoleConstants.studentRole) {
               Navigator.of(context)
                   .pushReplacementNamed(AppConstants.studentHomeRoute);
             }
@@ -121,16 +124,17 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
 
         return profileState.when(
           data: (profile) {
+            final typedProfile = profile as ProfileEntity;
             final dashboardItemsAsync = ref.watch(dashboardItemsProvider);
             final dashboardStatsAsync = ref.watch(dashboardStatsProvider);
             final preferences = ref.watch(homePreferencesProvider);
 
             void handleNavigation(String route) {
               try {
-                Logger.info('Navigating to $route');
+                AppLogger.info('Navigating to $route');
                 Navigator.of(context).pushNamed(route);
               } catch (e, stackTrace) {
-                Logger.error('Failed to navigate to $route', e, stackTrace);
+                AppLogger.error('Failed to navigate to $route', e, stackTrace);
                 if (context.mounted) {
                   Toast.show(
                     context,
@@ -152,7 +156,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                           .pushReplacementNamed(AppConstants.signInRoute);
                     }
                   } catch (e, stackTrace) {
-                    Logger.error('Failed to sign out', e, stackTrace);
+                    AppLogger.error('Failed to sign out', e, stackTrace);
                     if (context.mounted) {
                       Toast.show(
                         context,
@@ -187,16 +191,16 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Welcome, ${profile?.firstName ?? 'User'} ${profile?.lastName ?? ''}',
+                              'Welcome, ${typedProfile.firstName} ${typedProfile.lastName}',
                               style: AppStyles.headlineSmall,
                             ),
                             const SizedBox(height: AppConstants.defaultSpacing),
                             Text(
-                              'Staff ID: ${profile?.staffId ?? 'N/A'}',
+                              'Staff ID: ${typedProfile.staffId}',
                               style: AppStyles.bodyLarge,
                             ),
                             Text(
-                              'Department: ${profile?.department ?? 'N/A'}',
+                              'Department: ${typedProfile.department}',
                               style: AppStyles.bodyLarge,
                             ),
                           ],
@@ -221,7 +225,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                                   ? Theme.of(context).primaryColor
                                   : Theme.of(context)
                                       .primaryColor
-                                      .withOpacity(0.3),
+                                      .withAlpha(77),
                             ),
                           ),
                         ),
@@ -264,14 +268,15 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                           ),
                         ),
                         error: (error, stackTrace) {
-                          Logger.error('Failed to load dashboard items', error,
-                              stackTrace);
+                          AppLogger.error('Failed to load dashboard items',
+                              error, stackTrace);
                           return Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Text('Failed to load dashboard items'),
-                                const SizedBox(height: AppConstants.defaultSpacing),
+                                const SizedBox(
+                                    height: AppConstants.defaultSpacing),
                                 ElevatedButton(
                                   onPressed: () {
                                     ref.invalidate(dashboardItemsProvider);
@@ -328,7 +333,8 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: AppConstants.defaultPadding),
+                                const SizedBox(
+                                    height: AppConstants.defaultPadding),
                                 _StatItem(
                                   label: 'Total Users',
                                   value: stats['totalUsers'].toString(),
@@ -351,7 +357,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                             child: CircularProgressIndicator(),
                           ),
                           error: (error, stackTrace) {
-                            Logger.error('Failed to load system statistics',
+                            AppLogger.error('Failed to load system statistics',
                                 error, stackTrace);
                             return Center(
                               child: Column(
@@ -359,7 +365,8 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
                                 children: [
                                   const Text(
                                       'Failed to load system statistics'),
-                                  const SizedBox(height: AppConstants.defaultSpacing),
+                                  const SizedBox(
+                                      height: AppConstants.defaultSpacing),
                                   ElevatedButton(
                                     onPressed: () {
                                       ref.invalidate(dashboardStatsProvider);
@@ -389,7 +396,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
             ),
           ),
           error: (error, stackTrace) {
-            Logger.error('Failed to load profile data', error, stackTrace);
+            AppLogger.error('Failed to load profile data', error, stackTrace);
             return const Scaffold(
               body: Center(
                 child: CircularProgressIndicator(),
@@ -404,7 +411,7 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
         ),
       ),
       error: (error, stackTrace) {
-        Logger.error('Failed to load user data', error, stackTrace);
+        AppLogger.error('Failed to load user data', error, stackTrace);
         return const Scaffold(
           body: Center(
             child: CircularProgressIndicator(),

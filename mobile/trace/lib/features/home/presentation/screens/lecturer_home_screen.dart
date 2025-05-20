@@ -5,13 +5,14 @@ import '../../../../core/constants/role_constants.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/home_provider.dart';
-import '../../../../utils/logger.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../common/appbar/role_app_bar.dart';
 import '../../../../common/shared_widgets/app_card.dart';
 import '../../../../common/styles/app_styles.dart';
 import '../../../../common/shared_widgets/toast.dart';
 import '../../../../common/shared_widgets/skeleton_loading.dart';
 import '../../../../common/shared_widgets/refresh_wrapper.dart';
+import '../../../profile/domain/entities/profile_entity.dart';
 
 class LecturerHomeScreen extends ConsumerStatefulWidget {
   const LecturerHomeScreen({super.key});
@@ -24,7 +25,6 @@ class _LecturerHomeScreenState extends ConsumerState<LecturerHomeScreen> {
   final PageController _pageController = PageController();
   final int _currentSection = 0;
   double _dragStartX = 0;
-  final double _dragStartY = 0;
   DateTime? _lastTapTime;
 
   @override
@@ -86,13 +86,15 @@ class _LecturerHomeScreenState extends ConsumerState<LecturerHomeScreen> {
           );
         }
 
+        final typedUser = user;
+
         // Redirect non-lecturer users to their appropriate screens
-        if (user.role != RoleConstants.lecturerRole) {
+        if (typedUser.role != RoleConstants.lecturerRole) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (user.role == RoleConstants.adminRole) {
+            if (typedUser.role == RoleConstants.adminRole) {
               Navigator.of(context)
                   .pushReplacementNamed(AppConstants.adminHomeRoute);
-            } else if (user.role == RoleConstants.studentRole) {
+            } else if (typedUser.role == RoleConstants.studentRole) {
               Navigator.of(context)
                   .pushReplacementNamed(AppConstants.studentHomeRoute);
             }
@@ -120,10 +122,10 @@ class _LecturerHomeScreenState extends ConsumerState<LecturerHomeScreen> {
 
             void handleNavigation(String route) {
               try {
-                Logger.info('Navigating to $route');
+                AppLogger.info('Navigating to $route');
                 Navigator.of(context).pushNamed(route);
               } catch (e, stackTrace) {
-                Logger.error('Failed to navigate to $route', e, stackTrace);
+                AppLogger.error('Failed to navigate to $route', e, stackTrace);
                 if (context.mounted) {
                   Toast.show(
                     context,
@@ -145,7 +147,7 @@ class _LecturerHomeScreenState extends ConsumerState<LecturerHomeScreen> {
                           .pushReplacementNamed(AppConstants.signInRoute);
                     }
                   } catch (e, stackTrace) {
-                    Logger.error('Failed to sign out', e, stackTrace);
+                    AppLogger.error('Failed to sign out', e, stackTrace);
                     if (context.mounted) {
                       Toast.show(
                         context,
@@ -192,15 +194,19 @@ class _LecturerHomeScreenState extends ConsumerState<LecturerHomeScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 profileState.when(
-                                  data: (profile) => Text(
-                                    '${profile?.firstName ?? ''} ${profile?.lastName ?? ''}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                  ),
+                                  data: (profile) {
+                                    final typedProfile =
+                                        profile as ProfileEntity;
+                                    return Text(
+                                      '${typedProfile.firstName} ${typedProfile.lastName}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    );
+                                  },
                                   loading: () => const SkeletonLoading(
                                     width: 200,
                                     height: 32,
@@ -217,15 +223,19 @@ class _LecturerHomeScreenState extends ConsumerState<LecturerHomeScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 profileState.when(
-                                  data: (profile) => Text(
-                                    '${profile?.staffId ?? ''} • ${profile?.department ?? ''}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.copyWith(
-                                          color: Colors.grey[600],
-                                        ),
-                                  ),
+                                  data: (profile) {
+                                    final typedProfile =
+                                        profile as ProfileEntity;
+                                    return Text(
+                                      '${typedProfile.staffId} • ${typedProfile.department}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            color: Colors.grey[600],
+                                          ),
+                                    );
+                                  },
                                   loading: () => const SkeletonLoading(
                                     width: 150,
                                     height: 24,
@@ -448,7 +458,7 @@ class _LecturerHomeScreenState extends ConsumerState<LecturerHomeScreen> {
             ),
           ),
           error: (error, stackTrace) {
-            Logger.error('Profile state error', error, stackTrace);
+            AppLogger.error('Profile state error', error, stackTrace);
             return Scaffold(
               body: Center(
                 child: Column(
@@ -472,7 +482,7 @@ class _LecturerHomeScreenState extends ConsumerState<LecturerHomeScreen> {
         ),
       ),
       error: (error, stackTrace) {
-        Logger.error('Auth state error', error, stackTrace);
+        AppLogger.error('Auth state error', error, stackTrace);
         return Scaffold(
           body: Center(
             child: Column(

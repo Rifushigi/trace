@@ -5,7 +5,7 @@ import '../../../../core/constants/role_constants.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/home_provider.dart';
-import '../../../../utils/logger.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../common/appbar/role_app_bar.dart';
 import '../../../../common/shared_widgets/app_card.dart';
 import '../../../../common/styles/app_styles.dart';
@@ -25,7 +25,6 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
   final PageController _pageController = PageController();
   final int _currentSection = 0;
   double _dragStartX = 0;
-  final double _dragStartY = 0;
   DateTime? _lastTapTime;
 
   @override
@@ -88,13 +87,15 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
           );
         }
 
+        final typedUser = user;
+
         // Redirect non-student users to their appropriate screens
-        if (user.role != RoleConstants.studentRole) {
+        if (typedUser.role != RoleConstants.studentRole) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (user.role == RoleConstants.adminRole) {
+            if (typedUser.role == RoleConstants.adminRole) {
               Navigator.of(context)
                   .pushReplacementNamed(AppConstants.adminHomeRoute);
-            } else if (user.role == RoleConstants.lecturerRole) {
+            } else if (typedUser.role == RoleConstants.lecturerRole) {
               Navigator.of(context)
                   .pushReplacementNamed(AppConstants.lecturerHomeRoute);
             }
@@ -116,16 +117,17 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
               );
             }
 
+            final typedProfile = profile;
             final dashboardItemsAsync = ref.watch(dashboardItemsProvider);
             final dashboardStatsAsync = ref.watch(dashboardStatsProvider);
             final preferences = ref.watch(homePreferencesProvider);
 
             void handleNavigation(String route) {
               try {
-                Logger.info('Navigating to $route');
+                AppLogger.info('Navigating to $route');
                 Navigator.of(context).pushNamed(route);
               } catch (e, stackTrace) {
-                Logger.error('Failed to navigate to $route', e, stackTrace);
+                AppLogger.error('Failed to navigate to $route', e, stackTrace);
                 if (context.mounted) {
                   Toast.show(
                     context,
@@ -147,7 +149,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                           .pushReplacementNamed(AppConstants.signInRoute);
                     }
                   } catch (e, stackTrace) {
-                    Logger.error('Failed to sign out', e, stackTrace);
+                    AppLogger.error('Failed to sign out', e, stackTrace);
                     if (context.mounted) {
                       Toast.show(
                         context,
@@ -176,20 +178,20 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Welcome, ${profile.firstName} ${profile.lastName}',
+                              'Welcome, ${typedProfile.firstName} ${typedProfile.lastName}',
                               style: Theme.of(context).textTheme.headlineSmall,
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Matric Number: ${profile.matricNo}',
+                              'Matric Number: ${typedProfile.matricNo}',
                               style: Theme.of(context).textTheme.bodyLarge,
                             ),
                             Text(
-                              'Program: ${profile.program}',
+                              'Program: ${typedProfile.program}',
                               style: Theme.of(context).textTheme.bodyLarge,
                             ),
                             Text(
-                              'Level: ${profile.level}',
+                              'Level: ${typedProfile.level}',
                               style: Theme.of(context).textTheme.bodyLarge,
                             ),
                           ],
@@ -214,7 +216,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                   ? Theme.of(context).primaryColor
                                   : Theme.of(context)
                                       .primaryColor
-                                      .withOpacity(0.3),
+                                      .withAlpha(77),
                             ),
                           ),
                         ),
@@ -256,14 +258,15 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                           ),
                         ),
                         error: (error, stackTrace) {
-                          Logger.error('Failed to load dashboard items', error,
-                              stackTrace);
+                          AppLogger.error('Failed to load dashboard items',
+                              error, stackTrace);
                           return Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Text('Failed to load dashboard items'),
-                                const SizedBox(height: AppConstants.defaultSpacing),
+                                const SizedBox(
+                                    height: AppConstants.defaultSpacing),
                                 ElevatedButton(
                                   onPressed: () {
                                     ref.invalidate(dashboardItemsProvider);
@@ -320,7 +323,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: AppConstants.defaultPadding),
+                                const SizedBox(
+                                    height: AppConstants.defaultPadding),
                                 _StatItem(
                                   label: 'Overall Attendance',
                                   value: '${stats['overallAttendance']}%',
@@ -347,12 +351,14 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                   width: 200,
                                   height: 32,
                                 ),
-                                const SizedBox(height: AppConstants.defaultPadding),
+                                const SizedBox(
+                                    height: AppConstants.defaultPadding),
                                 ListView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemCount: 3,
-                                  itemBuilder: (context, index) => const Padding(
+                                  itemBuilder: (context, index) =>
+                                      const Padding(
                                     padding: EdgeInsets.only(
                                         bottom: AppConstants.defaultSpacing),
                                     child: SkeletonLoading(
@@ -367,14 +373,15 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             ),
                           ),
                           error: (error, stackTrace) {
-                            Logger.error(
+                            AppLogger.error(
                                 'Failed to load statistics', error, stackTrace);
                             return Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const Text('Failed to load statistics'),
-                                  const SizedBox(height: AppConstants.defaultSpacing),
+                                  const SizedBox(
+                                      height: AppConstants.defaultSpacing),
                                   ElevatedButton(
                                     onPressed: () {
                                       ref.invalidate(dashboardStatsProvider);
@@ -404,7 +411,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
             ),
           ),
           error: (error, stackTrace) {
-            Logger.error('Profile state error', error, stackTrace);
+            AppLogger.error('Profile state error', error, stackTrace);
             return Scaffold(
               body: Center(
                 child: Column(
@@ -428,7 +435,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
         ),
       ),
       error: (error, stackTrace) {
-        Logger.error('Auth state error', error, stackTrace);
+        AppLogger.error('Auth state error', error, stackTrace);
         return Scaffold(
           body: Center(
             child: Column(

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/dashboard_item.dart';
 import '../../data/repositories/home_repository_impl.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../../utils/logger.dart';
+import '../../../../core/utils/logger.dart';
 
 part 'home_provider.g.dart';
 
@@ -52,9 +52,9 @@ class HomePreferences extends _$HomePreferences {
           .read(homeRepositoryProvider)
           .updateDashboardPreferences(user.id, preferences);
       state = preferences;
-      Logger.info('Successfully updated dashboard preferences');
+      AppLogger.info('Successfully updated dashboard preferences');
     } catch (e, stackTrace) {
-      Logger.error('Failed to update dashboard preferences', e, stackTrace);
+      AppLogger.error('Failed to update dashboard preferences', e, stackTrace);
       rethrow;
     }
   }
@@ -65,7 +65,7 @@ class HomePreferences extends _$HomePreferences {
       newPreferences[key] = !(state[key] as bool);
       await updatePreferences(newPreferences);
     } catch (e, stackTrace) {
-      Logger.error('Failed to toggle preference: $key', e, stackTrace);
+      AppLogger.error('Failed to toggle preference: $key', e, stackTrace);
       rethrow;
     }
   }
