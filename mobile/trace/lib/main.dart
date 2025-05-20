@@ -7,11 +7,12 @@ import 'core/routes/app_router.dart';
 import 'core/services/notification_service.dart';
 import 'common/theme/theme_provider.dart';
 import 'common/theme/app_theme.dart';
+import 'core/utils/logger.dart';
 
 /// Handles background messages from Firebase Cloud Messaging.
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  AppLogger.info('Handling a background message: ${message.messageId}');
   await Firebase.initializeApp();
-  debugPrint('Handling a background message: ${message.messageId}');
 }
 
 /// The main entry point of the application.
@@ -51,7 +52,7 @@ class TraceApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Trace',
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      debugShowCheckedModeBanner: false,
       themeMode: themeMode,
       onGenerateRoute: (settings) => AppRouter.generateRoute(settings, ref),
       initialRoute: '/',
