@@ -3,9 +3,10 @@ import { CorsOptions } from "cors";
 export const corsConfig: CorsOptions = {
     origin: process.env.ENV === 'production'
         ? ['https://your-production-domain.com']
-        : ['http://localhost:3000', 'http://localhost:5173'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+        : true, // Add your development URLs
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
-    exposedHeaders: ['set-cookie']
+    exposedHeaders: ['set-cookie'],
+    maxAge: 86400 // 24 hours
 }
