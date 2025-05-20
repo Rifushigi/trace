@@ -1,17 +1,17 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../data/models/profile_model.dart';
-import '../../data/repositories/profile_repository.dart';
+import '../../domain/entities/profile_entity.dart';
+import '../../data/repositories/profile_repository_impl.dart';
 
 part 'profile_provider.g.dart';
 
 @riverpod
 class Profile extends _$Profile {
   @override
-  FutureOr<ProfileModel?> build() async {
-    return _loadProfile();
+  FutureOr<ProfileEntity?> build() async {
+    return await _loadProfile();
   }
 
-  Future<ProfileModel?> _loadProfile() async {
+  Future<ProfileEntity?> _loadProfile() async {
     try {
       final repository = ref.read(profileRepositoryProvider);
       return await repository.getProfile();
@@ -20,7 +20,7 @@ class Profile extends _$Profile {
     }
   }
 
-  Future<ProfileModel?> updateProfile(ProfileModel profile) async {
+  Future<ProfileEntity?> updateProfile(ProfileEntity profile) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final repository = ref.read(profileRepositoryProvider);
