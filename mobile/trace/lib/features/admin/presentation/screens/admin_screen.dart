@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../../utils/logger.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/network/endpoints.dart';
 import 'class_management_screen.dart';
 
 class AdminScreen extends ConsumerStatefulWidget {
@@ -42,7 +43,8 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
   Future<void> _loadClasses() async {
     setState(() => _isLoading = true);
     try {
-      final response = await ref.read(apiClientProvider).get('/class');
+      final response =
+          await ref.read(apiClientProvider).get(Endpoints.admin.classes);
       if (response.statusCode == 200) {
         setState(() {
           _classes = List<Map<String, dynamic>>.from(
@@ -51,7 +53,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
         });
       }
     } catch (e, stackTrace) {
-      Logger.error('Failed to load classes', e, stackTrace);
+      AppLogger.error('Failed to load classes', e, stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -88,7 +90,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                                 .pushReplacementNamed('/sign-in');
                           }
                         } catch (e, stackTrace) {
-                          Logger.error('Failed to sign out', e, stackTrace);
+                          AppLogger.error('Failed to sign out', e, stackTrace);
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -146,7 +148,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                               .pushReplacementNamed('/sign-in');
                         }
                       } catch (e, stackTrace) {
-                        Logger.error('Failed to sign out', e, stackTrace);
+                        AppLogger.error('Failed to sign out', e, stackTrace);
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Failed to sign out')),
@@ -184,7 +186,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
             body: Center(child: CircularProgressIndicator()),
           ),
           error: (error, stackTrace) {
-            Logger.error('Auth state error', error, stackTrace);
+            AppLogger.error('Auth state error', error, stackTrace);
             return Scaffold(
               body: Center(
                 child: Column(
