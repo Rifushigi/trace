@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,20 +24,6 @@ ApiClient apiClient(Ref ref) {
     ),
   );
 
-  // Add logger before creating the client
-  dio.interceptors.add(
-    PrettyDioLogger(
-      requestHeader: true,
-      requestBody: true,
-      responseBody: true,
-      responseHeader: true,
-      error: true,
-      compact: false,
-      maxWidth: 100,
-      logPrint: (object) => AppLogger.debug('DIO: $object'),
-    ),
-  );
-
   final prefs = ref.watch(sharedPreferencesProvider);
   final client = ApiClient(dio, prefs);
   client._setupInterceptors();
@@ -58,8 +43,7 @@ class ApiClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          AppLogger.info('=== REQUEST ===');
-          AppLogger.info('URL: ${options.baseUrl}${options.path}');
+          AppLogger.info('URL:${options.path}');
           AppLogger.info('Method: ${options.method}');
           if (options.data != null) {
             AppLogger.info('Request Body: ${options.data}');
@@ -67,7 +51,6 @@ class ApiClient {
           if (options.queryParameters.isNotEmpty) {
             AppLogger.info('Query Parameters: ${options.queryParameters}');
           }
-          AppLogger.info('Headers: ${options.headers}');
 
           // Add device ID if available
           final deviceId = _prefs.getString(_deviceIdKey);
@@ -93,7 +76,6 @@ class ApiClient {
           AppLogger.info(
               'Status: ${response.statusCode} ${response.statusMessage}');
           AppLogger.info('Response Data: ${response.data}');
-          AppLogger.info('Response Headers: ${response.headers}');
 
           // Extract and store cookies from response
           final cookies = response.headers['set-cookie'];
@@ -114,17 +96,11 @@ class ApiClient {
           return handler.next(response);
         },
         onError: (DioException e, handler) async {
-          AppLogger.error('=== ERROR ===');
           AppLogger.error('URL: ${e.requestOptions.uri}');
-          AppLogger.error('Status: ${e.response?.statusCode ?? "No Status"}');
-          AppLogger.error('Error Type: ${e.type}');
-          AppLogger.error('Error Message: ${e.message}');
           if (e.response != null) {
             AppLogger.error('Error Response Data: ${e.response?.data}');
-            AppLogger.error('Error Response Headers: ${e.response?.headers}');
           }
           AppLogger.error('Request Data: ${e.requestOptions.data}');
-          AppLogger.error('Request Headers: ${e.requestOptions.headers}');
 
           if (e.response?.statusCode == 401) {
             // Token expired, try to refresh
@@ -195,27 +171,23 @@ class ApiClient {
   // HTTP Methods
   Future<Response> get(String path,
       {Map<String, dynamic>? queryParameters, Options? options}) {
-    AppLogger.info('Making GET request to: $path');
     return _dio.get(path, queryParameters: queryParameters, options: options);
   }
 
   Future<Response> post(String path,
       {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
-    AppLogger.info('Making POST request to: $path');
     return _dio.post(path,
         data: data, queryParameters: queryParameters, options: options);
   }
 
   Future<Response> put(String path,
       {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
-    AppLogger.info('Making PUT request to: $path');
     return _dio.put(path,
         data: data, queryParameters: queryParameters, options: options);
   }
 
   Future<Response> delete(String path,
       {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
-    AppLogger.info('Making DELETE request to: $path');
     return _dio.delete(path,
         data: data, queryParameters: queryParameters, options: options);
   }

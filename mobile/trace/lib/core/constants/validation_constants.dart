@@ -21,6 +21,10 @@ class ValidationConstants {
     r'^[a-zA-Z\s]{2,50}$',
   );
 
+  static final RegExp classCodeRegex = RegExp(
+    r'^[A-Z]{3}\s\d{3}$',
+  );
+
   // Error Messages
   static const String invalidEmail = 'Please enter a valid email address';
   static const String invalidPassword =
@@ -29,6 +33,8 @@ class ValidationConstants {
       'Please enter a valid matric number (e.g., BU20CSC1001)';
   static const String invalidStaffId = 'Please enter a valid staff ID';
   static const String invalidName = 'Please enter a valid name';
+  static const String invalidClassCode =
+      'Please enter a valid class code (e.g., CSC 401)';
   static const String requiredField = 'This field is required';
   static const String passwordMismatch = 'Passwords do not match';
   static const String invalidOtp = 'Please enter a valid 6-digit OTP';
@@ -64,5 +70,10 @@ class ValidationConstants {
   // Helper method to validate name
   static bool isValidName(String name) {
     return name.length >= 2 && nameRegex.hasMatch(name);
+  }
+
+  // Helper method to validate class code
+  static bool isValidClassCode(String code) {
+    return classCodeRegex.hasMatch(code);
   }
 }

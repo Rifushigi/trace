@@ -44,7 +44,9 @@ class _ClassEndpoints {
 
 class _AuthEndpoints {
   final String signIn = '${Endpoints.baseUrl}/auth/signin';
-  final String signUp = '${Endpoints.baseUrl}/auth/signup';
+  //TODO
+  // Come back here later to fix the sign up route
+  final String signUp = '${Endpoints.baseUrl}/users/signup';
   final String signOut = '${Endpoints.baseUrl}/auth/signout';
   final String refreshToken = '${Endpoints.baseUrl}/auth/refresh-token';
   final String sendOtp = '${Endpoints.baseUrl}/auth/send-otp';
