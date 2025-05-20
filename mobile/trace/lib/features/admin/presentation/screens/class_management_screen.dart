@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../utils/logger.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/network/endpoints.dart';
 
 class ClassManagementScreen extends ConsumerStatefulWidget {
   const ClassManagementScreen({super.key});
@@ -48,7 +49,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
     setState(() => _isLoading = true);
     try {
       final response =
-          await ref.read(apiClientProvider).get('/users/lecturers');
+          await ref.read(apiClientProvider).get(Endpoints.admin.lecturers);
       if (response.statusCode == 200) {
         setState(() {
           _lecturers = List<Map<String, dynamic>>.from(
@@ -57,7 +58,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
         });
       }
     } catch (e, stackTrace) {
-      Logger.error('Failed to load lecturers', e, stackTrace);
+      AppLogger.error('Failed to load lecturers', e, stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to load lecturers')),
@@ -74,7 +75,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
     setState(() => _isLoading = true);
     try {
       final response = await ref.read(apiClientProvider).post(
-        '/class',
+        Endpoints.admin.createClass,
         data: {
           'name': _nameController.text,
           'code': _codeController.text,
@@ -96,7 +97,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
         }
       }
     } catch (e, stackTrace) {
-      Logger.error('Failed to create class', e, stackTrace);
+      AppLogger.error('Failed to create class', e, stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
