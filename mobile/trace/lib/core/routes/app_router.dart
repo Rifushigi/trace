@@ -10,6 +10,11 @@ import '../../features/authentication/presentation/screens/sign_up/lecturer_sign
 import '../../features/authentication/presentation/screens/forgot_password_screen.dart';
 import '../../features/home/presentation/screens/student_home_screen.dart';
 import '../../features/home/presentation/screens/lecturer_home_screen.dart';
+import '../../features/home/presentation/screens/admin_home_screen.dart';
+import '../../features/admin/presentation/screens/admin_users_screen.dart';
+import '../../features/admin/presentation/screens/admin_classes_screen.dart';
+import '../../features/admin/presentation/screens/admin_reports_screen.dart';
+import '../../features/admin/presentation/screens/admin_settings_screen.dart';
 import '../../features/profile/presentation/screens/student_profile_screen.dart';
 import '../../features/profile/presentation/screens/lecturer_profile_screen.dart';
 import '../../features/class_management/presentation/screens/student_class_list_screen.dart';
@@ -40,15 +45,27 @@ class AppRouter {
       case '/sign-up/role':
         return MaterialPageRoute(builder: (_) => const RoleSelectionScreen());
       case '/sign-up/student':
-        return MaterialPageRoute(builder: (_) => const StudentSignUpScreen());
+        return MaterialPageRoute(
+            builder: (_) => const StudentSignUpScreen(role: 'student'));
       case '/sign-up/lecturer':
-        return MaterialPageRoute(builder: (_) => const LecturerSignUpScreen());
+        return MaterialPageRoute(
+            builder: (_) => const LecturerSignUpScreen(role: 'lecturer'));
       case '/forgot-password':
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
       case '/student/home':
         return MaterialPageRoute(builder: (_) => const StudentHomeScreen());
       case '/lecturer/home':
         return MaterialPageRoute(builder: (_) => const LecturerHomeScreen());
+      case '/admin/home':
+        return MaterialPageRoute(builder: (_) => const AdminHomeScreen());
+      case '/admin/users':
+        return MaterialPageRoute(builder: (_) => const AdminUsersScreen());
+      case '/admin/classes':
+        return MaterialPageRoute(builder: (_) => const AdminClassesScreen());
+      case '/admin/reports':
+        return MaterialPageRoute(builder: (_) => const AdminReportsScreen());
+      case '/admin/settings':
+        return MaterialPageRoute(builder: (_) => const AdminSettingsScreen());
       case '/student/profile':
         return MaterialPageRoute(builder: (_) => const StudentProfileScreen());
       case '/lecturer/profile':
