@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/class_provider.dart';
-import '../../data/models/class_model.dart';
+import '../../domain/entities/class_entity.dart';
 import 'class_details_screen.dart';
 import '../../../../core/constants/role_constants.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -69,7 +69,7 @@ class StudentClassListScreen extends ConsumerWidget {
 
           return RefreshableListView(
             onRefresh: () async {
-              await ref.refresh(enrolledClassesProvider.future);
+              ref.invalidate(enrolledClassesProvider);
               if (context.mounted) {
                 Toast.show(
                   context,
@@ -115,7 +115,7 @@ class StudentClassListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildClassCard(BuildContext context, ClassModel classModel) {
+  Widget _buildClassCard(BuildContext context, ClassEntity classModel) {
     final schedule = classModel.schedule;
     final day = schedule['day'] as String? ?? 'N/A';
     final startTime = schedule['startTime'] as String? ?? 'N/A';
