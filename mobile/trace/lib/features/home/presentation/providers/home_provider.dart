@@ -24,7 +24,7 @@ Future<Map<String, dynamic>> dashboardStats(Ref ref) async {
   if (user == null) throw Exception('User not authenticated');
 
   final repository = ref.watch(homeRepositoryProvider);
-  return repository.getDashboardStats(user.id);
+  return repository.getDashboardStats();
 }
 
 @riverpod
@@ -44,13 +44,9 @@ class HomePreferences extends _$HomePreferences {
 
   Future<void> updatePreferences(Map<String, dynamic> preferences) async {
     try {
-      final authState = ref.watch(authProvider);
-      final user = authState.value;
-      if (user == null) throw Exception('User not authenticated');
-
       await ref
           .read(homeRepositoryProvider)
-          .updateDashboardPreferences(user.id, preferences);
+          .updateDashboardPreferences(preferences);
       state = preferences;
       AppLogger.info('Successfully updated dashboard preferences');
     } catch (e, stackTrace) {

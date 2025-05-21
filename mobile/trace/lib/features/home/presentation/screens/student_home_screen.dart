@@ -23,9 +23,19 @@ class StudentHomeScreen extends ConsumerStatefulWidget {
 
 class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
   final PageController _pageController = PageController();
-  final int _currentSection = 0;
+  int _currentSection = 0;
   double _dragStartX = 0;
   DateTime? _lastTapTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController.addListener(() {
+      setState(() {
+        _currentSection = _pageController.page?.round() ?? 0;
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -49,6 +59,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
           curve: Curves.easeInOut,
         );
       }
+      _dragStartX = 0; // Reset drag start position
     }
   }
 
@@ -68,8 +79,10 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                 : 'Attendance stats hidden',
         type: ToastType.info,
       );
+      _lastTapTime = null; // Reset after successful double tap
+    } else {
+      _lastTapTime = now;
     }
-    _lastTapTime = now;
   }
 
   @override

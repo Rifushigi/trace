@@ -81,19 +81,18 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> getDashboardStats(String userId) async {
+  Future<Map<String, dynamic>> getDashboardStats() async {
     try {
       final response = await _apiClient.get(
-        Endpoints.dashboard.statsUrl(userId),
+        Endpoints.dashboard.stats,
       );
 
       if (response.statusCode == 200) {
-        AppLogger.info(
-            'Successfully fetched dashboard stats for user: $userId');
+        AppLogger.info('Successfully fetched dashboard stats');
         return response.data['data']['stats'];
       }
 
-      AppLogger.warning('Failed to fetch dashboard stats for user: $userId');
+      AppLogger.warning('Failed to fetch dashboard stats');
       return {};
     } catch (e, stackTrace) {
       AppLogger.error('Error fetching dashboard stats', e, stackTrace);
@@ -103,16 +102,14 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   Future<void> updateDashboardPreferences(
-    String userId,
     Map<String, dynamic> preferences,
   ) async {
     try {
       await _apiClient.put(
-        Endpoints.dashboard.preferencesUrl(userId),
+        Endpoints.dashboard.preferences,
         data: preferences,
       );
-      AppLogger.info(
-          'Successfully updated dashboard preferences for user: $userId');
+      AppLogger.info('Successfully updated dashboard preferences');
     } catch (e, stackTrace) {
       AppLogger.error('Error updating dashboard preferences', e, stackTrace);
       rethrow;
