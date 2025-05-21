@@ -84,17 +84,15 @@ class _StudentSignUpScreenState extends ConsumerState<StudentSignUpScreen> {
         AppLogger.info(
             'Attempting to sign up with email: ${_emailController.text}');
         await ref.read(authProvider.notifier).signUp(
-          email: _emailController.text,
-          password: _passwordController.text,
-          firstName: _firstNameController.text,
-          lastName: _lastNameController.text,
-          role: widget.role,
-          additionalInfo: {
-            'matricNo': _matricNoController.text,
-            'program': _programController.text,
-            'level': _levelController.text,
-          },
-        );
+              email: _emailController.text,
+              password: _passwordController.text,
+              firstName: _firstNameController.text,
+              lastName: _lastNameController.text,
+              role: widget.role,
+              matricNo: _matricNoController.text,
+              program: _programController.text,
+              level: _levelController.text,
+            );
 
         // Check if the sign-up was successful by checking the auth state
         final authState = ref.read(authProvider);
