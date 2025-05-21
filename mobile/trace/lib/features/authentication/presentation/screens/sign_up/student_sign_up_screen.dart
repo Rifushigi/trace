@@ -115,9 +115,10 @@ class _StudentSignUpScreenState extends ConsumerState<StudentSignUpScreen> {
       } catch (e) {
         AppLogger.error('Sign up failed', e);
         if (mounted) {
+          final errorMessage = e.toString().split(':').last.trim();
           Toast.show(
             context,
-            message: e.toString(),
+            message: errorMessage,
             type: ToastType.error,
           );
         }

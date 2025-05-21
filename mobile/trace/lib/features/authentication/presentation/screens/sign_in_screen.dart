@@ -127,9 +127,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       } catch (e) {
         AppLogger.error('Sign in failed', e);
         if (mounted) {
+          final errorMessage = e.toString().split(':').last.trim();
           Toast.show(
             context,
-            message: "Sign in failed",
+            message: errorMessage,
             type: ToastType.error,
           );
         }
@@ -137,11 +138,14 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     } else {
       AppLogger.warning('Form validation failed');
       if (mounted) {
-        Toast.show(
-          context,
-          message: 'Please fill in all fields correctly',
-          type: ToastType.error,
-        );
+        final formErrors = _formKey.currentState?.validate() ?? false;
+        if (!formErrors) {
+          Toast.show(
+            context,
+            message: 'Please fill in all fields correctly',
+            type: ToastType.error,
+          );
+        }
       }
     }
   }
