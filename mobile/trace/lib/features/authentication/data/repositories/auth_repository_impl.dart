@@ -75,7 +75,9 @@ class AuthRepositoryImpl implements AuthRepository {
     required String role,
     String? staffId,
     String? college,
-    Map<String, dynamic>? additionalInfo,
+    String? matricNo,
+    String? program,
+    String? level,
   }) async {
     final response = await _apiClient.post(Endpoints.auth.signUp, data: {
       'email': email,
@@ -85,7 +87,9 @@ class AuthRepositoryImpl implements AuthRepository {
       'role': role,
       if (staffId != null) 'staffId': staffId,
       if (college != null) 'college': college,
-      if (additionalInfo != null) 'additionalInfo': additionalInfo,
+      if (matricNo != null) 'matricNo': matricNo,
+      if (program != null) 'program': program,
+      if (level != null) 'level': level,
     });
     return UserEntity.fromJson(response.data['response']['data']['user']);
   }

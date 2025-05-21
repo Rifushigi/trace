@@ -11,7 +11,9 @@ abstract class AuthRepository {
     required String role,
     String? staffId,
     String? college,
-    Map<String, dynamic>? additionalInfo,
+    String? matricNo,
+    String? program,
+    String? level,
   });
   Future<void> signOut();
   Future<void> sendOtp(String email);

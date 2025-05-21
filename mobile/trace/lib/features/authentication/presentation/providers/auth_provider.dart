@@ -48,7 +48,9 @@ class Auth extends AsyncNotifier<UserEntity?> {
     required String role,
     String? staffId,
     String? college,
-    Map<String, dynamic>? additionalInfo,
+    String? matricNo,
+    String? program,
+    String? level,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -60,7 +62,9 @@ class Auth extends AsyncNotifier<UserEntity?> {
         role: role,
         staffId: staffId,
         college: college,
-        additionalInfo: additionalInfo,
+        matricNo: matricNo,
+        program: program,
+        level: level,
       );
       state = AsyncValue.data(user);
     } catch (e, st) {
