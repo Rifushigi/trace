@@ -21,6 +21,11 @@ class ProfileEntity with _$ProfileEntity {
     String? department,
   }) = _ProfileEntity;
 
-  factory ProfileEntity.fromJson(Map<String, dynamic> json) =>
-      _$ProfileEntityFromJson(json);
+  factory ProfileEntity.fromJson(Map<String, dynamic> json) {
+    final id = json['id'] as String? ?? json['_id'] as String?;
+    if (id == null) {
+      throw const FormatException('Missing ID field in profile data');
+    }
+    return _$ProfileEntityFromJson({...json, 'id': id});
+  }
 }

@@ -14,8 +14,13 @@ class ClassEntity with _$ClassEntity {
     @Default([]) List<String> students,
   }) = _ClassEntity;
 
-  factory ClassEntity.fromJson(Map<String, dynamic> json) =>
-      _$ClassEntityFromJson(json);
+  factory ClassEntity.fromJson(Map<String, dynamic> json) {
+    final id = json['id'] as String? ?? json['_id'] as String?;
+    if (id == null) {
+      throw const FormatException('Missing ID field in class data');
+    }
+    return _$ClassEntityFromJson({...json, 'id': id});
+  }
 
   const ClassEntity._();
 
