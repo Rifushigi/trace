@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/endpoints.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -49,8 +50,9 @@ class AuthRepositoryImpl implements AuthRepository {
       AppLogger.info('Sign in response: ${response.data}');
 
       if (response.data['response']['status'] == false) {
-        throw Exception(
-            response.data['response']['message'] ?? 'Sign in failed');
+        final errorMessage = response.data['response']['message'] ?? 'Sign in failed';
+        AppLogger.error('Sign in failed: $errorMessage');
+        throw Exception(errorMessage);
       }
 
       // The user data is in response.data.response.data.user
@@ -59,8 +61,12 @@ class AuthRepositoryImpl implements AuthRepository {
       return UserEntity.fromJson(userData);
     } catch (e, stackTrace) {
       AppLogger.error('Error during sign in', e, stackTrace);
-      if (e is Exception) {
-        rethrow;
+      if (e is DioException) {
+        final errorData = e.response?.data;
+        if (errorData != null && errorData is Map<String, dynamic>) {
+          final errorMessage = errorData['response']?['message'] ?? e.message;
+          throw Exception(errorMessage);
+        }
       }
       throw Exception('Failed to sign in: ${e.toString()}');
     }
@@ -79,19 +85,38 @@ class AuthRepositoryImpl implements AuthRepository {
     String? program,
     String? level,
   }) async {
-    final response = await _apiClient.post(Endpoints.auth.signUp, data: {
-      'email': email,
-      'password': password,
-      'firstName': firstName,
-      'lastName': lastName,
-      'role': role,
-      if (staffId != null) 'staffId': staffId,
-      if (college != null) 'college': college,
-      if (matricNo != null) 'matricNo': matricNo,
-      if (program != null) 'program': program,
-      if (level != null) 'level': level,
-    });
-    return UserEntity.fromJson(response.data['response']['data']['user']);
+    try {
+      final response = await _apiClient.post(Endpoints.auth.signUp, data: {
+        'email': email,
+        'password': password,
+        'firstName': firstName,
+        'lastName': lastName,
+        'role': role,
+        if (staffId != null) 'staffId': staffId,
+        if (college != null) 'college': college,
+        if (matricNo != null) 'matricNo': matricNo,
+        if (program != null) 'program': program,
+        if (level != null) 'level': level,
+      });
+
+      if (response.data['response']['status'] == false) {
+        final errorMessage = response.data['response']['message'] ?? 'Sign up failed';
+        AppLogger.error('Sign up failed: $errorMessage');
+        throw Exception(errorMessage);
+      }
+
+      return UserEntity.fromJson(response.data['response']['data']['user']);
+    } catch (e, stackTrace) {
+      AppLogger.error('Error during sign up', e, stackTrace);
+      if (e is DioException) {
+        final errorData = e.response?.data;
+        if (errorData != null && errorData is Map<String, dynamic>) {
+          final errorMessage = errorData['response']?['message'] ?? e.message;
+          throw Exception(errorMessage);
+        }
+      }
+      throw Exception('Failed to sign up: ${e.toString()}');
+    }
   }
 
   @override

@@ -44,16 +44,14 @@ class _ClassEndpoints {
 
 class _AuthEndpoints {
   final String signIn = '${Endpoints.baseUrl}/auth/signin';
-  //TODO
-  // Come back here later to fix the sign up route
   final String signUp = '${Endpoints.baseUrl}/users/signup';
   final String signOut = '${Endpoints.baseUrl}/auth/signout';
   final String refreshToken = '${Endpoints.baseUrl}/auth/refresh-token';
-  final String sendOtp = '${Endpoints.baseUrl}/auth/send-otp';
-  final String verifyOtp = '${Endpoints.baseUrl}/auth/verify-otp';
+  final String sendOtp = '${Endpoints.baseUrl}/auth/otp/send';
+  final String verifyOtp = '${Endpoints.baseUrl}/auth/otp/verify';
   final String sendVerificationEmail =
-      '${Endpoints.baseUrl}/auth/send-verification-email';
-  final String verifyEmail = '${Endpoints.baseUrl}/auth/verify-email';
+      '${Endpoints.baseUrl}/auth/email/send-verification';
+  final String verifyEmail = '${Endpoints.baseUrl}/auth/email/verify';
 }
 
 class _UserEndpoints {
@@ -96,11 +94,6 @@ class _AdminEndpoints {
 
 class _DashboardEndpoints {
   final String items = '${Endpoints.baseUrl}/dashboard/items';
-  final String stats = '${Endpoints.baseUrl}/dashboard/stats/:userId';
-  final String preferences =
-      '${Endpoints.baseUrl}/dashboard/preferences/:userId';
-
-  String statsUrl(String userId) => stats.replaceAll(':userId', userId);
-  String preferencesUrl(String userId) =>
-      preferences.replaceAll(':userId', userId);
+  final String stats = '${Endpoints.baseUrl}/dashboard/stats';
+  final String preferences = '${Endpoints.baseUrl}/dashboard/preferences';
 }
