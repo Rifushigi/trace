@@ -1,14 +1,9 @@
 import React from 'react';
 import { View, StyleSheet, Image, Text, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../../../navigation/types';
-
-type WelcomeScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Welcome'>;
+import { router } from 'expo-router';
+import { colors } from '../../../shared/constants/theme';
 
 export const WelcomeScreen = () => {
-    const navigation = useNavigation<WelcomeScreenNavigationProp>();
-
     return (
         <View style={styles.container}>
             <View style={styles.logoContainer}>
@@ -26,15 +21,15 @@ export const WelcomeScreen = () => {
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('Login')}
+                    onPress={() => router.push('/login')}
                 >
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={[styles.button, styles.outlineButton]}
-                    onPress={() => navigation.navigate('Register')}
+                    style={[styles.button, styles.secondaryButton]}
+                    onPress={() => router.push('/register')}
                 >
-                    <Text style={[styles.buttonText, styles.outlineButtonText]}>Register</Text>
+                    <Text style={[styles.buttonText, styles.secondaryButtonText]}>Register</Text>
                 </TouchableOpacity>
             </View>
 
@@ -81,7 +76,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginVertical: 8,
     },
-    outlineButton: {
+    secondaryButton: {
         backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: '#007AFF',
@@ -91,7 +86,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
-    outlineButtonText: {
+    secondaryButtonText: {
         color: '#007AFF',
     },
     version: {
