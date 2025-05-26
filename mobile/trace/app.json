@@ -33,7 +33,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "react-native-ble-plx",
+      "react-native-permissions"
     ],
     "experiments": {
       "typedRoutes": true
