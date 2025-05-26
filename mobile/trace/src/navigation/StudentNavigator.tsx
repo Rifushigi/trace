@@ -5,7 +5,9 @@ import { AttendanceStatusScreen } from '../presentation/screens/student/Attendan
 import { ScheduleScreen } from '../presentation/screens/student/ScheduleScreen';
 import { ClassDetailsScreen } from '../presentation/screens/student/ClassDetailsScreen';
 import { AttendanceHistoryScreen } from '../presentation/screens/student/AttendanceHistoryScreen';
+import { StudentProfileScreen } from '../presentation/screens/student/StudentProfileScreen';
 import { StudentStackParamList } from './types';
+
 
 const Stack = createNativeStackNavigator<StudentStackParamList>();
 
@@ -56,6 +58,13 @@ export const StudentNavigator = () => {
                 component={AttendanceHistoryScreen}
                 options={{
                     title: 'Attendance History',
+                }}
+            />
+            <Stack.Screen
+                name="StudentProfile"
+                component={StudentProfileScreen}
+                options={{
+                    title: 'Student Profile',
                 }}
             />
             {/* Add other student screens here */}
