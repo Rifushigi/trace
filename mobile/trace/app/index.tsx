@@ -1,15 +1,28 @@
-import { Text, View } from "react-native";
+import { Redirect } from 'expo-router';
+import { useStores } from '../stores';
+import { observer } from 'mobx-react-lite';
 
-export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-    </View>
-  );
-}
+export default observer(function Index() {
+    const { authStore } = useStores();
+    const { user, isLoading } = authStore.authState;
+
+    if (isLoading) {
+        return null; // Let the root layout handle loading state
+    }
+
+    if (!user) {
+        return <Redirect href="/(auth)/welcome" />;
+    }
+
+    // Redirect based on user role
+    switch (user.role) {
+        case 'student':
+            return <Redirect href="/(student)/dashboard" />;
+        case 'lecturer':
+            return <Redirect href="/(lecturer)/dashboard" />;
+        case 'admin':
+            return <Redirect href="/(admin)/dashboard" />;
+        default:
+            return <Redirect href="/(auth)/welcome" />;
+    }
+});
