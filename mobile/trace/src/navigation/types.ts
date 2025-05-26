@@ -15,7 +15,13 @@ export type MainStackParamList = {
     Profile: undefined;
     EditProfile: undefined;
     Settings: undefined;
-    Student: undefined;
+    Student: {
+        screen?: keyof StudentStackParamList;
+        params?: any;
+    };
+    DeviceSetup: undefined;
+    ClassManagement: undefined;
+    UserManagement: undefined;
 };
 
 export type StudentStackParamList = {
