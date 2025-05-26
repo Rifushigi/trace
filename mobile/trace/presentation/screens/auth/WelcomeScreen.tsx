@@ -8,7 +8,7 @@ export const WelcomeScreen = () => {
         <View style={styles.container}>
             <View style={styles.logoContainer}>
                 <Image
-                    source={require('../../../assets/images/logo.png')}
+                    source={require('../../../assets/images/icon.png')}
                     style={styles.logo}
                     resizeMode="contain"
                 />

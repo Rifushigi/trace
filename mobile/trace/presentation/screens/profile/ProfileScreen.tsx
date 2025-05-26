@@ -142,7 +142,7 @@ export const ProfileScreen = observer(() => {
                         source={
                             user.avatar
                                 ? { uri: user.avatar }
-                                : require('../../../assets/images/default-avatar.png')
+                                : require('../../../assets/images/icon.png')
                         }
                         style={styles.profileImage}
                     />
@@ -159,14 +159,14 @@ export const ProfileScreen = observer(() => {
 
                 <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => router.push('/profile/edit')}
+                    onPress={() => router.push('/(profile)/edit')}
                 >
                     <Text style={styles.actionButtonText}>Edit Profile</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => router.push('/settings')}
+                    onPress={() => router.push('/(settings)')}
                 >
                     <Text style={styles.actionButtonText}>Settings</Text>
                 </TouchableOpacity>
