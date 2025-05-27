@@ -1,6 +1,7 @@
 import { makeAutoObservable, action, runInAction } from 'mobx';
 import { AuthUseCase } from '../domain/usecases/auth/AuthUseCase';
 import { ProfileUseCase } from '../domain/usecases/profile/ProfileUseCase';
+import { UserUseCase } from '../domain/usecases/user/UserUseCase';
 import { AuthState, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '../domain/entities/Auth';
 import { User } from '../domain/entities/User';
 import { features } from '../config/features';
@@ -10,6 +11,7 @@ import { AuthApi } from '../data/datasources/remote/AuthApi';
 export class AuthStore {
     public readonly authUseCase: AuthUseCase;
     public readonly profileUseCase: ProfileUseCase;
+    public readonly userUseCase: UserUseCase;
     private authApi: AuthApi | MockAuthApi;
     private authState: AuthState = {
         user: null,
@@ -23,9 +25,10 @@ export class AuthStore {
         return this.authState;
     }
 
-    constructor(authUseCase: AuthUseCase, profileUseCase: ProfileUseCase) {
+    constructor(authUseCase: AuthUseCase, profileUseCase: ProfileUseCase, userUseCase: UserUseCase) {
         this.authUseCase = authUseCase;
         this.profileUseCase = profileUseCase;
+        this.userUseCase = userUseCase;
         this.authApi = features.useMockApi ? new MockAuthApi() : new AuthApi();
         makeAutoObservable(this);
     }
