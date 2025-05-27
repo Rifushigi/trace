@@ -1,152 +1,268 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Alert, TextInput, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../../../navigation/types';
+import { View, StyleSheet, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView, Dimensions } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
-import { PasswordResetConfirm } from '../../../domain/entities/Auth';
+import { Input } from '../../../components/common/Input';
+import { colors } from '../../../shared/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
 
-type ResetPasswordScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'ResetPassword'>;
-type ResetPasswordScreenRouteProp = RouteProp<AuthStackParamList, 'ResetPassword'>;
+const { width, height } = Dimensions.get('window');
+const HORIZONTAL_PADDING = 24;
 
 export const ResetPasswordScreen = observer(() => {
-    const navigation = useNavigation<ResetPasswordScreenNavigationProp>();
-    const route = useRoute<ResetPasswordScreenRouteProp>();
+    const { token } = useLocalSearchParams<{ token: string }>();
     const { authStore } = useStores();
-    const [newPassword, setNewPassword] = useState('');
+    const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
-    const handleResetPassword = async () => {
-        if (!newPassword || !confirmPassword) {
+    const handleSubmit = async () => {
+        if (!password || !confirmPassword) {
             Alert.alert('Error', 'Please fill in all fields');
             return;
         }
 
-        if (newPassword !== confirmPassword) {
+        if (password !== confirmPassword) {
             Alert.alert('Error', 'Passwords do not match');
             return;
         }
 
         try {
-            const data: PasswordResetConfirm = {
-                token: route.params.token,
-                newPassword,
-            };
-            await authStore.confirmPasswordReset(data);
+            await authStore.confirmPasswordReset({ token, newPassword: password });
             Alert.alert(
                 'Success',
                 'Your password has been reset successfully',
                 [
                     {
                         text: 'OK',
-                        onPress: () => navigation.navigate('Login'),
+                        onPress: () => router.push('/login'),
                     },
                 ]
             );
         } catch (error) {
-            Alert.alert(
-                'Error',
-                error instanceof Error ? error.message : 'Failed to reset password'
-            );
+            Alert.alert('Error', 'Failed to reset password. Please try again.');
         }
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Reset Password</Text>
-                <Text style={styles.subtitle}>Enter your new password</Text>
-            </View>
+        <KeyboardAvoidingView 
+            style={styles.safeArea}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView 
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.contentContainer}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.header}>
+                        <Text style={styles.title}>New Password</Text>
+                        <Text style={styles.subtitle}>
+                            Enter your new password below
+                        </Text>
+                    </View>
 
-            <View style={styles.form}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="New Password"
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                    secureTextEntry
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry
-                />
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleResetPassword}
-                    disabled={authStore.authState.isLoading}
-                >
-                    {authStore.authState.isLoading ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>Reset Password</Text>
-                    )}
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.linkButton}
-                    onPress={() => navigation.navigate('Login')}
-                >
-                    <Text style={styles.linkText}>Back to Login</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+                    <View style={styles.formContainer}>
+                        <View style={styles.inputContainer}>
+                            <View style={styles.iconWrapper}>
+                                <MaterialIcons name="lock" size={20} color={colors.textSecondary} />
+                            </View>
+                            <Input
+                                placeholder="New Password"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                inputContainerStyle={styles.inputField}
+                            />
+                        </View>
+
+                        <View style={styles.inputContainer}>
+                            <View style={styles.iconWrapper}>
+                                <MaterialIcons name="lock" size={20} color={colors.textSecondary} />
+                            </View>
+                            <Input
+                                placeholder="Confirm New Password"
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                secureTextEntry
+                                inputContainerStyle={styles.inputField}
+                            />
+                        </View>
+
+                        <View style={styles.passwordRequirements}>
+                            <Text style={styles.requirementsTitle}>Password Requirements:</Text>
+                            <View style={styles.requirementItem}>
+                                <MaterialIcons 
+                                    name={password.length >= 8 ? "check-circle" : "radio-button-unchecked"} 
+                                    size={16} 
+                                    color={password.length >= 8 ? colors.success : colors.textSecondary} 
+                                />
+                                <Text style={styles.requirementText}>At least 8 characters</Text>
+                            </View>
+                            <View style={styles.requirementItem}>
+                                <MaterialIcons 
+                                    name={/[A-Z]/.test(password) ? "check-circle" : "radio-button-unchecked"} 
+                                    size={16} 
+                                    color={/[A-Z]/.test(password) ? colors.success : colors.textSecondary} 
+                                />
+                                <Text style={styles.requirementText}>One uppercase letter</Text>
+                            </View>
+                            <View style={styles.requirementItem}>
+                                <MaterialIcons 
+                                    name={/[0-9]/.test(password) ? "check-circle" : "radio-button-unchecked"} 
+                                    size={16} 
+                                    color={/[0-9]/.test(password) ? colors.success : colors.textSecondary} 
+                                />
+                                <Text style={styles.requirementText}>One number</Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    <View style={styles.footer}>
+                        <TouchableOpacity
+                            style={styles.submitButton}
+                            onPress={handleSubmit}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.submitButtonText}>Reset Password</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 });
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
-        padding: 20,
+        backgroundColor: '#FAFAFA',
     },
-    header: {
-        marginTop: 40,
-        marginBottom: 40,
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#FAFAFA',
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    subtitle: {
-        color: '#666',
-        fontSize: 16,
-        marginTop: 8,
-    },
-    form: {
+    scrollView: {
         flex: 1,
     },
-    input: {
-        height: 50,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        marginBottom: 15,
-        fontSize: 16,
+    contentContainer: {
+        paddingHorizontal: HORIZONTAL_PADDING,
+        paddingBottom: 32,
     },
-    button: {
-        backgroundColor: '#007AFF',
-        padding: 15,
-        borderRadius: 8,
+    header: {
         alignItems: 'center',
-        marginTop: 20,
+        paddingTop: height * 0.12,
+        paddingBottom: 40,
     },
-    buttonText: {
-        color: '#fff',
+    title: {
+        fontSize: 32,
+        fontWeight: '700',
+        color: '#1A1A1A',
+        marginBottom: 16,
+        letterSpacing: -0.5,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#6B7280',
+        fontWeight: '400',
+        textAlign: 'center',
+        paddingHorizontal: 20,
+        lineHeight: 24,
+    },
+    formContainer: {
+        gap: 16,
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+        overflow: 'hidden',
+    },
+    iconWrapper: {
+        paddingHorizontal: 16,
+        height: 52,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    inputField: {
+        flex: 1,
+        height: 52,
+        fontSize: 16,
+        color: '#1F2937',
+        paddingVertical: 0,
+        backgroundColor: '#FFFFFF',
+    },
+    passwordRequirements: {
+        marginTop: 8,
+        paddingHorizontal: 4,
+    },
+    requirementsTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#4B5563',
+        marginBottom: 12,
+    },
+    requirementItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    requirementText: {
+        marginLeft: 8,
+        fontSize: 14,
+        color: '#6B7280',
+    },
+    footer: {
+        paddingBottom: height * 0.04,
+        paddingTop: 20,
+    },
+    submitButton: {
+        height: 52,
+        borderRadius: 16,
+        backgroundColor: colors.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: colors.primary,
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    submitButtonText: {
+        color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
+        letterSpacing: 0.5,
     },
-    linkButton: {
-        padding: 10,
+    backLink: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 10,
+        justifyContent: 'center',
+        paddingVertical: 12,
+        marginTop: 12,
     },
-    linkText: {
-        color: '#007AFF',
-        fontSize: 16,
+    backIcon: {
+        marginRight: 8,
+    },
+    backLinkText: {
+        color: colors.primary,
+        fontSize: 15,
+        fontWeight: '600',
     },
 }); 
