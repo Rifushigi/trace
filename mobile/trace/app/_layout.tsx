@@ -22,28 +22,16 @@ function RootLayoutContent() {
 
     return (
         <Stack screenOptions={{ headerShown: false }}>
-            {!user ? (
-                // Auth Stack
-                <>
-                    <Stack.Screen name="(auth)" />
-                    <Stack.Screen name="index" />
-                </>
-            ) : (
-                // Role-based Stack
-                <>
-                    {user.role === 'student' && (
-                        <Stack.Screen name="(student)" />
-                    )}
-                    {user.role === 'lecturer' && (
-                        <Stack.Screen name="(lecturer)" />
-                    )}
-                    {user.role === 'admin' && (
-                        <Stack.Screen name="(admin)" />
-                    )}
-                    <Stack.Screen name="(profile)" />
-                    <Stack.Screen name="(settings)" />
-                </>
-            )}
+            {/* Auth Stack */}
+            {!user && <Stack.Screen name="(auth)" />}
+            {!user && <Stack.Screen name="index" />}
+            
+            {/* Role-based Stack */}
+            {user?.role === 'student' && <Stack.Screen name="(student)" />}
+            {user?.role === 'lecturer' && <Stack.Screen name="(lecturer)" />}
+            {user?.role === 'admin' && <Stack.Screen name="(admin)" />}
+            {user && <Stack.Screen name="(profile)" />}
+            {user && <Stack.Screen name="(settings)" />}
         </Stack>
     );
 }
@@ -84,6 +72,7 @@ export default function RootLayout() {
                 settingsUseCase={container.getSettingsUseCase()}
                 classUseCase={container.getClassUseCase()}
                 attendanceUseCase={container.getAttendanceUseCase()}
+                userUseCase={container.getUserUseCase()}
             >
                 <SafeAreaProvider>
                     <ObservedRootLayoutContent />
