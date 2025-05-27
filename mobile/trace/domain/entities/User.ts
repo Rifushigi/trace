@@ -1,3 +1,10 @@
+export interface AttendanceStats {
+    totalClasses: number;
+    attendedClasses: number;
+    attendanceRate: number;
+    lastAttendance?: Date;
+}
+
 export interface User {
     id: string;
     firstName?: string;
@@ -8,6 +15,7 @@ export interface User {
     avatar?: string;
     createdAt: Date;
     updatedAt: Date;
+    attendanceStats?: AttendanceStats;
 }
 
 export interface Student extends User {
