@@ -7,6 +7,7 @@ interface CardProps {
     variant?: 'elevated' | 'outlined' | 'filled';
     style?: ViewStyle;
     onPress?: () => void;
+    backgroundColor?: string;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -14,18 +15,28 @@ export const Card: React.FC<CardProps> = ({
     variant = 'elevated',
     style,
     onPress,
+    backgroundColor,
 }) => {
     const getCardStyle = () => {
-        switch (variant) {
-            case 'elevated':
-                return styles.elevated;
-            case 'outlined':
-                return styles.outlined;
-            case 'filled':
-                return styles.filled;
-            default:
-                return styles.elevated;
+        const baseStyle = styles[variant];
+        if (backgroundColor && variant !== 'outlined') {
+            return {
+                ...baseStyle,
+                backgroundColor,
+                // For elevated variant, keep the shadow
+                ...(variant === 'elevated' && {
+                    shadowColor: colors.text,
+                    shadowOffset: {
+                        width: 0,
+                        height: 2,
+                    },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                }),
+            };
         }
+        return baseStyle;
     };
 
     const Container = onPress ? TouchableOpacity : View;
