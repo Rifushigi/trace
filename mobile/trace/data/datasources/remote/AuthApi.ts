@@ -44,11 +44,14 @@ export class AuthApi {
     }
 
     async updatePassword(oldPassword: string, newPassword: string): Promise<void> {
-        await axiosInstance.post('/auth/update-password', { oldPassword, newPassword });
+        await axiosInstance.post('/auth/update-password', {
+            oldPassword,
+            newPassword,
+        });
     }
 
     async updateProfile(data: Partial<User>): Promise<User> {
-        const response = await axiosInstance.put('/auth/profile', data);
+        const response = await axiosInstance.patch('/auth/profile', data);
         return response.data;
     }
 } 
