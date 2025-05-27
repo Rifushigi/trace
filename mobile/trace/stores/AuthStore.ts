@@ -1,13 +1,17 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, action, runInAction } from 'mobx';
 import { AuthUseCase } from '../domain/usecases/auth/AuthUseCase';
 import { ProfileUseCase } from '../domain/usecases/profile/ProfileUseCase';
 import { AuthState, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '../domain/entities/Auth';
 import { User } from '../domain/entities/User';
+import { features } from '../config/features';
+import { MockAuthApi } from '../data/datasources/mock/MockAuthApi';
+import { AuthApi } from '../data/datasources/remote/AuthApi';
 
 export class AuthStore {
     public readonly authUseCase: AuthUseCase;
     public readonly profileUseCase: ProfileUseCase;
-    public authState: AuthState = {
+    private authApi: AuthApi | MockAuthApi;
+    private authState: AuthState = {
         user: null,
         tokens: null,
         isAuthenticated: false,
@@ -15,69 +19,92 @@ export class AuthStore {
         error: null
     };
 
+    get state(): AuthState {
+        return this.authState;
+    }
+
     constructor(authUseCase: AuthUseCase, profileUseCase: ProfileUseCase) {
         this.authUseCase = authUseCase;
         this.profileUseCase = profileUseCase;
+        this.authApi = features.useMockApi ? new MockAuthApi() : new AuthApi();
         makeAutoObservable(this);
     }
 
+    private setAuthState = action((newState: Partial<AuthState>) => {
+        this.authState = { ...this.authState, ...newState };
+    });
+
+    private setLoading = action((loading: boolean) => {
+        this.authState.isLoading = loading;
+    });
+
+    private setError = action((error: string | null) => {
+        this.authState.error = error;
+    });
+
     async login(credentials: LoginCredentials) {
-        this.authState.isLoading = true;
-        this.authState.error = null;
+        this.setLoading(true);
+        this.setError(null);
         try {
             const result = await this.authUseCase.login(credentials);
-            this.authState = {
-                user: result.user,
-                tokens: result.tokens,
-                isAuthenticated: true,
-                isLoading: false,
-                error: null
-            };
+            runInAction(() => {
+                this.authState = {
+                    user: result.user,
+                    tokens: result.tokens,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null
+                };
+            });
         } catch (error) {
-            this.authState.error = error instanceof Error ? error.message : 'An error occurred during login';
+            this.setError(error instanceof Error ? error.message : 'An error occurred during login');
             throw error;
         } finally {
-            this.authState.isLoading = false;
+            this.setLoading(false);
         }
     }
 
     async register(data: RegisterData) {
-        this.authState.isLoading = true;
-        this.authState.error = null;
+        this.setLoading(true);
+        this.setError(null);
         try {
             const result = await this.authUseCase.register(data);
-            this.authState = {
-                user: result.user,
-                tokens: result.tokens,
-                isAuthenticated: true,
-                isLoading: false,
-                error: null
-            };
+            runInAction(() => {
+                this.authState = {
+                    user: result.user,
+                    tokens: result.tokens,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null
+                };
+            });
         } catch (error) {
-            this.authState.error = error instanceof Error ? error.message : 'An error occurred during registration';
+            this.setError(error instanceof Error ? error.message : 'An error occurred during registration');
             throw error;
         } finally {
-            this.authState.isLoading = false;
+            this.setLoading(false);
         }
     }
 
     async logout() {
-        this.authState.isLoading = true;
-        this.authState.error = null;
+        this.setLoading(true);
+        this.setError(null);
         try {
             await this.authUseCase.logout();
-            this.authState = {
-                user: null,
-                tokens: null,
-                isAuthenticated: false,
-                isLoading: false,
-                error: null
-            };
+            runInAction(() => {
+                this.authState = {
+                    user: null,
+                    tokens: null,
+                    isAuthenticated: false,
+                    isLoading: false,
+                    error: null
+                };
+            });
         } catch (error) {
-            this.authState.error = error instanceof Error ? error.message : 'An error occurred during logout';
+            this.setError(error instanceof Error ? error.message : 'An error occurred during logout');
             throw error;
         } finally {
-            this.authState.isLoading = false;
+            this.setLoading(false);
         }
     }
 
@@ -86,114 +113,120 @@ export class AuthStore {
             throw new Error('No refresh token available');
         }
 
-        this.authState.isLoading = true;
-        this.authState.error = null;
+        this.setLoading(true);
+        this.setError(null);
         try {
             const tokens = await this.authUseCase.refreshToken(this.authState.tokens.refreshToken);
-            this.authState = {
-                ...this.authState,
-                tokens,
-                isAuthenticated: true,
-                isLoading: false,
-                error: null
-            };
+            runInAction(() => {
+                this.authState = {
+                    ...this.authState,
+                    tokens,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null
+                };
+            });
         } catch (error) {
-            this.authState.error = error instanceof Error ? error.message : 'An error occurred while refreshing token';
+            this.setError(error instanceof Error ? error.message : 'An error occurred while refreshing token');
             throw error;
         } finally {
-            this.authState.isLoading = false;
+            this.setLoading(false);
         }
     }
 
     async requestPasswordReset(request: PasswordResetRequest) {
-        this.authState.isLoading = true;
-        this.authState.error = null;
+        this.setLoading(true);
+        this.setError(null);
         try {
             await this.authUseCase.requestPasswordReset(request);
         } catch (error) {
-            this.authState.error = error instanceof Error ? error.message : 'An error occurred while requesting password reset';
+            this.setError(error instanceof Error ? error.message : 'An error occurred while requesting password reset');
             throw error;
         } finally {
-            this.authState.isLoading = false;
+            this.setLoading(false);
         }
     }
 
     async confirmPasswordReset(confirm: PasswordResetConfirm) {
-        this.authState.isLoading = true;
-        this.authState.error = null;
+        this.setLoading(true);
+        this.setError(null);
         try {
             await this.authUseCase.confirmPasswordReset(confirm);
         } catch (error) {
-            this.authState.error = error instanceof Error ? error.message : 'An error occurred while confirming password reset';
+            this.setError(error instanceof Error ? error.message : 'An error occurred while confirming password reset');
             throw error;
         } finally {
-            this.authState.isLoading = false;
+            this.setLoading(false);
         }
     }
 
     async verifyEmail(token: string) {
-        this.authState.isLoading = true;
-        this.authState.error = null;
+        this.setLoading(true);
+        this.setError(null);
         try {
             await this.authUseCase.verifyEmail(token);
         } catch (error) {
-            this.authState.error = error instanceof Error ? error.message : 'An error occurred while verifying email';
+            this.setError(error instanceof Error ? error.message : 'An error occurred while verifying email');
             throw error;
         } finally {
-            this.authState.isLoading = false;
+            this.setLoading(false);
         }
     }
 
     async updatePassword(oldPassword: string, newPassword: string) {
-        this.authState.isLoading = true;
-        this.authState.error = null;
+        this.setLoading(true);
+        this.setError(null);
         try {
             await this.authUseCase.updatePassword(oldPassword, newPassword);
         } catch (error) {
-            this.authState.error = error instanceof Error ? error.message : 'An error occurred while updating password';
+            this.setError(error instanceof Error ? error.message : 'An error occurred while updating password');
             throw error;
         } finally {
-            this.authState.isLoading = false;
+            this.setLoading(false);
         }
     }
 
     async updateProfile(data: Partial<User>) {
-        this.authState.isLoading = true;
-        this.authState.error = null;
+        this.setLoading(true);
+        this.setError(null);
         try {
             const updatedUser = await this.authUseCase.updateProfile(data);
-            this.authState = {
-                ...this.authState,
-                user: updatedUser,
-                isLoading: false,
-                error: null
-            };
+            runInAction(() => {
+                this.authState = {
+                    ...this.authState,
+                    user: updatedUser,
+                    isLoading: false,
+                    error: null
+                };
+            });
         } catch (error) {
-            this.authState.error = error instanceof Error ? error.message : 'An error occurred while updating profile';
+            this.setError(error instanceof Error ? error.message : 'An error occurred while updating profile');
             throw error;
         } finally {
-            this.authState.isLoading = false;
+            this.setLoading(false);
         }
     }
 
     async getCurrentUser() {
-        this.authState.isLoading = true;
-        this.authState.error = null;
+        this.setLoading(true);
+        this.setError(null);
         try {
             const user = await this.authUseCase.getCurrentUser();
-            this.authState = {
-                ...this.authState,
-                user,
-                isAuthenticated: !!user,
-                isLoading: false,
-                error: null
-            };
+            runInAction(() => {
+                this.authState = {
+                    ...this.authState,
+                    user,
+                    isAuthenticated: !!user,
+                    isLoading: false,
+                    error: null
+                };
+            });
             return user;
         } catch (error) {
-            this.authState.error = error instanceof Error ? error.message : 'An error occurred while getting current user';
+            this.setError(error instanceof Error ? error.message : 'An error occurred while getting current user');
             throw error;
         } finally {
-            this.authState.isLoading = false;
+            this.setLoading(false);
         }
     }
 
@@ -206,10 +239,12 @@ export class AuthStore {
     }
 
     async clearStoredTokens() {
-        this.authState = {
-            ...this.authState,
-            tokens: null,
-            isAuthenticated: false
-        };
+        runInAction(() => {
+            this.authState = {
+                ...this.authState,
+                tokens: null,
+                isAuthenticated: false
+            };
+        });
     }
 } 
