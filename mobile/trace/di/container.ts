@@ -23,10 +23,12 @@ import { ClassUseCaseImpl } from '../domain/usecases/class/impl/ClassUseCaseImpl
 import { AttendanceUseCaseImpl } from '../domain/usecases/attendance/impl/AttendanceUseCaseImpl';
 import { ClassUseCase } from '../domain/usecases/class/ClassUseCase';
 import { AttendanceUseCase } from '../domain/usecases/attendance/AttendanceUseCase';
+import { features } from '../config/features';
+import { MockAuthApi } from '../data/datasources/mock/MockAuthApi';
 
 export class Container {
     private static instance: Container;
-    private authApi: AuthApi;
+    private authApi: AuthApi | MockAuthApi;
     private authRepository: AuthRepository;
     private authUseCase: AuthUseCase;
     private profileApi: ProfileApi;
@@ -44,7 +46,7 @@ export class Container {
 
     private constructor() {
         // Initialize APIs
-        this.authApi = new AuthApi();
+        this.authApi = features.useMockApi ? new MockAuthApi() : new AuthApi();
         this.profileApi = new ProfileApi();
         this.settingsApi = new SettingsApi();
         this.classApi = new ClassApi();
