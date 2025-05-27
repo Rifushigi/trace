@@ -4,15 +4,11 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { LecturerStackParamList } from '../../../navigation/types';
-import { Lecturer } from '../../../domain/entities/User';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { router } from 'expo-router';
 
-type Props = NativeStackScreenProps<LecturerStackParamList, 'ReportsDashboard'>;
-
-export const ReportsDashboardScreen = observer(({ navigation }: Props) => {
+export const ReportsDashboardScreen = observer(() => {
     const { authStore } = useStores();
-    const user = authStore.authState.user as Lecturer;
+    const user = authStore.state.user;
 
     // Mock data - replace with actual data from your backend
     const [overviewStats, setOverviewStats] = useState({
@@ -77,7 +73,10 @@ export const ReportsDashboardScreen = observer(({ navigation }: Props) => {
     };
 
     const handleViewDetailedReport = (reportId: string) => {
-        navigation.navigate('DetailedReports', { reportId });
+        router.push({
+            pathname: '/reports',
+            params: { id: reportId }
+        });
     };
 
     const handleExportReport = (reportId: string) => {

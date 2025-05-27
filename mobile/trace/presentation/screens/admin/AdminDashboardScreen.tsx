@@ -1,14 +1,15 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
 import { router } from 'expo-router';
-
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 export const AdminDashboardScreen = observer(() => {
     const { authStore } = useStores();
+    const [refreshing, setRefreshing] = useState(false);
 
     // Mock data - replace with actual data from your backend
     const systemStatus = {
@@ -16,6 +17,10 @@ export const AdminDashboardScreen = observer(() => {
         lastUpdate: '2024-02-20 10:00:00',
         activeUsers: 150,
         activeSessions: 12,
+        cpuUsage: '95%',
+        memoryUsage: '60%',
+        storageUsage: '35%',
+        uptime: '76.9%',
     };
 
     const userStatistics = {
@@ -23,6 +28,10 @@ export const AdminDashboardScreen = observer(() => {
         activeUsers: 750,
         newUsers: 25,
         pendingApprovals: 5,
+        studentCount: 850,
+        lecturerCount: 145,
+        adminCount: 5,
+        verifiedUsers: 980,
     };
 
     const recentActivities = [
@@ -31,121 +40,214 @@ export const AdminDashboardScreen = observer(() => {
             type: 'user_registration',
             description: 'New student registration: John Doe',
             timestamp: '2024-02-20 09:45:00',
+            icon: 'person-add',
+            color: colors.primary,
         },
         {
             id: '2',
             type: 'attendance_session',
             description: 'Attendance session started: CS101',
             timestamp: '2024-02-20 09:30:00',
+            icon: 'schedule',
+            color: colors.success,
         },
         {
             id: '3',
             type: 'system_update',
             description: 'System maintenance completed',
             timestamp: '2024-02-20 09:00:00',
+            icon: 'system-update',
+            color: colors.warning,
+        },
+        {
+            id: '4',
+            type: 'error_alert',
+            description: 'High server load detected',
+            timestamp: '2024-02-20 08:45:00',
+            icon: 'warning',
+            color: colors.error,
         },
     ];
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        // TODO: Implement refresh logic
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 2000);
+    }, []);
 
     const handleQuickAction = (action: string) => {
         switch (action) {
             case 'manage_users':
-                router.push('/admin/user-management');
+                router.push('/(admin)/user-management');
                 break;
             case 'view_reports':
-                // TODO: Implement reports view
+                router.push('/(admin)/reports');
                 break;
             case 'system_settings':
-                // TODO: Implement system settings
+                router.push('/(admin)/system-settings');
+                break;
+            case 'backup':
+                Alert.alert('Backup', 'Starting system backup...');
+                break;
+            default:
                 break;
         }
     };
 
+    const getStatusColor = (value: string) => {
+        const numValue = parseInt(value);
+        if (numValue < 50) return colors.success;
+        if (numValue > 60 && numValue < 80) return colors.warning;
+        if (numValue > 80) return colors.error;
+        return colors.success; 
+    };
+
+    const getUptimeColor = (value: string) => {
+        const numValue = parseInt(value);
+            if (numValue <= 75) return colors.error;
+            if (numValue < 85 && numValue > 75) return colors.warning;
+            if (numValue > 85) return colors.success;
+        return colors.error; 
+    };
+
     return (
-        <ScrollView style={styles.container}>
-            {/* System Status */}
+        <ScrollView 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+                paddingBottom: 16,
+            }}
+            style={styles.container}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+        >
+            {/* System Health */}
             <Card style={styles.section}>
-                <Text style={styles.sectionTitle}>System Status</Text>
-                <View style={styles.statusContainer}>
-                    <View style={styles.statusItem}>
-                        <Text style={styles.statusLabel}>Status</Text>
-                        <Text style={[styles.statusValue, { color: colors.success }]}>
-                            {systemStatus.status}
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="health-and-safety" size={24} color={colors.primary} />
+                    <Text style={styles.sectionTitle}>System Health</Text>
+                </View>
+                <View style={styles.healthGrid}>
+                    <View style={styles.healthItem}>
+                        <Text style={styles.healthLabel}>CPU Usage</Text>
+                        <Text style={[styles.healthValue, { color: getStatusColor(systemStatus.cpuUsage) }]}>
+                            {systemStatus.cpuUsage}
                         </Text>
                     </View>
-                    <View style={styles.statusItem}>
-                        <Text style={styles.statusLabel}>Last Update</Text>
-                        <Text style={styles.statusValue}>{systemStatus.lastUpdate}</Text>
+                    <View style={styles.healthItem}>
+                        <Text style={styles.healthLabel}>Memory</Text>
+                        <Text style={[styles.healthValue, { color: getStatusColor(systemStatus.memoryUsage) }]}>
+                            {systemStatus.memoryUsage}
+                        </Text>
                     </View>
-                    <View style={styles.statusItem}>
-                        <Text style={styles.statusLabel}>Active Users</Text>
-                        <Text style={styles.statusValue}>{systemStatus.activeUsers}</Text>
+                    <View style={styles.healthItem}>
+                        <Text style={styles.healthLabel}>Storage</Text>
+                        <Text style={[styles.healthValue, { color: getStatusColor(systemStatus.storageUsage) }]}>
+                            {systemStatus.storageUsage}
+                        </Text>
                     </View>
-                    <View style={styles.statusItem}>
-                        <Text style={styles.statusLabel}>Active Sessions</Text>
-                        <Text style={styles.statusValue}>{systemStatus.activeSessions}</Text>
+                    <View style={styles.healthItem}>
+                        <Text style={styles.healthLabel}>Uptime</Text>
+                        <Text style={[styles.healthValue, { color: getUptimeColor(systemStatus.uptime) }]}>
+                            {systemStatus.uptime}
+                        </Text>
                     </View>
                 </View>
             </Card>
 
             {/* User Statistics */}
             <Card style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="people" size={24} color={colors.primary} />
                 <Text style={styles.sectionTitle}>User Statistics</Text>
-                <View style={styles.statsContainer}>
+                </View>
+                <View style={styles.statsGrid}>
                     <View style={styles.statItem}>
+                        <MaterialCommunityIcons name="account-group" size={32} color={colors.primary} />
                         <Text style={styles.statValue}>{userStatistics.totalUsers}</Text>
                         <Text style={styles.statLabel}>Total Users</Text>
                     </View>
                     <View style={styles.statItem}>
+                        <MaterialCommunityIcons name="account-check" size={32} color={colors.success} />
                         <Text style={styles.statValue}>{userStatistics.activeUsers}</Text>
                         <Text style={styles.statLabel}>Active Users</Text>
                     </View>
                     <View style={styles.statItem}>
+                        <MaterialCommunityIcons name="account-plus" size={32} color={colors.primary} />
                         <Text style={styles.statValue}>{userStatistics.newUsers}</Text>
                         <Text style={styles.statLabel}>New Users</Text>
                     </View>
                     <View style={styles.statItem}>
+                        <MaterialCommunityIcons name="account-clock" size={32} color={colors.warning} />
                         <Text style={styles.statValue}>{userStatistics.pendingApprovals}</Text>
-                        <Text style={styles.statLabel}>Pending Approvals</Text>
+                        <Text style={styles.statLabel}>Pending</Text>
                     </View>
                 </View>
             </Card>
 
             {/* Quick Actions */}
             <Card style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="flash-on" size={24} color={colors.primary} />
                 <Text style={styles.sectionTitle}>Quick Actions</Text>
-                <View style={styles.actionsContainer}>
+                </View>
+                <View style={styles.actionsGrid}>
                     <TouchableOpacity
                         style={styles.actionButton}
                         onPress={() => handleQuickAction('manage_users')}
                     >
+                        <MaterialIcons name="people" size={24} color="#FFF" />
                         <Text style={styles.actionButtonText}>Manage Users</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.actionButton}
                         onPress={() => handleQuickAction('view_reports')}
                     >
-                        <Text style={styles.actionButtonText}>View Reports</Text>
+                        <MaterialIcons name="assessment" size={24} color="#FFF" />
+                        <Text style={styles.actionButtonText}>Reports</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.actionButton}
                         onPress={() => handleQuickAction('system_settings')}
                     >
-                        <Text style={styles.actionButtonText}>System Settings</Text>
+                        <MaterialIcons name="settings" size={24} color="#FFF" />
+                        <Text style={styles.actionButtonText}>Settings</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => handleQuickAction('backup')}
+                    >
+                        <MaterialIcons name="backup" size={24} color="#FFF" />
+                        <Text style={styles.actionButtonText}>Backup</Text>
                     </TouchableOpacity>
                 </View>
             </Card>
 
             {/* Recent Activities */}
             <Card style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="notifications" size={24} color={colors.primary} />
                 <Text style={styles.sectionTitle}>Recent Activities</Text>
+                </View>
                 {recentActivities.map((activity) => (
                     <View key={activity.id} style={styles.activityItem}>
+                        <View style={[styles.activityIcon, { backgroundColor: '#F5F5F5' }]}>
+                            <MaterialIcons name={activity.icon as any} size={20} color={activity.color} />
+                        </View>
+                        <View style={styles.activityContent}>
                         <Text style={styles.activityDescription}>
                             {activity.description}
                         </Text>
                         <Text style={styles.activityTimestamp}>{activity.timestamp}</Text>
+                        </View>
                     </View>
                 ))}
+                <TouchableOpacity style={styles.viewAllButton}>
+                    <Text style={[styles.viewAllText, { color: '#666666' }]}>View All Activities</Text>
+                    <MaterialIcons name="arrow-forward" size={16} color="#666666" />
+                </TouchableOpacity>
             </Card>
         </ScrollView>
     );
@@ -159,53 +261,70 @@ const styles = StyleSheet.create({
     section: {
         margin: 16,
         padding: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: colors.text,
-        marginBottom: 16,
+        color: '#333333',
+        marginLeft: 8,
     },
-    statusContainer: {
+    healthGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
     },
-    statusItem: {
+    healthItem: {
         width: '48%',
+        backgroundColor: '#F8F9FA',
+        padding: 16,
+        borderRadius: 8,
         marginBottom: 16,
     },
-    statusLabel: {
+    healthLabel: {
         fontSize: 14,
-        color: colors.textSecondary,
+        color: '#666666',
         marginBottom: 4,
     },
-    statusValue: {
-        fontSize: 16,
-        color: colors.text,
-        fontWeight: '500',
+    healthValue: {
+        fontSize: 20,
+        fontWeight: 'bold',
     },
-    statsContainer: {
+    statsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
     },
     statItem: {
         width: '48%',
+        backgroundColor: '#F8F9FA',
+        padding: 16,
+        borderRadius: 8,
         marginBottom: 16,
         alignItems: 'center',
     },
     statValue: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: colors.primary,
-        marginBottom: 4,
+        color: '#333333',
+        marginVertical: 4,
     },
     statLabel: {
         fontSize: 14,
-        color: colors.textSecondary,
+        color: '#666666',
     },
-    actionsContainer: {
+    actionsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
@@ -217,24 +336,50 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 16,
         alignItems: 'center',
+        flexDirection: 'column',
     },
     actionButtonText: {
         color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '500',
+        fontSize: 14,
+        fontWeight: '600',
+        marginTop: 8,
     },
     activityItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: colors.border,
+        borderBottomColor: '#E0E0E0',
+    },
+    activityIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    activityContent: {
+        flex: 1,
     },
     activityDescription: {
-        fontSize: 16,
-        color: colors.text,
+        fontSize: 14,
+        color: '#333333',
         marginBottom: 4,
     },
     activityTimestamp: {
+        fontSize: 12,
+        color: '#666666',
+    },
+    viewAllButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 16,
+        padding: 8,
+    },
+    viewAllText: {
         fontSize: 14,
-        color: colors.textSecondary,
+        marginRight: 4,
     },
 }); 
