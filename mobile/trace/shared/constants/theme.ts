@@ -9,6 +9,7 @@ export const colors = {
     error: '#FF3B30',
     success: '#34C759',
     warning: '#FF9500',
+    indigo: '#6366F1',
     shadows: {
         sm: {
             shadowColor: '#000',
