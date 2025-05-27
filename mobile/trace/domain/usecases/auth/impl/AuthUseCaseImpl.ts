@@ -55,8 +55,8 @@ export class AuthUseCaseImpl implements AuthUseCase {
     }
 
     async isAuthenticated(): Promise<boolean> {
-        const tokens = await this.getStoredTokens();
-        return !!tokens;
+        const user = await this.getCurrentUser();
+        return !!user;
     }
 
     async getStoredTokens(): Promise<AuthTokens | null> {

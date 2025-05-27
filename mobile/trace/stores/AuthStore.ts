@@ -176,6 +176,145 @@ export class AuthStore {
         }
     }
 
+    async getCurrentUser() {
+        this.setLoading(true);
+        this.setError(null);
+        try {
+            // First try to get user from cookie-based session
+            const user = await this.authUseCase.getCurrentUser();
+
+            if (user) {
+                // If we have a valid cookie session, update state
+                runInAction(() => {
+                    this.authState = {
+                        ...this.authState,
+                        user,
+                        isAuthenticated: true,
+                        isLoading: false,
+                        error: null
+                    };
+                });
+                return user;
+            }
+
+            // If no valid cookie session but we have tokens, try token refresh
+            if (this.authState.tokens?.refreshToken) {
+                try {
+                    await this.refreshToken();
+                    // After successful refresh, try getting user again
+                    const userAfterRefresh = await this.authUseCase.getCurrentUser();
+                    runInAction(() => {
+                        this.authState = {
+                            ...this.authState,
+                            user: userAfterRefresh,
+                            isAuthenticated: !!userAfterRefresh,
+                            isLoading: false,
+                            error: null
+                        };
+                    });
+                    return userAfterRefresh;
+                } catch (refreshError) {
+                    // If refresh fails, clear tokens and update state
+                    await this.clearStoredTokens();
+                    runInAction(() => {
+                        this.authState = {
+                            user: null,
+                            tokens: null,
+                            isAuthenticated: false,
+                            isLoading: false,
+                            error: null
+                        };
+                    });
+                    return null;
+                }
+            }
+
+            // No valid session or tokens
+            runInAction(() => {
+                this.authState = {
+                    user: null,
+                    tokens: null,
+                    isAuthenticated: false,
+                    isLoading: false,
+                    error: null
+                };
+            });
+            return null;
+        } catch (error) {
+            this.setError(error instanceof Error ? error.message : 'An error occurred while getting current user');
+            throw error;
+        } finally {
+            this.setLoading(false);
+        }
+    }
+
+    async isAuthenticated() {
+        try {
+            // First check if we have a valid cookie session
+            const user = await this.authUseCase.getCurrentUser();
+            if (user) {
+                runInAction(() => {
+                    this.authState = {
+                        ...this.authState,
+                        user,
+                        isAuthenticated: true
+                    };
+                });
+                return true;
+            }
+
+            // If no valid cookie session but we have tokens, check token validity
+            if (this.authState.tokens?.refreshToken) {
+                try {
+                    await this.refreshToken();
+                    return true;
+                } catch {
+                    await this.clearStoredTokens();
+                    return false;
+                }
+            }
+
+            return false;
+        } catch {
+            return false;
+        }
+    }
+
+    async getStoredTokens() {
+        // First check if tokens in state are still valid
+        if (this.authState.tokens) {
+            try {
+                await this.refreshToken();
+                return this.authState.tokens;
+            } catch {
+                await this.clearStoredTokens();
+                return null;
+            }
+        }
+        return null;
+    }
+
+    async clearStoredTokens() {
+        // Clear tokens from state
+        runInAction(() => {
+            this.authState = {
+                ...this.authState,
+                tokens: null,
+                isAuthenticated: false
+            };
+        });
+
+        // Also clear tokens from storage
+        await this.authUseCase.clearStoredTokens();
+
+        // Try to logout to clear cookies as well
+        try {
+            await this.authUseCase.logout();
+        } catch (error) {
+            console.error('Error clearing cookies during token clear:', error);
+        }
+    }
+
     async updatePassword(oldPassword: string, newPassword: string) {
         this.setLoading(true);
         this.setError(null);
@@ -208,46 +347,5 @@ export class AuthStore {
         } finally {
             this.setLoading(false);
         }
-    }
-
-    async getCurrentUser() {
-        this.setLoading(true);
-        this.setError(null);
-        try {
-            const user = await this.authUseCase.getCurrentUser();
-            runInAction(() => {
-                this.authState = {
-                    ...this.authState,
-                    user,
-                    isAuthenticated: !!user,
-                    isLoading: false,
-                    error: null
-                };
-            });
-            return user;
-        } catch (error) {
-            this.setError(error instanceof Error ? error.message : 'An error occurred while getting current user');
-            throw error;
-        } finally {
-            this.setLoading(false);
-        }
-    }
-
-    async isAuthenticated() {
-        return this.authState.isAuthenticated;
-    }
-
-    async getStoredTokens() {
-        return this.authState.tokens;
-    }
-
-    async clearStoredTokens() {
-        runInAction(() => {
-            this.authState = {
-                ...this.authState,
-                tokens: null,
-                isAuthenticated: false
-            };
-        });
     }
 } 
