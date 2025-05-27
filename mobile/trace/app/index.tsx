@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 
 export default observer(function Index() {
     const { authStore } = useStores();
-    const { user, isLoading } = authStore.authState;
+    const { user, isLoading } = authStore.state;
 
     if (isLoading) {
         return null; // Let the root layout handle loading state
