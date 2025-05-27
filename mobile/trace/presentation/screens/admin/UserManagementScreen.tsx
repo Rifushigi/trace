@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
     View,
     StyleSheet,
@@ -7,203 +7,312 @@ import {
     TextInput,
     FlatList,
     Alert,
+    ActivityIndicator,
+    RefreshControl,
+    Image,
 } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
-import { colors } from '../../../shared/constants/theme';
-import { AdminStackParamList } from '../../../navigation/types';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { User } from '../../../domain/entities/User';
+import { MaterialIcons } from '@expo/vector-icons';
+import { User, Student, Lecturer } from '../../../domain/entities/User';
+import { formatDistanceToNow } from 'date-fns';
 
-type Props = NativeStackScreenProps<AdminStackParamList, 'UserManagement'>;
+// move it to the theme file
+const BLUE = {
+    primary: '#1976D2',
+    light: '#E3F2FD',
+    dark: '#1565C0',
+    text: '#2196F3',
+    background: '#F5F9FF',
+};
 
-export const UserManagementScreen = observer(({ navigation }: Props) => {
+type SortField = 'name' | 'email' | 'role' | 'date';
+type SortOrder = 'asc' | 'desc';
+
+export const UserManagementScreen = observer(() => {
     const { authStore } = useStores();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
+    const [sortField, setSortField] = useState<SortField>('name');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [users, setUsers] = useState<User[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Mock data - replace with actual data from your backend
-    const users: User[] = [
-        {
-            id: '1',
-            email: 'john.doe@example.com',
-            firstName: 'John',
-            lastName: 'Doe',
-            role: 'student',
-            avatar: undefined,
-            isVerified: true,
-            createdAt: new Date('2024-01-01'),
-            updatedAt: new Date('2024-01-01'),
-        },
-        {
-            id: '2',
-            email: 'jane.smith@example.com',
-            firstName: 'Jane',
-            lastName: 'Smith',
-            role: 'lecturer',
-            avatar: undefined,
-            isVerified: true,
-            createdAt: new Date('2024-01-01'),
-            updatedAt: new Date('2024-01-01'),
-        },
-        // Add more mock users as needed
-    ];
+    const fetchUsers = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const fetchedUsers = await authStore.userUseCase.getAllUsers();
+            setUsers(fetchedUsers);
+        } catch (error) {
+            Alert.alert('Error', 'Failed to fetch users');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [authStore]);
 
-    const filteredUsers = users.filter((user) => {
-        const matchesSearch = searchQuery === '' ||
-            user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesRole = selectedRole === null || user.role === selectedRole;
-        return matchesSearch && matchesRole;
-    });
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
-    const handleRoleChange = (userId: string, newRole: string) => {
-        Alert.alert(
-            'Change Role',
-            'Are you sure you want to change this user\'s role?',
-            [
-                {
-                    text: 'Cancel',
-                    style: 'cancel',
-                },
-                {
-                    text: 'Change',
-                    onPress: () => {
-                        // TODO: Implement role change
-                        Alert.alert('Success', 'User role updated successfully');
-                    },
-                },
-            ]
+    const onRefresh = useCallback(async () => {
+        setIsRefreshing(true);
+        try {
+            await fetchUsers();
+        } finally {
+            setIsRefreshing(false);
+        }
+    }, [fetchUsers]);
+
+    const sortedAndFilteredUsers = useMemo(() => {
+        let filtered = users.filter((user: User) => {
+            const matchesSearch = (
+                (user.firstName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                (user.lastName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            const matchesRole = selectedRole ? user.role === selectedRole : true;
+            return matchesSearch && matchesRole;
+        });
+
+        return filtered.sort((a: User, b: User) => {
+            let comparison = 0;
+            switch (sortField) {
+                case 'name':
+                    comparison = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+                    break;
+                case 'email':
+                    comparison = a.email.localeCompare(b.email);
+                    break;
+                case 'role':
+                    comparison = a.role.localeCompare(b.role);
+                    break;
+                case 'date':
+                    comparison = a.createdAt.getTime() - b.createdAt.getTime();
+                    break;
+            }
+            return sortOrder === 'asc' ? comparison : -comparison;
+        });
+    }, [users, searchQuery, selectedRole, sortField, sortOrder]);
+
+    const renderSortButton = (field: SortField, label: string) => (
+        <TouchableOpacity
+            style={[
+                styles.sortButton,
+                sortField === field && styles.sortButtonActive
+            ]}
+            onPress={() => {
+                if (sortField === field) {
+                    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                } else {
+                    setSortField(field);
+                    setSortOrder('asc');
+                }
+            }}
+        >
+            <Text style={[
+                styles.sortButtonText,
+                sortField === field && styles.sortButtonTextActive
+            ]}>
+                {label}
+            </Text>
+            {sortField === field && (
+                <MaterialIcons
+                    name={sortOrder === 'asc' ? 'arrow-upward' : 'arrow-downward'}
+                    size={16}
+                    color={sortField === field ? BLUE.primary : '#666666'}
+                />
+            )}
+        </TouchableOpacity>
+    );
+
+    const renderUserDetails = (user: User) => {
+        const attendanceSection = user.attendanceStats && (
+            <View style={styles.attendanceStats}>
+                <Text style={styles.attendanceTitle}>Attendance Statistics</Text>
+                <View style={styles.attendanceGrid}>
+                    <View style={styles.attendanceItem}>
+                        <Text style={styles.attendanceLabel}>Total Classes</Text>
+                        <Text style={styles.attendanceValue}>{user.attendanceStats.totalClasses}</Text>
+                    </View>
+                    <View style={styles.attendanceItem}>
+                        <Text style={styles.attendanceLabel}>Attended</Text>
+                        <Text style={styles.attendanceValue}>{user.attendanceStats.attendedClasses}</Text>
+                    </View>
+                    <View style={styles.attendanceItem}>
+                        <Text style={styles.attendanceLabel}>Rate</Text>
+                        <Text style={[
+                            styles.attendanceValue,
+                            { color: user.attendanceStats.attendanceRate >= 75 ? '#10B981' : '#DC2626' }
+                        ]}>{user.attendanceStats.attendanceRate.toFixed(1)}%</Text>
+                    </View>
+                    {user.attendanceStats.lastAttendance && (
+                        <View style={styles.attendanceItem}>
+                            <Text style={styles.attendanceLabel}>Last Attendance</Text>
+                            <Text style={styles.attendanceValue}>
+                                {formatDistanceToNow(user.attendanceStats.lastAttendance, { addSuffix: true })}
+                            </Text>
+                        </View>
+                    )}
+                </View>
+            </View>
         );
-    };
 
-    const handleAccountAction = (userId: string, action: string) => {
-        switch (action) {
-            case 'disable':
-                Alert.alert(
-                    'Disable Account',
-                    'Are you sure you want to disable this account?',
-                    [
-                        {
-                            text: 'Cancel',
-                            style: 'cancel',
-                        },
-                        {
-                            text: 'Disable',
-                            style: 'destructive',
-                            onPress: () => {
-                                // TODO: Implement account disable
-                                Alert.alert('Success', 'Account disabled successfully');
-                            },
-                        },
-                    ]
+        switch (user.role) {
+            case 'student':
+                const studentUser = user as Student;
+                return (
+                    <View style={styles.extraDetails}>
+                        <Text style={styles.detailText}>Matric No: {studentUser.matricNo}</Text>
+                        <Text style={styles.detailText}>Program: {studentUser.program}</Text>
+                        <Text style={styles.detailText}>Level: {studentUser.level}</Text>
+                        {attendanceSection}
+                    </View>
                 );
-                break;
-            case 'delete':
-                Alert.alert(
-                    'Delete Account',
-                    'Are you sure you want to delete this account? This action cannot be undone.',
-                    [
-                        {
-                            text: 'Cancel',
-                            style: 'cancel',
-                        },
-                        {
-                            text: 'Delete',
-                            style: 'destructive',
-                            onPress: () => {
-                                // TODO: Implement account deletion
-                                Alert.alert('Success', 'Account deleted successfully');
-                            },
-                        },
-                    ]
+            case 'lecturer':
+                const lecturerUser = user as Lecturer;
+                return (
+                    <View style={styles.extraDetails}>
+                        <Text style={styles.detailText}>Staff ID: {lecturerUser.staffId}</Text>
+                        <Text style={styles.detailText}>College: {lecturerUser.college}</Text>
+                        {attendanceSection}
+                    </View>
                 );
-                break;
+            default:
+                return null;
         }
     };
 
     const renderUserItem = ({ item }: { item: User }) => (
         <Card style={styles.userCard}>
             <View style={styles.userInfo}>
-                <Text style={styles.userName}>{`${item.firstName} ${item.lastName}`}</Text>
-                <Text style={styles.userEmail}>{item.email}</Text>
-                <Text style={styles.userRole}>Role: {item.role}</Text>
-            </View>
-            <View style={styles.userActions}>
-                <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => handleRoleChange(item.id, item.role === 'student' ? 'lecturer' : 'student')}
-                >
-                    <Text style={styles.actionButtonText}>Change Role</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.actionButton, styles.disableButton]}
-                    onPress={() => handleAccountAction(item.id, 'disable')}
-                >
-                    <Text style={[styles.actionButtonText, styles.disableButtonText]}>
-                        Disable Account
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.actionButton, styles.deleteButton]}
-                    onPress={() => handleAccountAction(item.id, 'delete')}
-                >
-                    <Text style={[styles.actionButtonText, styles.deleteButtonText]}>
-                        Delete Account
-                    </Text>
-                </TouchableOpacity>
+                <View style={styles.userHeader}>
+                    <View style={styles.userAvatar}>
+                        {item.avatar ? (
+                            <Image source={{ uri: item.avatar }} style={styles.avatarImage} />
+                        ) : (
+                            <Text style={styles.avatarText}>
+                                {item.firstName?.[0] || ''}{item.lastName?.[0] || ''}
+                            </Text>
+                        )}
+                        {item.isVerified && (
+                            <MaterialIcons
+                                name="verified"
+                                size={16}
+                                color={BLUE.primary}
+                                style={styles.verifiedIcon}
+                            />
+                        )}
+                    </View>
+                    <View style={styles.userDetails}>
+                        <Text style={styles.userName}>{item.firstName} {item.lastName}</Text>
+                        <Text style={styles.userEmail}>{item.email}</Text>
+                        <View style={styles.statusContainer}>
+                            <View style={styles.roleChip}>
+                                <Text style={styles.roleText}>{item.role}</Text>
+                            </View>
+                            <Text style={styles.dateText}>
+                                Joined {formatDistanceToNow(item.createdAt, { addSuffix: true })}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+                
+                {renderUserDetails(item)}
             </View>
         </Card>
     );
 
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={BLUE.primary} />
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
-            {/* Search and Filter */}
             <Card style={styles.filterCard}>
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search users..."
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                />
-                <View style={styles.roleFilter}>
-                    <TouchableOpacity
-                        style={[
-                            styles.roleButton,
-                            selectedRole === null && styles.roleButtonActive,
-                        ]}
-                        onPress={() => setSelectedRole(null)}
-                    >
-                        <Text style={styles.roleButtonText}>All</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.roleButton,
-                            selectedRole === 'student' && styles.roleButtonActive,
-                        ]}
-                        onPress={() => setSelectedRole('student')}
-                    >
-                        <Text style={styles.roleButtonText}>Students</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.roleButton,
-                            selectedRole === 'lecturer' && styles.roleButtonActive,
-                        ]}
-                        onPress={() => setSelectedRole('lecturer')}
-                    >
-                        <Text style={styles.roleButtonText}>Lecturers</Text>
-                    </TouchableOpacity>
+                <View style={styles.searchContainer}>
+                    <MaterialIcons name="search" size={24} color="#999" style={styles.searchIcon} />
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Search users..."
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                    />
+                </View>
+
+                <View style={styles.filterSection}>
+                    <View style={styles.roleFilter}>
+                        <TouchableOpacity
+                            style={[
+                                styles.roleButton,
+                                selectedRole === null && styles.roleButtonActive
+                            ]}
+                            onPress={() => setSelectedRole(null)}
+                        >
+                            <Text style={[
+                                styles.roleButtonText,
+                                selectedRole === null && styles.roleButtonTextActive
+                            ]}>All</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.roleButton,
+                                selectedRole === 'student' && styles.roleButtonActive
+                            ]}
+                            onPress={() => setSelectedRole('student')}
+                        >
+                            <Text style={[
+                                styles.roleButtonText,
+                                selectedRole === 'student' && styles.roleButtonTextActive
+                            ]}>Students</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.roleButton,
+                                selectedRole === 'lecturer' && styles.roleButtonActive
+                            ]}
+                            onPress={() => setSelectedRole('lecturer')}
+                        >
+                            <Text style={[
+                                styles.roleButtonText,
+                                selectedRole === 'lecturer' && styles.roleButtonTextActive
+                            ]}>Lecturers</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.sortContainer}>
+                        {renderSortButton('name', 'Name')}
+                        {renderSortButton('email', 'Email')}
+                        {renderSortButton('role', 'Role')}
+                        {renderSortButton('date', 'Date')}
+                    </View>
                 </View>
             </Card>
 
-            {/* User List */}
             <FlatList
-                data={filteredUsers}
+                data={sortedAndFilteredUsers}
                 renderItem={renderUserItem}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContainer}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={onRefresh}
+                        colors={[BLUE.primary]}
+                    />
+                }
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <MaterialIcons name="people" size={48} color={BLUE.primary} />
+                        <Text style={styles.emptyText}>No users found</Text>
+                    </View>
+                }
             />
         </View>
     );
@@ -212,92 +321,238 @@ export const UserManagementScreen = observer(({ navigation }: Props) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: BLUE.background,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: BLUE.background,
     },
     filterCard: {
         margin: 16,
         padding: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
-    searchInput: {
-        height: 40,
-        borderWidth: 1,
-        borderColor: colors.border,
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F8F9FA',
         borderRadius: 8,
         paddingHorizontal: 12,
-        marginBottom: 16,
+    },
+    searchIcon: {
+        marginRight: 8,
+    },
+    searchInput: {
+        flex: 1,
+        height: 40,
+        fontSize: 16,
+        color: '#333333',
+    },
+    filterSection: {
+        gap: 16,
+        marginTop: 16,
     },
     roleFilter: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        backgroundColor: '#F8F9FA',
+        borderRadius: 8,
+        padding: 4,
     },
     roleButton: {
         flex: 1,
-        padding: 8,
-        marginHorizontal: 4,
-        borderRadius: 8,
-        backgroundColor: colors.card,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 6,
         alignItems: 'center',
     },
     roleButtonActive: {
-        backgroundColor: colors.primary,
+        backgroundColor: BLUE.primary,
     },
     roleButtonText: {
-        color: colors.text,
+        fontSize: 14,
+        color: '#666666',
+        fontWeight: '500',
+    },
+    roleButtonTextActive: {
+        color: '#FFFFFF',
+    },
+    sortContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    sortButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 6,
+        backgroundColor: '#F8F9FA',
+        gap: 4,
+    },
+    sortButtonActive: {
+        backgroundColor: BLUE.light,
+    },
+    sortButtonText: {
+        fontSize: 14,
+        color: '#666666',
+    },
+    sortButtonTextActive: {
+        color: BLUE.primary,
+        fontWeight: '500',
     },
     listContainer: {
         padding: 16,
     },
     userCard: {
-        marginBottom: 16,
+        marginBottom: 12,
         padding: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
     },
     userInfo: {
-        marginBottom: 16,
+        gap: 12,
     },
-    userName: {
+    userHeader: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+    },
+    userAvatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: BLUE.light,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+    },
+    avatarImage: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+    },
+    avatarText: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: colors.text,
-        marginBottom: 4,
+        color: BLUE.primary,
+    },
+    verifiedIcon: {
+        position: 'absolute',
+        bottom: -4,
+        right: -4,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+    },
+    userDetails: {
+        flex: 1,
+        marginLeft: 12,
+    },
+    userName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333333',
     },
     userEmail: {
         fontSize: 14,
-        color: colors.textSecondary,
-        marginBottom: 4,
+        color: '#666666',
+        marginTop: 2,
     },
-    userRole: {
-        fontSize: 14,
-        color: colors.primary,
-    },
-    userActions: {
+    statusContainer: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-    },
-    actionButton: {
-        flex: 1,
-        padding: 12,
-        borderRadius: 8,
-        marginHorizontal: 4,
-        marginBottom: 8,
         alignItems: 'center',
-        backgroundColor: colors.primary,
+        marginTop: 4,
+        gap: 8,
     },
-    actionButtonText: {
-        color: '#FFFFFF',
-        fontSize: 14,
+    roleChip: {
+        backgroundColor: BLUE.light,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    roleText: {
+        fontSize: 12,
+        color: BLUE.primary,
+        textTransform: 'capitalize',
         fontWeight: '500',
     },
-    disableButton: {
-        backgroundColor: colors.warning,
+    dateText: {
+        fontSize: 12,
+        color: '#666666',
     },
-    disableButtonText: {
-        color: '#FFFFFF',
+    extraDetails: {
+        backgroundColor: '#F8F9FA',
+        padding: 12,
+        borderRadius: 8,
+        gap: 4,
     },
-    deleteButton: {
-        backgroundColor: colors.error,
+    detailText: {
+        fontSize: 14,
+        color: '#666666',
     },
-    deleteButtonText: {
-        color: '#FFFFFF',
+    actions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: 8,
+    },
+    actionButton: {
+        padding: 8,
+        borderRadius: 8,
+        backgroundColor: '#F8F9FA',
+    },
+    emptyContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 32,
+        gap: 16,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#666666',
+        textAlign: 'center',
+    },
+    attendanceStats: {
+        marginTop: 12,
+        backgroundColor: '#F8F9FA',
+        borderRadius: 8,
+        padding: 12,
+    },
+    attendanceTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#333333',
+        marginBottom: 8,
+    },
+    attendanceGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+    },
+    attendanceItem: {
+        flex: 1,
+        minWidth: '45%',
+    },
+    attendanceLabel: {
+        fontSize: 12,
+        color: '#666666',
+        marginBottom: 4,
+    },
+    attendanceValue: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333333',
     },
 }); 
