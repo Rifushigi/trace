@@ -8,6 +8,7 @@ interface InputProps extends TextInputProps {
     leftIcon?: React.ReactNode;
     rightIcon?: React.ReactNode;
     containerStyle?: ViewStyle;
+    inputContainerStyle?: ViewStyle;
     inputStyle?: TextStyle;
     labelStyle?: TextStyle;
     errorStyle?: TextStyle;
@@ -19,6 +20,7 @@ export const Input: React.FC<InputProps> = ({
     leftIcon,
     rightIcon,
     containerStyle,
+    inputContainerStyle,
     inputStyle,
     labelStyle,
     errorStyle,
@@ -27,19 +29,17 @@ export const Input: React.FC<InputProps> = ({
     return (
         <View style={[styles.container, containerStyle]}>
             {label && <Text style={[styles.label, labelStyle]}>{label}</Text>}
-            <View style={[styles.inputContainer, error && styles.inputContainerError]}>
-                {leftIcon && <View style={styles.iconContainer}>{leftIcon}</View>}
+            <View style={[styles.inputContainer, error && styles.inputContainerError, inputContainerStyle]}>
+                {leftIcon}
                 <TextInput
                     style={[
                         styles.input,
-                        leftIcon ? styles.inputWithLeftIcon : null,
-                        rightIcon ? styles.inputWithRightIcon : null,
                         inputStyle,
                     ]}
-                    placeholderTextColor="#999999"
+                    placeholderTextColor={colors.textSecondary}
                     {...props}
                 />
-                {rightIcon && <View style={styles.iconContainer}>{rightIcon}</View>}
+                {rightIcon}
             </View>
             {error && <Text style={[styles.error, errorStyle]}>{error}</Text>}
         </View>
@@ -48,44 +48,32 @@ export const Input: React.FC<InputProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 16,
+        width: '100%',
     },
     label: {
         fontSize: 16,
         fontWeight: '500',
-        color: '#000000',
+        color: colors.text,
         marginBottom: 8,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E5E5E5',
-        borderRadius: 8,
         backgroundColor: '#FFFFFF',
     },
     inputContainerError: {
-        borderColor: '#FF3B30',
+        borderColor: colors.error,
     },
     input: {
         flex: 1,
-        height: 48,
-        paddingHorizontal: 16,
         fontSize: 16,
-        color: '#000000',
-    },
-    inputWithLeftIcon: {
-        paddingLeft: 8,
-    },
-    inputWithRightIcon: {
-        paddingRight: 8,
-    },
-    iconContainer: {
-        paddingHorizontal: 12,
+        color: colors.text,
+        minHeight: 52,
+        paddingVertical: 0,
     },
     error: {
         fontSize: 14,
-        color: '#FF3B30',
+        color: colors.error,
         marginTop: 4,
     },
 }); 
