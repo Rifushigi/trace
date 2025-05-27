@@ -1,98 +1,145 @@
 import React from 'react';
-import { View, StyleSheet, Image, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Image, Text, TouchableOpacity, Dimensions, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '../../../shared/constants/theme';
+import { MaterialIcons } from '@expo/vector-icons';
+
+const { width, height } = Dimensions.get('window');
+const HORIZONTAL_PADDING = 24;
 
 export const WelcomeScreen = () => {
     return (
-        <View style={styles.container}>
-            <View style={styles.logoContainer}>
-                <Image
-                    source={require('../../../assets/images/icon.png')}
-                    style={styles.logo}
-                    resizeMode="contain"
-                />
-                <Text style={styles.title}>Welcome to TRACE</Text>
-                <Text style={styles.subtitle}>
-                    Track your attendance with ease
-                </Text>
-            </View>
+        <SafeAreaView style={styles.container}>
+            <View style={styles.content}>
+                <View style={styles.header}>
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('../../../assets/images/icon.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
+                    </View>
+                    <Text style={styles.title}>Welcome to TRACE</Text>
+                    <Text style={styles.subtitle}>
+                        Track your attendance with ease
+                    </Text>
+                </View>
 
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => router.push('/login')}
-                >
-                    <Text style={styles.buttonText}>Login</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.button, styles.secondaryButton]}
-                    onPress={() => router.push('/register')}
-                >
-                    <Text style={[styles.buttonText, styles.secondaryButtonText]}>Register</Text>
-                </TouchableOpacity>
-            </View>
+                <View style={styles.footer}>
+                    <TouchableOpacity
+                        style={styles.loginButton}
+                        onPress={() => router.push('/login')}
+                        activeOpacity={0.8}
+                    >
+                        <MaterialIcons name="login" size={20} color="#FFF" style={styles.buttonIcon} />
+                        <Text style={styles.loginButtonText}>Login</Text>
+                    </TouchableOpacity>
 
-            <Text style={styles.version}>Version 1.0.0</Text>
-        </View>
+                    <TouchableOpacity
+                        style={styles.registerButton}
+                        onPress={() => router.push('/register/role')}
+                        activeOpacity={0.8}
+                    >
+                        <MaterialIcons name="person-add" size={20} color={colors.primary} style={styles.buttonIcon} />
+                        <Text style={styles.registerButtonText}>Create Account</Text>
+                    </TouchableOpacity>
+
+                    <Text style={styles.version}>Version 1.0.0</Text>
+                </View>
+            </View>
+        </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
-        padding: 20,
+        backgroundColor: '#FAFAFA',
+    },
+    content: {
+        flex: 1,
+        paddingHorizontal: HORIZONTAL_PADDING,
+        justifyContent: 'space-between',
+    },
+    header: {
+        alignItems: 'center',
+        paddingTop: height * 0.12,
     },
     logoContainer: {
-        flex: 1,
+        width: width * 0.4,
+        height: width * 0.4,
+        backgroundColor: colors.primary + '08',
+        borderRadius: width * 0.2,
         justifyContent: 'center',
         alignItems: 'center',
+        marginBottom: 32,
     },
     logo: {
-        width: 150,
-        height: 150,
-        marginBottom: 20,
+        width: width * 0.25,
+        height: width * 0.25,
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 10,
+        fontSize: 32,
+        fontWeight: '700',
+        color: '#1A1A1A',
+        marginBottom: 8,
+        letterSpacing: -0.5,
     },
     subtitle: {
-        textAlign: 'center',
-        color: '#666',
         fontSize: 16,
+        color: '#6B7280',
+        fontWeight: '400',
+        textAlign: 'center',
     },
-    buttonContainer: {
-        width: '100%',
-        paddingHorizontal: 20,
+    footer: {
+        paddingBottom: height * 0.04,
+        gap: 12,
     },
-    button: {
-        backgroundColor: '#007AFF',
-        padding: 15,
-        borderRadius: 8,
+    loginButton: {
+        height: 52,
+        borderRadius: 16,
+        backgroundColor: colors.primary,
+        flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 8,
+        justifyContent: 'center',
+        shadowColor: colors.primary,
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
-    secondaryButton: {
+    registerButton: {
+        height: 52,
+        borderRadius: 16,
         backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: '#007AFF',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: colors.primary,
     },
-    buttonText: {
-        color: '#fff',
+    buttonIcon: {
+        marginRight: 8,
+    },
+    loginButtonText: {
+        color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
+        letterSpacing: 0.5,
     },
-    secondaryButtonText: {
-        color: '#007AFF',
+    registerButtonText: {
+        color: colors.primary,
+        fontSize: 16,
+        fontWeight: '600',
+        letterSpacing: 0.5,
     },
     version: {
         textAlign: 'center',
-        color: '#999',
-        marginTop: 20,
-        marginBottom: 10,
+        color: '#6B7280',
+        fontSize: 14,
+        marginTop: 12,
     },
 }); 
