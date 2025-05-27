@@ -6,6 +6,7 @@ import { ProfileUseCase } from '../domain/usecases/profile/ProfileUseCase';
 import { SettingsUseCase } from '../domain/usecases/settings/SettingsUseCase';
 import { ClassUseCase } from '../domain/usecases/class/ClassUseCase';
 import { AttendanceUseCase } from '../domain/usecases/attendance/AttendanceUseCase';
+import { UserUseCase } from '../domain/usecases/user/UserUseCase';
 
 interface StoreProviderProps {
     children: ReactNode;
@@ -14,6 +15,7 @@ interface StoreProviderProps {
     settingsUseCase: SettingsUseCase;
     classUseCase: ClassUseCase;
     attendanceUseCase: AttendanceUseCase;
+    userUseCase: UserUseCase;
 }
 
 export const StoreProvider: React.FC<StoreProviderProps> = ({
@@ -23,10 +25,11 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({
     settingsUseCase,
     classUseCase,
     attendanceUseCase,
+    userUseCase,
 }) => {
     const store = useMemo(
-        () => new RootStore(authUseCase, profileUseCase, settingsUseCase, classUseCase, attendanceUseCase),
-        [authUseCase, profileUseCase, settingsUseCase, classUseCase, attendanceUseCase]
+        () => new RootStore(authUseCase, profileUseCase, settingsUseCase, classUseCase, attendanceUseCase, userUseCase),
+        [authUseCase, profileUseCase, settingsUseCase, classUseCase, attendanceUseCase, userUseCase]
     );
 
     return (
