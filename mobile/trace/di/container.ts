@@ -25,6 +25,12 @@ import { ClassUseCase } from '../domain/usecases/class/ClassUseCase';
 import { AttendanceUseCase } from '../domain/usecases/attendance/AttendanceUseCase';
 import { features } from '../config/features';
 import { MockAuthApi } from '../data/datasources/mock/MockAuthApi';
+import { UserUseCase } from '../domain/usecases/user/UserUseCase';
+import { UserUseCaseImpl } from '../domain/usecases/user/impl/UserUseCaseImpl';
+import { UserRepository } from '../domain/repositories/UserRepository';
+import { UserRepositoryImpl } from '../data/repositories/UserRepositoryImpl';
+import { UserApi } from '../data/datasources/remote/UserApi';
+import { MockUserApi } from '../data/datasources/mock/MockUserApi';
 
 export class Container {
     private static instance: Container;
@@ -43,6 +49,9 @@ export class Container {
     private attendanceRepository: AttendanceRepository;
     private classUseCase: ClassUseCase;
     private attendanceUseCase: AttendanceUseCase;
+    private userApi: UserApi | MockUserApi;
+    private userRepository: UserRepository;
+    private userUseCase: UserUseCase;
 
     private constructor() {
         // Initialize APIs
@@ -51,6 +60,7 @@ export class Container {
         this.settingsApi = new SettingsApi();
         this.classApi = new ClassApi();
         this.attendanceApi = new AttendanceApi();
+        this.userApi = features.useMockApi ? new MockUserApi() : new UserApi();
 
         // Initialize Repositories
         this.authRepository = new AuthRepositoryImpl(this.authApi);
@@ -58,6 +68,7 @@ export class Container {
         this.settingsRepository = new SettingsRepositoryImpl(this.settingsApi);
         this.classRepository = new ClassRepositoryImpl(this.classApi);
         this.attendanceRepository = new AttendanceRepositoryImpl(this.attendanceApi);
+        this.userRepository = new UserRepositoryImpl(this.userApi);
 
         // Initialize Use Cases
         this.authUseCase = new AuthUseCaseImpl(this.authRepository);
@@ -65,6 +76,7 @@ export class Container {
         this.settingsUseCase = new SettingsUseCaseImpl(this.settingsRepository);
         this.classUseCase = new ClassUseCaseImpl(this.classRepository);
         this.attendanceUseCase = new AttendanceUseCaseImpl(this.attendanceRepository);
+        this.userUseCase = new UserUseCaseImpl(this.userRepository);
     }
 
     public static getInstance(): Container {
@@ -92,5 +104,9 @@ export class Container {
 
     public getAttendanceUseCase(): AttendanceUseCase {
         return this.attendanceUseCase;
+    }
+
+    public getUserUseCase(): UserUseCase {
+        return this.userUseCase;
     }
 }
