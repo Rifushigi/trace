@@ -22,17 +22,16 @@ export default function AdminLayout() {
                         <MaterialIcons name="dashboard" size={size} color={color} />
                     ),
                     tabBarActiveTintColor: colors.primary,
-                tabBarInactiveTintColor: colors.textSecondary,
-                headerRight: () => (
-                    <TouchableOpacity 
-                        onPress={handleLogout}
-                        style={{ marginRight: 16 }}
-                    >
-                        <MaterialIcons name="logout" size={24} color={colors.primary} />
-                    </TouchableOpacity>
-                ),
+                    tabBarInactiveTintColor: colors.textSecondary,
+                    headerRight: () => (
+                        <TouchableOpacity 
+                            onPress={handleLogout}
+                            style={{ marginRight: 16 }}
+                        >
+                            <MaterialIcons name="logout" size={24} color={colors.primary} />
+                        </TouchableOpacity>
+                    ),
                 }} 
-                
             />
             <Tabs.Screen
                 name="user-management" 

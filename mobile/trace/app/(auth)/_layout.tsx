@@ -11,7 +11,7 @@ export default function AuthLayout() {
                 options={{
                     presentation: 'modal',
                 }}
-            />``
+            />
             <Stack.Screen name="forgot-password" />
         </Stack>
     );
