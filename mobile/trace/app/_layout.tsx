@@ -10,7 +10,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 
 function RootLayoutContent() {
     const { authStore } = useStores();
-    const { user, isLoading } = authStore.authState;
+    const { user, isLoading } = authStore.state;
 
     if (isLoading) {
         return (
@@ -21,29 +21,27 @@ function RootLayoutContent() {
     }
 
     return (
-        <Stack>
+        <Stack screenOptions={{ headerShown: false }}>
             {!user ? (
                 // Auth Stack
                 <>
-                    <Stack.Screen name="(auth)/welcome" options={{ headerShown: false }} />
-                    <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-                    <Stack.Screen name="(auth)/register" options={{ headerShown: false }} />
-                    <Stack.Screen name="(auth)/forgot-password" options={{ headerShown: false }} />
+                    <Stack.Screen name="(auth)" />
+                    <Stack.Screen name="index" />
                 </>
             ) : (
                 // Role-based Stack
                 <>
                     {user.role === 'student' && (
-                        <Stack.Screen name="(student)" options={{ headerShown: false }} />
+                        <Stack.Screen name="(student)" />
                     )}
                     {user.role === 'lecturer' && (
-                        <Stack.Screen name="(lecturer)" options={{ headerShown: false }} />
+                        <Stack.Screen name="(lecturer)" />
                     )}
                     {user.role === 'admin' && (
-                        <Stack.Screen name="(admin)" options={{ headerShown: false }} />
+                        <Stack.Screen name="(admin)" />
                     )}
-                    <Stack.Screen name="(profile)" options={{ headerShown: false }} />
-                    <Stack.Screen name="(settings)" options={{ headerShown: false }} />
+                    <Stack.Screen name="(profile)" />
+                    <Stack.Screen name="(settings)" />
                 </>
             )}
         </Stack>
