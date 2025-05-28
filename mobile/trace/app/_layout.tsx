@@ -4,7 +4,7 @@ import { useStores } from '../stores';
 import { observer } from 'mobx-react-lite';
 import { View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StoreProvider } from '../stores/StoreProvider';
+import StoreProvider from '../stores/StoreProvider';
 import { Container } from '../di/container';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
@@ -27,7 +27,7 @@ function RootLayoutContent() {
             {!user && <Stack.Screen name="index" />}
             
             {/* Role-based Stack */}
-            {user?.role === 'student' && <Stack.Screen name="(student)" />}
+            {user?.role === 'student' && <Stack.Screen name="student" />}
             {user?.role === 'lecturer' && <Stack.Screen name="(lecturer)" />}
             {user?.role === 'admin' && <Stack.Screen name="(admin)" />}
             {user && <Stack.Screen name="(profile)" />}

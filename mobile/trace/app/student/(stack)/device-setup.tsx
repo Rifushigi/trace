@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../stores';
-import { Student } from '../../domain/entities/User';
+import { useStores } from '../../../stores';
+import { Student } from '../../../domain/entities/User';
 
 export default observer(function DeviceSetupScreen() {
     const { authStore } = useStores();
-    const { user } = authStore.authState;
+    const { user } = authStore.state;
     const student = user as Student;
 
     return (

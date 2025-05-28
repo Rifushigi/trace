@@ -17,7 +17,7 @@ export default observer(function Index() {
     // Redirect based on user role
     switch (user.role) {
         case 'student':
-            return <Redirect href="/(student)/dashboard" />;
+            return <Redirect href="/student/(tabs)/dashboard" />;
         case 'lecturer':
             return <Redirect href="/(lecturer)/dashboard" />;
         case 'admin':

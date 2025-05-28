@@ -1,11 +1,12 @@
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors } from '../../shared/constants/theme';
+import { colors } from '../../../shared/constants/theme';
 
-export default function StudentLayout() {
+export default function TabsLayout() {
     return (
         <Tabs
             screenOptions={{
+                headerShown: true,
                 tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: colors.textSecondary,
                 tabBarStyle: {
@@ -18,9 +19,9 @@ export default function StudentLayout() {
                     shadowRadius: 4,
                 },
                 headerStyle: {
-                    backgroundColor: colors.primary,
+                    backgroundColor: colors.background,
                 },
-                headerTintColor: '#fff',
+                headerTintColor: colors.text,
                 headerTitleStyle: {
                     fontWeight: '600',
                 },
@@ -45,7 +46,7 @@ export default function StudentLayout() {
                 }} 
             />
             <Tabs.Screen
-                name="attendance"
+                name="attendance-status"
                 options={{ 
                     title: 'Attendance',
                     tabBarIcon: ({ color, size }) => (
@@ -54,11 +55,11 @@ export default function StudentLayout() {
                 }} 
             />
             <Tabs.Screen
-                name="profile"
+                name="attendance-history"
                 options={{ 
-                    title: 'Profile',
+                    title: 'History',
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialIcons name="person" size={size} color={color} />
+                        <MaterialIcons name="history" size={size} color={color} />
                     ),
                 }} 
             />
