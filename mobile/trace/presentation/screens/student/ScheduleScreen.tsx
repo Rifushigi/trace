@@ -4,9 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { StudentStackScreenProps } from '../../../navigation/types';
-
-type Props = StudentStackScreenProps<'Schedule'>;
+import { router } from 'expo-router';
 
 // Mock data for demonstration
 const mockSchedule = [
@@ -31,8 +29,7 @@ const mockSchedule = [
     // Add more mock data as needed
 ];
 
-export const ScheduleScreen = observer(({ navigation }: Props) => {
-    const { authStore } = useStores();
+export const ScheduleScreen = observer(() => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedDay, setSelectedDay] = useState('Monday');
 
@@ -76,7 +73,10 @@ export const ScheduleScreen = observer(({ navigation }: Props) => {
                     filteredSchedule.map((item) => (
                         <TouchableOpacity
                             key={item.id}
-                            onPress={() => navigation.navigate('ClassDetails', { classId: item.id })}
+                            onPress={() => router.push({
+                                pathname: '/student/class-details',
+                                params: { classId: item.id }
+                            })}
                         >
                             <Card style={styles.scheduleItem}>
                                 <View style={styles.timeContainer}>
