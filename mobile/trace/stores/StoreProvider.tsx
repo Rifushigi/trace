@@ -18,7 +18,7 @@ interface StoreProviderProps {
     userUseCase: UserUseCase;
 }
 
-export const StoreProvider: React.FC<StoreProviderProps> = ({
+function StoreProvider({
     children,
     authUseCase,
     profileUseCase,
@@ -26,7 +26,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({
     classUseCase,
     attendanceUseCase,
     userUseCase,
-}) => {
+}: StoreProviderProps) {
     const store = useMemo(
         () => new RootStore(authUseCase, profileUseCase, settingsUseCase, classUseCase, attendanceUseCase, userUseCase),
         [authUseCase, profileUseCase, settingsUseCase, classUseCase, attendanceUseCase, userUseCase]
@@ -37,4 +37,6 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({
             {children}
         </StoreContext.Provider>
     );
-}; 
+}
+
+export default StoreProvider; 
