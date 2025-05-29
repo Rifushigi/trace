@@ -4,30 +4,16 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { StudentStackScreenProps } from '../../../navigation/types';
+import { router } from 'expo-router';
 import { Student } from '../../../domain/entities/User';
-import { CommonActions } from '@react-navigation/native';
 
-type Props = StudentStackScreenProps<'StudentProfile'>;
-
-export const StudentProfileScreen = observer(({ navigation }: Props) => {
+export const StudentProfileScreen = observer(() => {
     const { authStore } = useStores();
-    const user = authStore.authState.user as Student;
+    const user = authStore.state.user as Student;
 
     if (!user) {
         return null;
     }
-
-    const navigateToMainProfile = () => {
-        navigation.dispatch(
-            CommonActions.navigate({
-                name: 'Main',
-                params: {
-                    screen: 'Profile',
-                },
-            })
-        );
-    };
 
     return (
         <ScrollView style={styles.container}>
@@ -80,13 +66,15 @@ export const StudentProfileScreen = observer(({ navigation }: Props) => {
                 <Text style={styles.sectionTitle}>Quick Actions</Text>
                 <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => navigation.navigate('DeviceSetup')}
+                    onPress={() => router.push('/student/device-setup')}
                 >
                     <Text style={styles.actionButtonText}>Setup Device</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => navigation.navigate('StudentSettings')}
+                    onPress={() => router.push({
+                        pathname: '/(settings)'
+                    })}
                 >
                     <Text style={styles.actionButtonText}>Settings</Text>
                 </TouchableOpacity>
