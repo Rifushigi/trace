@@ -3,9 +3,9 @@ import { TouchableOpacity, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useStores } from '../../stores';
 import { colors } from '../../shared/constants/theme';
+import { observer } from 'mobx-react-lite';
 
-
-export default function LecturerLayout() {
+const LecturerLayout = observer(() => {
     const { authStore } = useStores();
 
     const handleLogout = async () => {
@@ -37,6 +37,7 @@ export default function LecturerLayout() {
         <Stack>
             <Stack.Screen 
                 name="dashboard" 
+                
                 options={{ 
                     title: 'Dashboard',
                     headerShown: true,
@@ -83,6 +84,15 @@ export default function LecturerLayout() {
                     headerShown: true 
                 }} 
             />
+            <Stack.Screen 
+                name="session-details" 
+                options={{ 
+                    title: 'Session Details',
+                    headerShown: true 
+                }} 
+            />
         </Stack>
     );
-} 
+});
+
+export default LecturerLayout; 
