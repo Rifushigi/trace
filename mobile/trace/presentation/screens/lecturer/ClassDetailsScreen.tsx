@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
@@ -12,21 +12,14 @@ export const ClassDetailsScreen = observer(() => {
 
     const handleStartSession = () => {
         router.push({
-            pathname: '/session-control',
+            pathname: '/(lecturer)/session-control',
             params: { classId }
         });
     };
 
     const handleViewAttendance = () => {
         router.push({
-            pathname: '/attendance-management',
-            params: { classId }
-        });
-    };
-
-    const handleEditClass = () => {
-        router.push({
-            pathname: '/edit-class',
+            pathname: '/(lecturer)/attendance-management',
             params: { classId }
         });
     };
@@ -80,14 +73,6 @@ export const ClassDetailsScreen = observer(() => {
                     </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={[styles.button, styles.secondaryButton]}
-                    onPress={handleEditClass}
-                >
-                    <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-                        Edit Class
-                    </Text>
-                </TouchableOpacity>
             </View>
         </ScrollView>
     );
