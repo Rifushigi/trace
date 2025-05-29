@@ -4,14 +4,12 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { StudentStackScreenProps } from '../../../navigation/types';
 import { Student } from '../../../domain/entities/User';
+import { router } from 'expo-router';
 
-type Props = StudentStackScreenProps<'StudentSettings'>;
-
-export const StudentSettingsScreen = observer(({ navigation }: Props) => {
+export const StudentSettingsScreen = observer(() => {
     const { authStore, settingsStore } = useStores();
-    const user = authStore.authState.user as Student;
+    const user = authStore.state.user as Student;
 
     // Attendance Notification Settings
     const [attendanceNotifications, setAttendanceNotifications] = useState({
@@ -188,7 +186,7 @@ export const StudentSettingsScreen = observer(({ navigation }: Props) => {
                 <Text style={styles.sectionTitle}>Help & Support</Text>
                 <TouchableOpacity
                     style={styles.supportButton}
-                    onPress={() => navigation.navigate('DeviceSetup')}
+                    onPress={() => router.push('/student/(stack)/device-setup')}
                 >
                     <Text style={styles.supportButtonText}>Device Setup Guide</Text>
                 </TouchableOpacity>
