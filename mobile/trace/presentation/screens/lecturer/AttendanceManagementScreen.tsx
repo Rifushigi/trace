@@ -12,7 +12,7 @@ export const AttendanceManagementScreen = observer(() => {
 
     const handleViewSessionDetails = (sessionId: string) => {
         router.push({
-            pathname: '/session-details',
+            pathname: '/(lecturer)/session-details',
             params: { sessionId }
         });
     };
