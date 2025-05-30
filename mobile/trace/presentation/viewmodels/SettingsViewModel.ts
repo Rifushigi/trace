@@ -23,6 +23,10 @@ export class SettingsViewModel {
         return this._error;
     }
 
+    getSettings(): AppSettings {
+        return this._settings as AppSettings;
+    }
+
     async loadSettings(): Promise<void> {
         try {
             this._isLoading = true;
