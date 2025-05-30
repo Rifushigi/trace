@@ -33,6 +33,7 @@ import { UserApi } from '../data/datasources/remote/UserApi';
 import { MockUserApi } from '../data/datasources/mock/MockUserApi';
 
 export class Container {
+    // Singleton instance
     private static instance: Container;
 
     // Auth 
