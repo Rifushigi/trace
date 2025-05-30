@@ -4,16 +4,12 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { LecturerStackParamList } from '../../../navigation/types';
-import { Lecturer } from '../../../domain/entities/User';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { router } from 'expo-router';
 
-type Props = NativeStackScreenProps<LecturerStackParamList, 'SessionControl'>;
-
-export const SessionControlScreen = observer(({ navigation, route }: Props) => {
+export const SessionControlScreen = observer(({ route }: { route: { params: { classId: string } } }) => {
     const { authStore } = useStores();
-    const user = authStore.authState.user as Lecturer;
-    const { classId } = route.params;
+    const user = authStore.state.user;
+    const { classId } = route.params as { classId: string };
 
     // Mock data - replace with actual data from your backend
     const [sessionData, setSessionData] = useState({
@@ -60,7 +56,7 @@ export const SessionControlScreen = observer(({ navigation, route }: Props) => {
                     style: 'destructive',
                     onPress: () => {
                         // TODO: Implement end session logic
-                        navigation.goBack();
+                        router.back();
                     },
                 },
             ],
