@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { StudentStackScreenProps } from '../../../navigation/types';
-
-type Props = StudentStackScreenProps<'AttendanceHistory'>;
 
 type AttendanceStatus = 'present' | 'late' | 'absent';
 
@@ -54,8 +50,7 @@ const statusColors: Record<AttendanceStatus, string> = {
     absent: colors.error,
 };
 
-export const AttendanceHistoryScreen = observer(({ navigation }: Props) => {
-    const { authStore } = useStores();
+export const AttendanceHistoryScreen = observer(() => {
     const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
     const [selectedStatus, setSelectedStatus] = useState<AttendanceStatus | null>(null);
 
