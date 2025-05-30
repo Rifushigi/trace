@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { StudentStackScreenProps } from '../../../navigation/types';
-
-type Props = StudentStackScreenProps<'ClassDetails'>;
+import { router, useLocalSearchParams } from 'expo-router';
 
 // Mock data for demonstration
 const mockClassDetails = {
@@ -52,8 +49,8 @@ const mockClassDetails = {
     ],
 };
 
-export const ClassDetailsScreen = observer(({ route, navigation }: Props) => {
-    const { classId } = route.params;
+export const ClassDetailsScreen = observer(() => {
+    const { classId } = useLocalSearchParams<{ classId: string }>();
     const [isLoading, setIsLoading] = useState(true);
     const [classDetails, setClassDetails] = useState(mockClassDetails);
 
@@ -146,7 +143,7 @@ export const ClassDetailsScreen = observer(({ route, navigation }: Props) => {
                 </View>
                 <TouchableOpacity
                     style={styles.viewMoreButton}
-                    onPress={() => navigation.navigate('AttendanceHistory')}
+                    onPress={() => router.push('/student/attendance-history')}
                 >
                     <Text style={styles.viewMoreText}>View Detailed History</Text>
                 </TouchableOpacity>
