@@ -5,6 +5,10 @@ import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } f
 export class SettingsUseCaseImpl implements SettingsUseCase {
     constructor(private settingsRepository: SettingsRepository) { }
 
+    async getSettings(): Promise<AppSettings> {
+        return this.settingsRepository.getSettings();
+    }
+
     async loadSettings(): Promise<AppSettings> {
         return this.settingsRepository.getSettings();
     }
