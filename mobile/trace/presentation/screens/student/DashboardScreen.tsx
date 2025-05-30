@@ -254,7 +254,10 @@ export const DashboardScreen = observer(() => {
                     </View>
                     <Text style={styles.sectionTitle}>Today&apos;s Schedule</Text>
                 </View>
-                <TouchableOpacity style={styles.viewAllButton}>
+                <TouchableOpacity 
+                    style={styles.viewAllButton}
+                    onPress={() => router.push('/student/(tabs)/schedule')}
+                >
                     <Text style={styles.viewAllText}>View All</Text>
                     <MaterialIcons name="arrow-forward-ios" size={14} color={colors.primary} />
                 </TouchableOpacity>
@@ -270,7 +273,7 @@ export const DashboardScreen = observer(() => {
                             index === todayClasses.length - 1 && styles.lastClassItem
                         ]}
                         onPress={() => router.push({
-                            pathname: '/class-details',
+                            pathname: '/student/class-details',
                             params: { classId: classItem.id }
                         })}
                         activeOpacity={0.7}
@@ -331,7 +334,6 @@ export const DashboardScreen = observer(() => {
                 <View style={styles.quickActions}>
                     <TouchableOpacity 
                         style={[styles.actionButton, { backgroundColor: '#6366F1' }]}
-                        onPress={() => router.push('/attendance-status')}
                         activeOpacity={0.8}
                     >
                         <View style={styles.actionIconContainer}>
@@ -343,7 +345,7 @@ export const DashboardScreen = observer(() => {
                     
                     <TouchableOpacity 
                         style={[styles.actionButton, { backgroundColor: '#10B981' }]}
-                        onPress={() => router.push('/device-setup')}
+                        onPress={() => router.push('/student/(stack)/device-setup')}
                         activeOpacity={0.8}
                     >
                         <View style={styles.actionIconContainer}>
