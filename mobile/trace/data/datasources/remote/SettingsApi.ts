@@ -2,7 +2,7 @@ import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } f
 import { axiosInstance } from '../../../infrastructure/network/axiosInstance';
 
 export class SettingsApi {
-    private readonly BASE_URL = '/api/settings';
+    private readonly BASE_URL = '/settings';
 
     async getSettings(): Promise<AppSettings> {
         const response = await axiosInstance.get<AppSettings>(`${this.BASE_URL}`);

@@ -2,7 +2,7 @@ import { User } from '../../../domain/entities/User';
 import { axiosInstance } from '../../../infrastructure/network/axiosInstance';
 
 export class ProfileApi {
-    private readonly BASE_URL = '/api/profile';
+    private readonly BASE_URL = '/profile';
 
     async getProfile(): Promise<User> {
         const response = await axiosInstance.get<User>(`${this.BASE_URL}`);
