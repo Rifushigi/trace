@@ -2,6 +2,7 @@ import { Class } from '../../../entities/Class';
 import { ClassRepository } from '../../../repositories/ClassRepository';
 import { ClassUseCase } from '../ClassUseCase';
 
+// orchestration entities and validation logic
 export class ClassUseCaseImpl implements ClassUseCase {
     constructor(private classRepository: ClassRepository) { }
 

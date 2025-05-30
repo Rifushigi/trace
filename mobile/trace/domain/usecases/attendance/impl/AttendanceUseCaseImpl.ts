@@ -2,6 +2,8 @@ import { AttendanceUseCase } from '../AttendanceUseCase';
 import { AttendanceRepository } from '../../../repositories/AttendanceRepository';
 import { AttendanceSession, AttendanceRecord } from '../../../entities/Attendance';
 
+
+// orchestration entities and validation logic
 export class AttendanceUseCaseImpl implements AttendanceUseCase {
     constructor(private readonly attendanceRepository: AttendanceRepository) { }
 

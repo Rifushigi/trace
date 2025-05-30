@@ -4,6 +4,7 @@ import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, Passw
 import { User } from '@/domain/entities/User';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// orchestration entities and validation logic
 export class AuthUseCaseImpl implements AuthUseCase {
     constructor(private readonly authRepository: AuthRepository) { }
 
