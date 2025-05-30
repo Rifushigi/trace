@@ -9,7 +9,7 @@ import { router } from 'expo-router';
 
 export const ClassManagementScreen = observer(() => {
     const { authStore } = useStores();
-    const user = authStore.authState.user as Lecturer;
+    const user = authStore.state.user as Lecturer;
     const [refreshing, setRefreshing] = useState(false);
 
     // Mock data - replace with actual data from your backend
@@ -201,6 +201,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 4,
         marginBottom: 8,
         minWidth: '45%',
+        alignItems: 'center',
     },
     primaryButton: {
         backgroundColor: colors.primary,
