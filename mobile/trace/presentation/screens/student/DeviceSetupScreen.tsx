@@ -4,18 +4,14 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { StudentStackScreenProps } from '../../../navigation/types';
-import { Student } from '../../../domain/entities/User';
 import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 import { BleManager } from 'react-native-ble-plx';
 
-type Props = StudentStackScreenProps<'DeviceSetup'>;
-
 const bleManager = new BleManager();
 
-export const DeviceSetupScreen = observer(({ navigation }: Props) => {
+export const DeviceSetupScreen = observer(() => {
     const { authStore } = useStores();
-    const user = authStore.authState.user as Student;
+    const user = authStore.state.user;
     const [bluetoothStatus, setBluetoothStatus] = useState<'checking' | 'granted' | 'denied'>('checking');
     const [isScanning, setIsScanning] = useState(false);
     const [nearbyBeacons, setNearbyBeacons] = useState<any[]>([]);
@@ -30,7 +26,7 @@ export const DeviceSetupScreen = observer(({ navigation }: Props) => {
     const checkBluetoothPermissions = async () => {
         try {
             if (Platform.OS === 'ios') {
-                const result = await check(PERMISSIONS.IOS.BLUETOOTH_PERIPHERAL);
+                const result = await check(PERMISSIONS.IOS.BLUETOOTH);
                 if (result === RESULTS.GRANTED) {
                     setBluetoothStatus('granted');
                 } else if (result === RESULTS.DENIED) {
@@ -53,7 +49,7 @@ export const DeviceSetupScreen = observer(({ navigation }: Props) => {
     const requestBluetoothPermissions = async () => {
         try {
             if (Platform.OS === 'ios') {
-                const result = await request(PERMISSIONS.IOS.BLUETOOTH_PERIPHERAL);
+                const result = await request(PERMISSIONS.IOS.BLUETOOTH);
                 if (result === RESULTS.GRANTED) {
                     setBluetoothStatus('granted');
                 }
@@ -181,7 +177,7 @@ export const DeviceSetupScreen = observer(({ navigation }: Props) => {
                 <Text style={styles.instructionText}>
                     1. Grant Bluetooth permissions if not already granted{'\n'}
                     2. Start scanning for nearby beacons{'\n'}
-                    3. Select your classroom's beacon from the list{'\n'}
+                    3. Select your classroom&apos;s beacon from the list{'\n'}
                     4. Wait for successful connection confirmation
                 </Text>
             </Card>
