@@ -1,9 +1,8 @@
 import { User } from '../../../domain/entities/User';
-import { IUserApi } from '../../../domain/repositories/UserRepository';
 import { axiosInstance } from '../../../infrastructure/network/axiosInstance';
 
-export class UserApi implements IUserApi {
-    private readonly BASE_URL = '/api/users';
+export class UserApi {
+    private readonly BASE_URL = '/users';
 
     async getAllUsers(): Promise<User[]> {
         const response = await axiosInstance.get<User[]>(`${this.BASE_URL}`);
