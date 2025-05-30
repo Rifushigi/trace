@@ -34,21 +34,33 @@ import { MockUserApi } from '../data/datasources/mock/MockUserApi';
 
 export class Container {
     private static instance: Container;
+
+    // Auth 
     private authApi: AuthApi | MockAuthApi;
     private authRepository: AuthRepository;
     private authUseCase: AuthUseCase;
+
+    // Profile
     private profileApi: ProfileApi;
     private profileRepository: ProfileRepository;
     private profileUseCase: ProfileUseCase;
+
+    // Settings
     private settingsApi: SettingsApi;
     private settingsRepository: SettingsRepository;
     private settingsUseCase: SettingsUseCase;
+
+    // Class
     private classApi: ClassApi;
-    private attendanceApi: AttendanceApi;
     private classRepository: ClassRepository;
-    private attendanceRepository: AttendanceRepository;
     private classUseCase: ClassUseCase;
+
+    // Attendance
+    private attendanceApi: AttendanceApi;
+    private attendanceRepository: AttendanceRepository;
     private attendanceUseCase: AttendanceUseCase;
+
+    // User
     private userApi: UserApi | MockUserApi;
     private userRepository: UserRepository;
     private userUseCase: UserUseCase;
