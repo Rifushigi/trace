@@ -40,4 +40,17 @@ export interface PasswordResetRequest {
 export interface PasswordResetConfirm {
     token: string;
     newPassword: string;
-} 
+}
+
+export interface IAuthApi {
+    login(credentials: LoginCredentials): Promise<{ user: User; tokens: AuthTokens }>;
+    register(data: RegisterData): Promise<{ user: User; tokens: AuthTokens }>;
+    logout(): Promise<void>;
+    refreshToken(refreshToken: string): Promise<AuthTokens>;
+    requestPasswordReset(data: PasswordResetRequest): Promise<void>;
+    confirmPasswordReset(data: PasswordResetConfirm): Promise<void>;
+    verifyEmail(token: string): Promise<void>;
+    getCurrentUser(): Promise<User | null>;
+    updatePassword(oldPassword: string, newPassword: string): Promise<void>;
+    updateProfile(data: Partial<User>): Promise<User>;
+}
