@@ -1,7 +1,9 @@
-import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '../../../domain/entities/Auth';
+import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm, IAuthApi } from '../../../domain/entities/Auth';
 import { User, Student, Lecturer } from '../../../domain/entities/User';
 
-export class MockAuthApi {
+export class MockAuthApi implements IAuthApi {
+
+    readonly BASE_URL = '/auth';
     private mockUsers: (Student | Lecturer | User)[] = [
         {
             id: '1',
@@ -48,7 +50,7 @@ export class MockAuthApi {
         // if (!user || credentials.password !== 'password') {
         //     throw new Error('Invalid credentials');
         // }
-        const user = this.mockUsers[2];
+        const user = this.mockUsers[0];
 
         return {
             user,
