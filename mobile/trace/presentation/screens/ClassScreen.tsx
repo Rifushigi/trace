@@ -3,7 +3,6 @@ import { View, FlatList, StyleSheet } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { ClassViewModel } from '../viewmodels/ClassViewModel';
 import { ClassCard } from '../components/ClassCard';
-import { Header } from '../components/common/Header';
 import { colors } from '../../shared/constants/theme';
 
 interface ClassScreenProps {
@@ -19,19 +18,9 @@ export const ClassScreen: React.FC<ClassScreenProps> = observer(({ viewModel }) 
     viewModel.loadClasses();
   };
 
-  const handleSearch = (query: string) => {
-    viewModel.searchClasses(query);
-  };
-
   return (
     <View style={styles.container}>
-      <Header
-        title="Classes"
-        rightAction={{
-          icon: 'search',
-          onPress: () => {/* Implement search */},
-        }}
-      />
+
       <FlatList
         data={viewModel.classes}
         renderItem={({ item }) => (
