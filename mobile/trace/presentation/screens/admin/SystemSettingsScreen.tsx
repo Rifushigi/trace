@@ -21,6 +21,9 @@ export const SystemSettingsScreen = observer(() => {
         }));
     };
 
+    // TODO: Use this as the settings screen for all users
+    // use props to pass the settings to the screen
+
     return (
         <ScrollView style={styles.container}>
             <Card style={styles.section}>
