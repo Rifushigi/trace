@@ -8,7 +8,7 @@ import { colors } from '../../../shared/constants/theme';
 
 export const EditProfileScreen = observer(() => {
     const { authStore } = useStores();
-    const { user } = authStore.authState;
+    const user = authStore.state.user;
     const [firstName, setFirstName] = useState(user?.firstName || '');
     const [lastName, setLastName] = useState(user?.lastName || '');
     const [email, setEmail] = useState(user?.email || '');
