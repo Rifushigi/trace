@@ -4,11 +4,9 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { StudentStackScreenProps } from '../../../navigation/types';
+import { router } from 'expo-router';
 
-type Props = StudentStackScreenProps<'AttendanceStatus'>;
-
-export const AttendanceStatusScreen = observer(({ navigation }: Props) => {
+export const AttendanceStatusScreen = observer(() => {
     const { authStore } = useStores();
     const [isLoading, setIsLoading] = useState(true);
     const [status, setStatus] = useState({
@@ -137,7 +135,7 @@ export const AttendanceStatusScreen = observer(({ navigation }: Props) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.actionButton, styles.secondaryButton]}
-                    onPress={() => navigation.navigate('DeviceSetup')}
+                    onPress={() => router.push('/student/(stack)/device-setup')}
                 >
                     <Text style={[styles.actionButtonText, styles.secondaryButtonText]}>
                         Device Setup
