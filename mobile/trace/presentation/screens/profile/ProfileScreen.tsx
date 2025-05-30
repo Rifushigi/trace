@@ -8,7 +8,7 @@ import { colors } from '../../../shared/constants/theme';
 
 export const ProfileScreen = observer(() => {
     const { authStore } = useStores();
-    const { user } = authStore.authState;
+    const user = authStore.state.user;
 
     const handleLogout = async () => {
         Alert.alert(
@@ -106,7 +106,7 @@ export const ProfileScreen = observer(() => {
                 return (
                     <TouchableOpacity
                         style={styles.actionButton}
-                        onPress={() => router.push('/device-setup')}
+                        onPress={() => router.push('/student/(stack)/device-setup')}
                     >
                         <Text style={styles.actionButtonText}>Device Setup</Text>
                     </TouchableOpacity>
