@@ -12,7 +12,7 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { MaterialIcons } from '@expo/vector-icons';
-import { BarChart, LineChart } from 'react-native-chart-kit';
+import { LineChart } from 'react-native-chart-kit';
 import { format } from 'date-fns';
 
 interface AttendanceMetrics {
