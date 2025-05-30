@@ -4,16 +4,11 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { LecturerStackParamList } from '../../../navigation/types';
-import { Lecturer } from '../../../domain/entities/User';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-type Props = NativeStackScreenProps<LecturerStackParamList, 'StudentAnalytics'>;
-
-export const StudentAnalyticsScreen = observer(({ navigation, route }: Props) => {
+export const StudentAnalyticsScreen = observer(({ route }: { route: { params: { studentId: string } } }) => {
     const { authStore } = useStores();
-    const user = authStore.authState.user as Lecturer;
-    const { studentId } = route.params;
+    const user = authStore.state.user;
+    const { studentId } = route.params as { studentId: string };
 
     // Mock data - replace with actual data from your backend
     const [studentData, setStudentData] = useState({
