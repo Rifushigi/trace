@@ -15,7 +15,7 @@ interface FormData extends RegisterData {
     confirmPassword: string;
 }
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 24;
 
 export const RegisterScreen = observer(() => {
