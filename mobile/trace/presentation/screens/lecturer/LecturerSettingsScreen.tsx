@@ -4,15 +4,10 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { LecturerStackParamList } from '../../../navigation/types';
-import { Lecturer } from '../../../domain/entities/User';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-type Props = NativeStackScreenProps<LecturerStackParamList, 'LecturerSettings'>;
-
-export const LecturerSettingsScreen = observer(({ navigation }: Props) => {
+export const LecturerSettingsScreen = observer(() => {
     const { authStore } = useStores();
-    const user = authStore.authState.user as Lecturer;
+    const user = authStore.state.user;
 
     // Session Preferences
     const [sessionSettings, setSessionSettings] = useState({
