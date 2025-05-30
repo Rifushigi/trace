@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+import { check, request, RESULTS, PERMISSIONS } from 'react-native-permissions';
 import { BleManager } from 'react-native-ble-plx';
 
 const bleManager = new BleManager();
