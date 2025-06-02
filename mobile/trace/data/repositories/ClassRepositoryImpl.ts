@@ -1,6 +1,6 @@
-import { Class } from '../../domain/entities/Class';
-import { ClassRepository } from '../../domain/repositories/ClassRepository';
-import { ClassApi } from '../datasources/remote/ClassApi';
+import { Class } from '@/domain/entities/Class';
+import { ClassRepository } from '@/domain/repositories/ClassRepository';
+import { ClassApi } from '@/data/datasources/remote/ClassApi';
 
 export class ClassRepositoryImpl implements ClassRepository {
     constructor(private classApi: ClassApi) { }

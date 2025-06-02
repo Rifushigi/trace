@@ -1,6 +1,6 @@
-import { UserUseCase } from '../UserUseCase';
-import { User } from '../../../entities/User';
-import { UserRepository } from '../../../repositories/UserRepository';
+import { UserUseCase } from '@/domain/usecases/user/UserUseCase';
+import { User } from '@/domain/entities/User';
+import { UserRepository } from '@/domain/repositories/UserRepository';
 
 export class UserUseCaseImpl implements UserUseCase {
     constructor(private readonly userRepository: UserRepository) { }

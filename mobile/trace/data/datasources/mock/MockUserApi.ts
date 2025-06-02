@@ -1,5 +1,4 @@
-import { User, Student, Lecturer, AttendanceStats } from '../../../domain/entities/User';
-import { IUserApi } from '../../../domain/repositories/UserRepository';
+import { User, Student, Lecturer, IUserApi } from '@/domain/entities/User';
 
 export class MockUserApi implements IUserApi {
     private readonly BASE_URL = '/api/users';

@@ -1,6 +1,6 @@
-import { ProfileUseCase } from '../ProfileUseCase';
-import { User } from '../../../entities/User';
-import { ProfileRepository } from '../../../repositories/ProfileRepository';
+import { ProfileUseCase } from '@/domain/usecases/profile/ProfileUseCase';
+import { User } from '@/domain/entities/User';
+import { ProfileRepository } from '@/domain/repositories/ProfileRepository';
 
 export class ProfileUseCaseImpl implements ProfileUseCase {
     constructor(private readonly profileRepository: ProfileRepository) { }

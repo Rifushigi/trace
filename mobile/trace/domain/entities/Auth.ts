@@ -1,4 +1,4 @@
-import { User } from './User';
+import { User } from '@/domain/entities/User';
 
 export interface AuthTokens {
     accessToken: string;

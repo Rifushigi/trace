@@ -1,4 +1,4 @@
-import { Class } from '../entities/Class';
+import { Class } from '@/domain/entities/Class';
 
 export interface ClassRepository {
     getClass(id: string): Promise<Class | null>;

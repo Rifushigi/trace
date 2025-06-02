@@ -1,4 +1,4 @@
-import { AppError, NetworkError, AuthError, ValidationError, NotFoundError, ServerError } from '../domain/errors/AppError';
+import { AppError, NetworkError, AuthError, ValidationError, NotFoundError, ServerError } from '@/shared/errors/AppError';
 import { AxiosError, isAxiosError } from 'axios';
 
 interface ErrorResponse {

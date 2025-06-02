@@ -1,4 +1,4 @@
-import { Lecturer, Student } from './User';
+import { Lecturer, Student } from '@/domain/entities/User';
 
 export interface Class {
     id: string;

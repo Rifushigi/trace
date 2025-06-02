@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import { useStores } from '../stores';
+import { useStores } from '@/stores';
 import { observer } from 'mobx-react-lite';
 
 export default observer(function Index() {

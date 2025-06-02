@@ -1,6 +1,6 @@
-import { AttendanceUseCase } from '../AttendanceUseCase';
-import { AttendanceRepository } from '../../../repositories/AttendanceRepository';
-import { AttendanceSession, AttendanceRecord } from '../../../entities/Attendance';
+import { AttendanceUseCase } from '@/domain/usecases/attendance/AttendanceUseCase';
+import { AttendanceRepository } from '@/domain/repositories/AttendanceRepository';
+import { AttendanceSession, AttendanceRecord } from '@/domain/entities/Attendance';
 
 
 // orchestration entities and validation logic

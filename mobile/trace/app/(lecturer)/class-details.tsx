@@ -1,2 +1,2 @@
-import { ClassDetailsScreen } from '../../presentation/screens/lecturer/ClassDetailsScreen';
+import { ClassDetailsScreen } from '@/presentation/screens/lecturer/ClassDetailsScreen';
 export default ClassDetailsScreen; 

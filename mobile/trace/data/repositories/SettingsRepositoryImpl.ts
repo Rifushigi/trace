@@ -1,6 +1,6 @@
-import { SettingsRepository } from '../../domain/repositories/SettingsRepository';
-import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '../../domain/entities/Settings';
-import { SettingsApi } from '../datasources/remote/SettingsApi';
+import { SettingsRepository } from '@/domain/repositories/SettingsRepository';
+import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
+import { SettingsApi } from '@/data/datasources/remote/SettingsApi';
 
 export class SettingsRepositoryImpl implements SettingsRepository {
     constructor(private readonly settingsApi: SettingsApi) { }

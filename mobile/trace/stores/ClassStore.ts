@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
-import { ClassUseCase } from '../domain/usecases/class/ClassUseCase';
-import { Class } from '../domain/entities/Class';
+import { ClassUseCase } from '@/domain/usecases/class/ClassUseCase';
+import { Class } from '@/domain/entities/Class';
 
 export class ClassStore {
     public readonly classUseCase: ClassUseCase;

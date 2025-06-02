@@ -1,6 +1,6 @@
-import { ProfileRepository } from '../../domain/repositories/ProfileRepository';
-import { User } from '../../domain/entities/User';
-import { ProfileApi } from '../datasources/remote/ProfileApi';
+import { ProfileRepository } from '@/domain/repositories/ProfileRepository';
+import { User } from '@/domain/entities/User';
+import { ProfileApi } from '@/data/datasources/remote/ProfileApi';
 
 export class ProfileRepositoryImpl implements ProfileRepository {
     constructor(private readonly profileApi: ProfileApi) { }

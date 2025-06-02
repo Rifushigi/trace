@@ -36,4 +36,10 @@ export interface Lecturer extends User {
 
 export interface Admin extends User {
     role: 'admin';
-} 
+}
+
+export interface IUserApi {
+    getAllUsers(): Promise<User[]>;
+    deleteUser(userId: string): Promise<void>;
+    verifyUser(userId: string): Promise<void>;
+}

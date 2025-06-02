@@ -1,2 +1,2 @@
-import { ForgotPasswordScreen } from '../../presentation/screens/auth/ForgotPasswordScreen';
+import { ForgotPasswordScreen } from '@/presentation/screens/auth/ForgotPasswordScreen';
 export default ForgotPasswordScreen; 

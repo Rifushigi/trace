@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RoleSelectionScreen, UserRole } from '../../../presentation/screens/auth/RoleSelectionScreen';
+import { RoleSelectionScreen, UserRole } from '@/presentation/screens/auth/RoleSelectionScreen';
 
 export default function RoleSelectionRoute() {
     const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);

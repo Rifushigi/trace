@@ -1,5 +1,5 @@
-import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '../../../domain/entities/Settings';
-import { axiosInstance } from '../../../infrastructure/network/axiosInstance';
+import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
+import { axiosInstance } from '@/infrastructure/network/axiosInstance';
 
 export class SettingsApi {
     private readonly BASE_URL = '/settings';

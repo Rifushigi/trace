@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { AppError, ServerError } from '../domain/errors/AppError';
-import { handleError } from '../utils/errorHandler';
+import { AppError, ServerError } from '@/shared/errors/AppError';
+import { handleError } from '@/shared/errors/errorHandler';
 
 interface Props {
     children: ReactNode;

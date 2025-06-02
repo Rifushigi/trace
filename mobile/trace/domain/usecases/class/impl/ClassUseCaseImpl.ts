@@ -1,6 +1,6 @@
-import { Class } from '../../../entities/Class';
-import { ClassRepository } from '../../../repositories/ClassRepository';
-import { ClassUseCase } from '../ClassUseCase';
+import { Class } from '@/domain/entities/Class';
+import { ClassRepository } from '@/domain/repositories/ClassRepository';
+import { ClassUseCase } from '@/domain/usecases/class/ClassUseCase';
 
 // orchestration entities and validation logic
 export class ClassUseCaseImpl implements ClassUseCase {

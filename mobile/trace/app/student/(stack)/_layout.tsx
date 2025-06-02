@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { colors } from '../../../shared/constants/theme';
+import { colors } from '@/shared/constants/theme';
 
 export default function StudentStackLayout() {
     return (

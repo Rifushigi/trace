@@ -1,5 +1,5 @@
-import { User } from '../../domain/entities/User';
-import { UserRepository, IUserApi } from '../../domain/repositories/UserRepository';
+import { User, IUserApi } from '@/domain/entities/User';
+import { UserRepository } from '@/domain/repositories/UserRepository';
 
 export class UserRepositoryImpl implements UserRepository {
     constructor(private readonly api: IUserApi) { }

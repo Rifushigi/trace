@@ -1,2 +1,2 @@
-import { UserManagementScreen } from '../../presentation/screens/admin/UserManagementScreen';
+import { UserManagementScreen } from '@/presentation/screens/admin/UserManagementScreen';
 export default UserManagementScreen; 

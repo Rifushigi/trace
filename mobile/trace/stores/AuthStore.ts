@@ -225,7 +225,7 @@ export class AuthStore {
                             error: null
                         };
                     });
-                    return null;
+
                 }
             }
 

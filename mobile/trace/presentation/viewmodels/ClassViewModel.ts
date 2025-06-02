@@ -1,8 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import { ClassUseCase } from '../../domain/usecases/class/ClassUseCase';
 import { Class } from '../../domain/entities/Class';
-import { ClassError } from '../../domain/errors/AppError';
-import { handleError } from '../../utils/errorHandler';
+import { ClassError } from '../../shared/errors/AppError';
+import { handleError } from '../../shared/errors/errorHandler';
 
 export class ClassViewModel {
     public readonly classUseCase: ClassUseCase;

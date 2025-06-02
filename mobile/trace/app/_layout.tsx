@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Stack } from "expo-router";
-import { useStores } from '../stores';
+import { useStores } from '@/stores';
 import { observer } from 'mobx-react-lite';
 import { View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import StoreProvider from '../stores/StoreProvider';
-import { Container } from '../di/container';
-import { ErrorBoundary } from '../components/ErrorBoundary';
+import { Container } from '@/di/container';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 function RootLayoutContent() {
     const { authStore } = useStores();

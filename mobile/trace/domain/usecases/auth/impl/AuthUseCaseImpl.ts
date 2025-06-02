@@ -1,4 +1,4 @@
-import { AuthUseCase } from '../AuthUseCase';
+import { AuthUseCase } from '@/domain/usecases/auth/AuthUseCase';
 import { AuthRepository } from '@/domain/repositories/AuthRepository';
 import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '@/domain/entities/Auth';
 import { User } from '@/domain/entities/User';
@@ -65,6 +65,8 @@ export class AuthUseCaseImpl implements AuthUseCase {
         return tokensJson ? JSON.parse(tokensJson) : null;
     }
 
+
+    // Move storage logic to a separate class
     async clearStoredTokens(): Promise<void> {
         await AsyncStorage.removeItem('auth_tokens');
     }

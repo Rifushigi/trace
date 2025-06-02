@@ -1,8 +1,8 @@
 import { makeAutoObservable } from 'mobx';
-import { SettingsUseCase } from '../domain/usecases/settings/SettingsUseCase';
-import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '../domain/entities/Settings';
-import { SettingsError } from '../domain/errors/AppError';
-import { handleError } from '../utils/errorHandler';
+import { SettingsUseCase } from '@/domain/usecases/settings/SettingsUseCase';
+import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
+import { SettingsError } from '@/shared/errors/AppError';
+import { handleError } from '@/shared/errors/errorHandler';
 
 export class SettingsStore {
     public readonly settingsUseCase: SettingsUseCase;

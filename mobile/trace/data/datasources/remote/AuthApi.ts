@@ -1,6 +1,6 @@
-import { axiosInstance } from '../../../infrastructure/network/axiosInstance';
-import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm, IAuthApi } from '../../../domain/entities/Auth';
-import { User } from '../../../domain/entities/User';
+import { axiosInstance } from '@/infrastructure/network/axiosInstance';
+import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm, IAuthApi } from '@/domain/entities/Auth';
+import { User } from '@/domain/entities/User';
 
 export class AuthApi implements IAuthApi {
     readonly BASE_URL = '/auth';

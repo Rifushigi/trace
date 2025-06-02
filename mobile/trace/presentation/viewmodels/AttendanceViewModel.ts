@@ -1,8 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import { AttendanceUseCase } from '../../domain/usecases/attendance/AttendanceUseCase';
 import { AttendanceSession, AttendanceRecord } from '../../domain/entities/Attendance';
-import { AttendanceError } from '../../domain/errors/AppError';
-import { handleError } from '../../utils/errorHandler';
+import { AttendanceError } from '../../shared/errors/AppError';
+import { handleError } from '../../shared/errors/errorHandler';
 
 export class AttendanceViewModel {
     public readonly attendanceUseCase: AttendanceUseCase;

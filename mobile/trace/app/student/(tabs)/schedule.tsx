@@ -1,2 +1,2 @@
-import { ScheduleScreen } from '../../../presentation/screens/student/ScheduleScreen';
+import { ScheduleScreen } from '@/presentation/screens/student/ScheduleScreen';
 export default ScheduleScreen; 

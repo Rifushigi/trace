@@ -1,4 +1,4 @@
-import { AttendanceRecord, AttendanceSession } from '../entities/Attendance';
+import { AttendanceRecord, AttendanceSession } from '@/domain/entities/Attendance';
 
 export interface AttendanceRepository {
     getSession(id: string): Promise<AttendanceSession | null>;

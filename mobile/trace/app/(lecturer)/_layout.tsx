@@ -1,8 +1,8 @@
 import { Stack, router } from 'expo-router';
 import { TouchableOpacity, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useStores } from '../../stores';
-import { colors } from '../../shared/constants/theme';
+import { useStores } from '@/stores';
+import { colors } from '@/shared/constants/theme';
 import { observer } from 'mobx-react-lite';
 
 const LecturerLayout = observer(() => {

@@ -1,3 +1,3 @@
-import { AttendanceHistoryScreen } from '../../../presentation/screens/student/AttendanceHistoryScreen';
+import { AttendanceHistoryScreen } from '@/presentation/screens/student/AttendanceHistoryScreen';
 
 export default AttendanceHistoryScreen;

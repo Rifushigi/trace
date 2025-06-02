@@ -1,5 +1,5 @@
-import { Class } from '../../../domain/entities/Class';
-import { axiosInstance } from '../../../infrastructure/network/axiosInstance';
+import { Class } from '@/domain/entities/Class';
+import { axiosInstance } from '@/infrastructure/network/axiosInstance';
 
 export class ClassApi {
     private readonly baseUrl = '/classes';

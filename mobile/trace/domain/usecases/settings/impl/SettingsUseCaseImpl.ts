@@ -1,6 +1,6 @@
-import { SettingsUseCase } from '../SettingsUseCase';
-import { SettingsRepository } from '../../../repositories/SettingsRepository';
-import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '../../../entities/Settings';
+import { SettingsUseCase } from '@/domain/usecases/settings/SettingsUseCase';
+import { SettingsRepository } from '@/domain/repositories/SettingsRepository';
+import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
 
 export class SettingsUseCaseImpl implements SettingsUseCase {
     constructor(private settingsRepository: SettingsRepository) { }

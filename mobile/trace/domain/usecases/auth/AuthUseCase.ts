@@ -1,5 +1,5 @@
-import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '../../entities/Auth';
-import { User } from '../../entities/User';
+import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '@/domain/entities/Auth';
+import { User } from '@/domain/entities/User';
 
 export interface AuthUseCase {
     login(credentials: LoginCredentials): Promise<{ user: User; tokens: AuthTokens }>;

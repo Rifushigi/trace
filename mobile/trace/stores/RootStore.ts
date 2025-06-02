@@ -1,13 +1,13 @@
-import { AuthUseCase } from '../domain/usecases/auth/AuthUseCase';
-import { ProfileUseCase } from '../domain/usecases/profile/ProfileUseCase';
-import { SettingsUseCase } from '../domain/usecases/settings/SettingsUseCase';
-import { ClassUseCase } from '../domain/usecases/class/ClassUseCase';
-import { AttendanceUseCase } from '../domain/usecases/attendance/AttendanceUseCase';
-import { UserUseCase } from '../domain/usecases/user/UserUseCase';
-import { AuthStore } from './AuthStore';
-import { SettingsStore } from './SettingsStore';
-import { ClassStore } from './ClassStore';
-import { AttendanceStore } from './AttendanceStore';
+import { AuthUseCase } from '@/domain/usecases/auth/AuthUseCase';
+import { ProfileUseCase } from '@/domain/usecases/profile/ProfileUseCase';
+import { SettingsUseCase } from '@/domain/usecases/settings/SettingsUseCase';
+import { ClassUseCase } from '@/domain/usecases/class/ClassUseCase';
+import { AttendanceUseCase } from '@/domain/usecases/attendance/AttendanceUseCase';
+import { UserUseCase } from '@/domain/usecases/user/UserUseCase';
+import { AuthStore } from '@/stores/AuthStore';
+import { SettingsStore } from '@/stores/SettingsStore';
+import { ClassStore } from '@/stores/ClassStore';
+import { AttendanceStore } from '@/stores/AttendanceStore';
 
 export class RootStore {
     public readonly authStore: AuthStore;

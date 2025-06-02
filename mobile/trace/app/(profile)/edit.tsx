@@ -1,2 +1,2 @@
-import { EditProfileScreen } from '../../presentation/screens/profile/EditProfileScreen';
+import { EditProfileScreen } from '@/presentation/screens/profile/EditProfileScreen';
 export default EditProfileScreen; 

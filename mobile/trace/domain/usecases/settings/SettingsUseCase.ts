@@ -1,4 +1,4 @@
-import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '../../entities/Settings';
+import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
 
 export interface SettingsUseCase {
     getSettings(): Promise<AppSettings>;

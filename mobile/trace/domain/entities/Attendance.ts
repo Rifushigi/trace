@@ -1,5 +1,5 @@
-import { Class } from './Class';
-import { Student } from './User';
+import { Class } from '@/domain/entities/Class';
+import { Student } from '@/domain/entities/User';
 
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 

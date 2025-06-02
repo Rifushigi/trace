@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
-import { AttendanceUseCase } from '../domain/usecases/attendance/AttendanceUseCase';
-import { AttendanceSession, AttendanceRecord } from '../domain/entities/Attendance';
+import { AttendanceUseCase } from '@/domain/usecases/attendance/AttendanceUseCase';
+import { AttendanceSession, AttendanceRecord } from '@/domain/entities/Attendance';
+import { handleError } from '@/shared/errors/errorHandler';
 
 export class AttendanceStore {
     public readonly attendanceUseCase: AttendanceUseCase;
@@ -25,7 +26,7 @@ export class AttendanceStore {
             return session;
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to fetch session';
-            throw error;
+            return handleError(error);
         } finally {
             this.isLoading = false;
         }
@@ -38,7 +39,7 @@ export class AttendanceStore {
             this.sessions = await this.attendanceUseCase.getSessions(classId);
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to fetch sessions';
-            throw error;
+            return handleError(error);
         } finally {
             this.isLoading = false;
         }
@@ -53,7 +54,7 @@ export class AttendanceStore {
             return session;
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to create session';
-            throw error;
+            return handleError(error);
         } finally {
             this.isLoading = false;
         }
@@ -74,7 +75,7 @@ export class AttendanceStore {
             return updatedSession;
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to update session';
-            throw error;
+            return handleError(error);
         } finally {
             this.isLoading = false;
         }
@@ -91,7 +92,7 @@ export class AttendanceStore {
             }
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to delete session';
-            throw error;
+            return handleError(error);
         } finally {
             this.isLoading = false;
         }
@@ -108,7 +109,7 @@ export class AttendanceStore {
             return record;
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to mark attendance';
-            throw error;
+            return handleError(error);
         } finally {
             this.isLoading = false;
         }
@@ -121,7 +122,7 @@ export class AttendanceStore {
             return await this.attendanceUseCase.getStudentAttendance(studentId, classId);
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to fetch student attendance';
-            throw error;
+            return handleError(error);
         } finally {
             this.isLoading = false;
         }
@@ -138,7 +139,7 @@ export class AttendanceStore {
             return session;
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to fetch class attendance';
-            throw error;
+            return handleError(error);
         } finally {
             this.isLoading = false;
         }

@@ -1,5 +1,5 @@
-import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm, IAuthApi } from '../../../domain/entities/Auth';
-import { User, Student, Lecturer } from '../../../domain/entities/User';
+import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm, IAuthApi } from '@/domain/entities/Auth';
+import { User, Student, Lecturer } from '@/domain/entities/User';
 
 export class MockAuthApi implements IAuthApi {
 

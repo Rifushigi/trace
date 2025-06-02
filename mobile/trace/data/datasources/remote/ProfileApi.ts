@@ -1,5 +1,5 @@
-import { User } from '../../../domain/entities/User';
-import { axiosInstance } from '../../../infrastructure/network/axiosInstance';
+import { User } from '@/domain/entities/User';
+import { axiosInstance } from '@/infrastructure/network/axiosInstance';
 
 export class ProfileApi {
     private readonly BASE_URL = '/profile';

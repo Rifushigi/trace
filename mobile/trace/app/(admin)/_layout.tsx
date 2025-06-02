@@ -1,8 +1,8 @@
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
-import { useStores } from '../../stores';
-import { colors } from '../../shared/constants/theme';
+import { useStores } from '@/stores';
+import { colors } from '@/shared/constants/theme';
 
 export default function AdminLayout() {
     const { authStore } = useStores();
