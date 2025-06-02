@@ -1,9 +1,5 @@
-export interface AttendanceStats {
-    totalClasses: number;
-    attendedClasses: number;
-    attendanceRate: number;
-    lastAttendance?: Date;
-}
+import { AttendanceStats } from "@/domain/entities/Attendance";
+
 
 export interface User {
     id: string;
