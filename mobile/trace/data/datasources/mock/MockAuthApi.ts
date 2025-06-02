@@ -1,5 +1,7 @@
 import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm, IAuthApi } from '@/domain/entities/Auth';
 import { User, Student, Lecturer } from '@/domain/entities/User';
+import { AppError } from '@/shared/errors/AppError';
+import { handleError } from '@/shared/errors/errorHandler';
 
 export class MockAuthApi implements IAuthApi {
 
@@ -45,7 +47,7 @@ export class MockAuthApi implements IAuthApi {
         }
     ];
 
-    async login(credentials: LoginCredentials): Promise<{ user: User; tokens: AuthTokens }> {
+    async login(credentials: LoginCredentials): Promise<{ user: User; tokens: AuthTokens } | AppError> {
         // const user = this.mockUsers.find(u => u.email === credentials.email);
         // if (!user || credentials.password !== 'password') {
         //     throw new Error('Invalid credentials');
@@ -62,10 +64,10 @@ export class MockAuthApi implements IAuthApi {
         };
     }
 
-    async register(data: RegisterData): Promise<{ user: User; tokens: AuthTokens }> {
+    async register(data: RegisterData): Promise<{ user: User; tokens: AuthTokens } | AppError> {
         // Simulate email check
         if (this.mockUsers.some(u => u.email === data.email)) {
-            throw new Error('Email already exists');
+            handleError(new Error('Email already exists'));
         }
 
         const now = new Date();
@@ -118,11 +120,11 @@ export class MockAuthApi implements IAuthApi {
         };
     }
 
-    async logout(): Promise<void> {
+    async logout(): Promise<void | AppError> {
         // Mock logout - no action needed
     }
 
-    async refreshToken(refreshToken: string): Promise<AuthTokens> {
+    async refreshToken(refreshToken: string): Promise<AuthTokens | AppError> {
         return {
             accessToken: 'new-mock-access-token',
             refreshToken: 'new-mock-refresh-token',
@@ -130,27 +132,27 @@ export class MockAuthApi implements IAuthApi {
         };
     }
 
-    async requestPasswordReset(data: PasswordResetRequest): Promise<void> {
+    async requestPasswordReset(data: PasswordResetRequest): Promise<void | AppError> {
         // Mock password reset request - no action needed
     }
 
-    async confirmPasswordReset(data: PasswordResetConfirm): Promise<void> {
+    async confirmPasswordReset(data: PasswordResetConfirm): Promise<void | AppError> {
         // Mock password reset confirmation - no action needed
     }
 
-    async verifyEmail(token: string): Promise<void> {
+    async verifyEmail(token: string): Promise<void | AppError> {
         // Mock email verification - no action needed
     }
 
-    async getCurrentUser(): Promise<User | null> {
+    async getCurrentUser(): Promise<User | null | AppError> {
         return this.mockUsers[0];
     }
 
-    async updatePassword(oldPassword: string, newPassword: string): Promise<void> {
+    async updatePassword(oldPassword: string, newPassword: string): Promise<void | AppError> {
         // Mock password update - no action needed
     }
 
-    async updateProfile(data: Partial<User>): Promise<User> {
+    async updateProfile(data: Partial<User>): Promise<User | AppError> {
         const user = this.mockUsers[0];
         const updatedUser = { ...user, ...data, updatedAt: new Date() };
         this.mockUsers[0] = updatedUser;
