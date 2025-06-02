@@ -1,4 +1,4 @@
-import { UserUseCase } from '@/domain/usecases/user/UserUseCase';
+import { UserUseCase } from '@/domain/services/user/UserService';
 import { User } from '@/domain/entities/User';
 import { UserRepository } from '@/domain/repositories/UserRepository';
 

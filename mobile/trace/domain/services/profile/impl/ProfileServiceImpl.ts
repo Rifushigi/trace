@@ -1,4 +1,4 @@
-import { ProfileUseCase } from '@/domain/usecases/profile/ProfileUseCase';
+import { ProfileUseCase } from '@/domain/services/profile/ProfileService';
 import { User } from '@/domain/entities/User';
 import { ProfileRepository } from '@/domain/repositories/ProfileRepository';
 

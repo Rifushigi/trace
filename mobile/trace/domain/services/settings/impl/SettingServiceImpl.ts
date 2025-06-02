@@ -1,4 +1,4 @@
-import { SettingsUseCase } from '@/domain/usecases/settings/SettingsUseCase';
+import { SettingsUseCase } from '@/domain/services/settings/SettingService';
 import { SettingsRepository } from '@/domain/repositories/SettingsRepository';
 import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
 

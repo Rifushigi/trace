@@ -1,4 +1,4 @@
-import { AttendanceUseCase } from '@/domain/usecases/attendance/AttendanceUseCase';
+import { AttendanceUseCase } from '@/domain/services/attendance/AttendanceService';
 import { AttendanceRepository } from '@/domain/repositories/AttendanceRepository';
 import { AttendanceSession, AttendanceRecord } from '@/domain/entities/Attendance';
 

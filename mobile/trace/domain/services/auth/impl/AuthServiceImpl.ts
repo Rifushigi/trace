@@ -1,4 +1,4 @@
-import { AuthUseCase } from '@/domain/usecases/auth/AuthUseCase';
+import { AuthUseCase } from '@/domain/services/auth/AuthService';
 import { AuthRepository } from '@/domain/repositories/AuthRepository';
 import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '@/domain/entities/Auth';
 import { User } from '@/domain/entities/User';
