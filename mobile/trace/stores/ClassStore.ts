@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { ClassUseCase } from '@/domain/usecases/class/ClassUseCase';
+import { ClassUseCase } from '@/domain/services/class/ClassService';
 import { Class } from '@/domain/entities/Class';
 
 export class ClassStore {

@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { SettingsUseCase } from '@/domain/usecases/settings/SettingsUseCase';
+import { SettingsUseCase } from '@/domain/services/settings/SettingService';
 import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
 import { SettingsError } from '@/shared/errors/AppError';
 import { handleError } from '@/shared/errors/errorHandler';

@@ -1,9 +1,9 @@
-import { AuthUseCase } from '@/domain/usecases/auth/AuthUseCase';
-import { ProfileUseCase } from '@/domain/usecases/profile/ProfileUseCase';
-import { SettingsUseCase } from '@/domain/usecases/settings/SettingsUseCase';
-import { ClassUseCase } from '@/domain/usecases/class/ClassUseCase';
-import { AttendanceUseCase } from '@/domain/usecases/attendance/AttendanceUseCase';
-import { UserUseCase } from '@/domain/usecases/user/UserUseCase';
+import { AuthUseCase } from '@/domain/services/auth/AuthService';
+import { ProfileUseCase } from '@/domain/services/profile/ProfileService';
+import { SettingsUseCase } from '@/domain/services/settings/SettingService';
+import { ClassUseCase } from '@/domain/services/class/ClassService';
+import { AttendanceUseCase } from '@/domain/services/attendance/AttendanceService';
+import { UserUseCase } from '@/domain/services/user/UserService';
 import { AuthStore } from '@/stores/AuthStore';
 import { SettingsStore } from '@/stores/SettingsStore';
 import { ClassStore } from '@/stores/ClassStore';

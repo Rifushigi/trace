@@ -1,7 +1,7 @@
 import { makeAutoObservable, action, runInAction } from 'mobx';
-import { AuthUseCase } from '../domain/usecases/auth/AuthUseCase';
-import { ProfileUseCase } from '../domain/usecases/profile/ProfileUseCase';
-import { UserUseCase } from '../domain/usecases/user/UserUseCase';
+import { AuthUseCase } from '../domain/services/auth/AuthService';
+import { ProfileUseCase } from '../domain/services/profile/ProfileService';
+import { UserUseCase } from '../domain/services/user/UserService';
 import { AuthState, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '../domain/entities/Auth';
 import { User } from '../domain/entities/User';
 import { features } from '../config/features';

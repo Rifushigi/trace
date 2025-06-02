@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { AttendanceUseCase } from '@/domain/usecases/attendance/AttendanceUseCase';
+import { AttendanceUseCase } from '@/domain/services/attendance/AttendanceService';
 import { AttendanceSession, AttendanceRecord } from '@/domain/entities/Attendance';
 import { handleError } from '@/shared/errors/errorHandler';
 
