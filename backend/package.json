@@ -65,9 +65,10 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "firebase/util",
+      "@firebase/util",
       "bcrypt",
       "esbuild",
+      "firebase/util",
       "protobufjs"
     ]
   }
