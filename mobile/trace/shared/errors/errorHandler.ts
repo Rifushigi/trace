@@ -57,4 +57,19 @@ export const getErrorMessage = (error: unknown): string => {
         return error.message;
     }
     return 'An unexpected error occurred';
+};
+
+export const withErrorHandling = async <T>(
+    fn: () => Promise<T>,
+    errorMessage?: string
+): Promise<T> => {
+    try {
+        return await fn();
+    } catch (error) {
+        const handledError = handleError(error);
+        if (errorMessage) {
+            handledError.message = errorMessage;
+        }
+        throw handledError;
+    }
 }; 

@@ -1,97 +1,138 @@
 import { Class } from '@/domain/entities/Class';
 import { ClassRepository } from '@/domain/repositories/ClassRepository';
 import { ClassApi } from '@/data/datasources/remote/ClassApi';
+import { AppError, RepositoryError } from '@/shared/errors/AppError';
 
 export class ClassRepositoryImpl implements ClassRepository {
     constructor(private classApi: ClassApi) { }
 
-    async getClass(id: string): Promise<Class | null> {
+    async getClass(id: string): Promise<Class | AppError> {
         try {
             return await this.classApi.getClass(id);
         } catch (error) {
-            console.error('Error getting class:', error);
-            return null;
+            throw new RepositoryError(
+                'Error getting class',
+                'ClassRepository',
+                'getClass',
+                error
+            );
         }
     }
 
-    async getClasses(): Promise<Class[]> {
+    async getClasses(): Promise<Class[] | AppError> {
         try {
             return await this.classApi.getClasses();
         } catch (error) {
-            console.error('Error getting classes:', error);
-            return [];
+            throw new RepositoryError(
+                'Error getting classes',
+                'ClassRepository',
+                'getClasses',
+                error
+            );
         }
     }
 
-    async createClass(data: Omit<Class, 'id' | 'createdAt' | 'updatedAt'>): Promise<Class> {
+    async createClass(data: Omit<Class, 'id' | 'createdAt' | 'updatedAt'>): Promise<Class | AppError> {
         try {
             return await this.classApi.createClass(data);
         } catch (error) {
-            console.error('Error creating class:', error);
-            throw error;
+            throw new RepositoryError(
+                'Error creating class',
+                'ClassRepository',
+                'createClass',
+                error
+            );
         }
     }
 
-    async updateClass(id: string, data: Partial<Class>): Promise<Class> {
+    async updateClass(id: string, data: Partial<Class>): Promise<Class | AppError> {
         try {
             return await this.classApi.updateClass(id, data);
         } catch (error) {
-            console.error('Error updating class:', error);
-            throw error;
+            throw new RepositoryError(
+                'Error updating class',
+                'ClassRepository',
+                'updateClass',
+                error
+            );
         }
     }
 
-    async deleteClass(id: string): Promise<void> {
+    async deleteClass(id: string): Promise<void | AppError> {
         try {
             await this.classApi.deleteClass(id);
         } catch (error) {
-            console.error('Error deleting class:', error);
-            throw error;
+            throw new RepositoryError(
+                'Error deleting class',
+                'ClassRepository',
+                'deleteClass',
+                error
+            );
         }
     }
 
-    async addStudent(classId: string, studentId: string): Promise<void> {
+    async addStudent(classId: string, studentId: string): Promise<void | AppError> {
         try {
             await this.classApi.addStudent(classId, studentId);
         } catch (error) {
-            console.error('Error adding student to class:', error);
-            throw error;
+            throw new RepositoryError(
+                'Error adding student to class',
+                'ClassRepository',
+                'addStudent',
+                error
+            );
         }
     }
 
-    async removeStudent(classId: string, studentId: string): Promise<void> {
+    async removeStudent(classId: string, studentId: string): Promise<void | AppError> {
         try {
             await this.classApi.removeStudent(classId, studentId);
         } catch (error) {
-            console.error('Error removing student from class:', error);
-            throw error;
+            throw new RepositoryError(
+                'Error removing student from class',
+                'ClassRepository',
+                'removeStudent',
+                error
+            );
         }
     }
 
-    async getLecturerClasses(lecturerId: string): Promise<Class[]> {
+    async getLecturerClasses(lecturerId: string): Promise<Class[] | AppError> {
         try {
             return await this.classApi.getLecturerClasses(lecturerId);
         } catch (error) {
-            console.error('Error getting lecturer classes:', error);
-            return [];
+            throw new RepositoryError(
+                'Error getting lecturer classes',
+                'ClassRepository',
+                'getLecturerClasses',
+                error
+            );
         }
     }
 
-    async getStudentClasses(studentId: string): Promise<Class[]> {
+    async getStudentClasses(studentId: string): Promise<Class[] | AppError> {
         try {
             return await this.classApi.getStudentClasses(studentId);
         } catch (error) {
-            console.error('Error getting student classes:', error);
-            return [];
+            throw new RepositoryError(
+                'Error getting student classes',
+                'ClassRepository',
+                'getStudentClasses',
+                error
+            );
         }
     }
 
-    async searchClasses(query: string): Promise<Class[]> {
+    async searchClasses(query: string): Promise<Class[] | AppError> {
         try {
             return await this.classApi.searchClasses(query);
         } catch (error) {
-            console.error('Error searching classes:', error);
-            return [];
+            throw new RepositoryError(
+                'Error searching classes',
+                'ClassRepository',
+                'searchClasses',
+                error
+            );
         }
     }
 } 

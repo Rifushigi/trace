@@ -28,4 +28,11 @@ export interface AttendanceSession {
     records: AttendanceRecord[];
     createdAt: Date;
     updatedAt: Date;
-} 
+}
+
+export interface AttendanceStats {
+    totalClasses: number;
+    attendedClasses: number;
+    attendanceRate: number;
+    lastAttendance?: Date;
+}
