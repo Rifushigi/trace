@@ -64,4 +64,16 @@ export class ClassError extends AppError {
         super(message, 'CLASS_ERROR', 500, originalError);
         this.name = 'ClassError';
     }
+}
+
+export class RepositoryError extends AppError {
+    constructor(
+        message: string,
+        public readonly repository: string,
+        public readonly operation: string,
+        originalError?: unknown
+    ) {
+        super(message, 'REPOSITORY_ERROR', 500, originalError);
+        this.name = 'RepositoryError';
+    }
 } 
