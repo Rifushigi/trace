@@ -1,33 +1,44 @@
-import { AuthUseCase } from '@/domain/services/auth/AuthService';
+import { AuthService } from '@/domain/services/auth/AuthService';
 import { AuthRepository } from '@/domain/repositories/AuthRepository';
 import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '@/domain/entities/Auth';
 import { User } from '@/domain/entities/User';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppError } from '@/shared/errors/AppError';
+import { AuthStorage } from '@/infrastructure/storage/AuthStorage';
 
 // orchestration entities and validation logic
-export class AuthUseCaseImpl implements AuthUseCase {
+export class AuthServiceImpl implements AuthService {
     constructor(private readonly authRepository: AuthRepository) { }
+    private readonly storage = AuthStorage;
 
     async login(credentials: LoginCredentials): Promise<{ user: User; tokens: AuthTokens }> {
         const result = await this.authRepository.login(credentials);
-        await this.storeTokens(result.tokens);
+        if (result instanceof AppError) {
+            throw result;
+        }
+        await this.storage.storeTokens(result.tokens);
         return result;
     }
 
     async register(data: RegisterData): Promise<{ user: User; tokens: AuthTokens }> {
         const result = await this.authRepository.register(data);
-        await this.storeTokens(result.tokens);
+        if (result instanceof AppError) {
+            throw result;
+        }
+        await this.storage.storeTokens(result.tokens);
         return result;
     }
 
     async logout(): Promise<void> {
         await this.authRepository.logout();
-        await this.clearStoredTokens();
+        await this.storage.removeStoredTokens();
     }
 
     async refreshToken(refreshToken: string): Promise<AuthTokens> {
         const tokens = await this.authRepository.refreshToken(refreshToken);
-        await this.storeTokens(tokens);
+        if (tokens instanceof AppError) {
+            throw tokens;
+        }
+        await this.storage.storeTokens(tokens);
         return tokens;
     }
 
@@ -44,7 +55,11 @@ export class AuthUseCaseImpl implements AuthUseCase {
     }
 
     async getCurrentUser(): Promise<User | null> {
-        return this.authRepository.getCurrentUser();
+        const result = await this.authRepository.getCurrentUser();
+        if (result instanceof AppError) {
+            throw result;
+        }
+        return result;
     }
 
     async updatePassword(oldPassword: string, newPassword: string): Promise<void> {
@@ -52,26 +67,15 @@ export class AuthUseCaseImpl implements AuthUseCase {
     }
 
     async updateProfile(data: Partial<User>): Promise<User> {
-        return this.authRepository.updateProfile(data);
+        const result = await this.authRepository.updateProfile(data);
+        if (result instanceof AppError) {
+            throw result;
+        }
+        return result;
     }
 
     async isAuthenticated(): Promise<boolean> {
         const user = await this.getCurrentUser();
         return !!user;
-    }
-
-    async getStoredTokens(): Promise<AuthTokens | null> {
-        const tokensJson = await AsyncStorage.getItem('auth_tokens');
-        return tokensJson ? JSON.parse(tokensJson) : null;
-    }
-
-
-    // Move storage logic to a separate class
-    async clearStoredTokens(): Promise<void> {
-        await AsyncStorage.removeItem('auth_tokens');
-    }
-
-    private async storeTokens(tokens: AuthTokens): Promise<void> {
-        await AsyncStorage.setItem('auth_tokens', JSON.stringify(tokens));
     }
 } 

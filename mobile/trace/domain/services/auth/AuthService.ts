@@ -1,7 +1,7 @@
 import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '@/domain/entities/Auth';
 import { User } from '@/domain/entities/User';
 
-export interface AuthUseCase {
+export interface AuthService {
     login(credentials: LoginCredentials): Promise<{ user: User; tokens: AuthTokens }>;
     register(data: RegisterData): Promise<{ user: User; tokens: AuthTokens }>;
     logout(): Promise<void>;
@@ -13,6 +13,4 @@ export interface AuthUseCase {
     updatePassword(oldPassword: string, newPassword: string): Promise<void>;
     updateProfile(data: Partial<User>): Promise<User>;
     isAuthenticated(): Promise<boolean>;
-    getStoredTokens(): Promise<AuthTokens | null>;
-    clearStoredTokens(): Promise<void>;
 } 

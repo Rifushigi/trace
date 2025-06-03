@@ -1,6 +1,6 @@
 import { Class } from '@/domain/entities/Class';
 
-export interface ClassUseCase {
+export interface ClassService {
     getClass(id: string): Promise<Class | null>;
     getClasses(): Promise<Class[]>;
     createClass(data: Omit<Class, 'id' | 'createdAt' | 'updatedAt'>): Promise<Class>;

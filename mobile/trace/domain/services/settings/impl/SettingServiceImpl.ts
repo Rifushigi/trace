@@ -1,35 +1,64 @@
-import { SettingsUseCase } from '@/domain/services/settings/SettingService';
+import { SettingsService } from '@/domain/services/settings/SettingService';
 import { SettingsRepository } from '@/domain/repositories/SettingsRepository';
 import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
+import { AppError } from '@/shared/errors/AppError';
 
-export class SettingsUseCaseImpl implements SettingsUseCase {
+export class SettingsServiceImpl implements SettingsService {
     constructor(private settingsRepository: SettingsRepository) { }
 
     async getSettings(): Promise<AppSettings> {
-        return this.settingsRepository.getSettings();
+        const result = await this.settingsRepository.getSettings();
+        if (result instanceof AppError) {
+            throw result;
+        }
+        return result;
     }
 
     async loadSettings(): Promise<AppSettings> {
-        return this.settingsRepository.getSettings();
+        const result = await this.settingsRepository.getSettings();
+        if (result instanceof AppError) {
+            throw result;
+        }
+        return result;
     }
 
     async updateTheme(theme: Theme): Promise<AppSettings> {
-        return this.settingsRepository.updateTheme(theme);
+        const result = await this.settingsRepository.updateTheme(theme);
+        if (result instanceof AppError) {
+            throw result;
+        }
+        return result;
     }
 
     async updateLanguage(language: Language): Promise<AppSettings> {
-        return this.settingsRepository.updateLanguage(language);
+        const result = await this.settingsRepository.updateLanguage(language);
+        if (result instanceof AppError) {
+            throw result;
+        }
+        return result;
     }
 
     async updateNotificationSettings(settings: Partial<NotificationSettings>): Promise<AppSettings> {
-        return this.settingsRepository.updateNotificationSettings(settings);
+        const result = await this.settingsRepository.updateNotificationSettings(settings);
+        if (result instanceof AppError) {
+            throw result;
+        }
+        return result;
     }
 
     async updatePrivacySettings(settings: Partial<PrivacySettings>): Promise<AppSettings> {
-        return this.settingsRepository.updatePrivacySettings(settings);
+        const result = await this.settingsRepository.updatePrivacySettings(settings);
+        if (result instanceof AppError) {
+            throw result;
+        }
+        return result;
     }
 
     async resetSettings(): Promise<AppSettings> {
-        return this.settingsRepository.resetSettings();
+        const result = await this.settingsRepository.resetSettings();
+        if (result instanceof AppError) {
+            throw result;
+        }
+        return result;
     }
 }

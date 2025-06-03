@@ -1,6 +1,6 @@
 import { AttendanceRecord, AttendanceSession } from '@/domain/entities/Attendance';
 
-export interface AttendanceUseCase {
+export interface AttendanceService {
     getSession(id: string): Promise<AttendanceSession | null>;
     getSessions(classId: string): Promise<AttendanceSession[]>;
     createSession(data: Omit<AttendanceSession, 'id' | 'records' | 'createdAt' | 'updatedAt'>): Promise<AttendanceSession>;

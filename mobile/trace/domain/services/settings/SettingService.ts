@@ -1,6 +1,6 @@
 import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
 
-export interface SettingsUseCase {
+export interface SettingsService {
     getSettings(): Promise<AppSettings>;
     loadSettings(): Promise<AppSettings>;
     updateTheme(theme: Theme): Promise<AppSettings>;
