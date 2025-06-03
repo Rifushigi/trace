@@ -1,97 +1,103 @@
 import { axiosInstance } from '@/infrastructure/network/axiosInstance';
 import { AuthTokens, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm, IAuthApi } from '@/domain/entities/Auth';
 import { User } from '@/domain/entities/User';
-import { handleError } from '@/shared/errors/errorHandler';
-import { AppError } from '@/shared/errors/AppError';
+import { withErrorHandling } from '@/shared/errors/errorHandler';
 
 export class AuthApi implements IAuthApi {
     readonly BASE_URL = '/auth';
 
-    async login(credentials: LoginCredentials): Promise<{ user: User; tokens: AuthTokens } | AppError> {
-        try {
-            const response = await axiosInstance.post(`${this.BASE_URL}/login`, credentials);
-            return response.data;
-        } catch (error) {
-            return handleError(error);
-        }
+    async login(credentials: LoginCredentials): Promise<{ user: User; tokens: AuthTokens }> {
+        return withErrorHandling(
+            async () => {
+                const response = await axiosInstance.post(`${this.BASE_URL}/login`, credentials);
+                return response.data;
+            },
+            'Failed to login'
+        );
     }
 
-    async register(data: RegisterData): Promise<{ user: User; tokens: AuthTokens } | AppError> {
-        try {
-            const response = await axiosInstance.post(`${this.BASE_URL}/register`, data);
-            return response.data;
-        } catch (error) {
-            return handleError(error);
-        }
+    async register(data: RegisterData): Promise<{ user: User; tokens: AuthTokens }> {
+        return withErrorHandling(
+            async () => {
+                const response = await axiosInstance.post(`${this.BASE_URL}/register`, data);
+                return response.data;
+            },
+            'Failed to register'
+        );
     }
 
-    async logout(): Promise<void | AppError> {
-        try {
-            await axiosInstance.post(`${this.BASE_URL}/logout`);
-        } catch (error) {
-            return handleError(error);
-        }
+    async logout(): Promise<void> {
+        return withErrorHandling(
+            async () => {
+                await axiosInstance.post(`${this.BASE_URL}/logout`);
+            },
+            'Failed to logout'
+        );
     }
 
-    async refreshToken(refreshToken: string): Promise<AuthTokens | AppError> {
-        try {
-            const response = await axiosInstance.post(`${this.BASE_URL}/refresh-token`, { refreshToken });
-            return response.data;
-        } catch (error) {
-            return handleError(error);
-        }
+    async refreshToken(refreshToken: string): Promise<AuthTokens> {
+        return withErrorHandling(
+            async () => {
+                const response = await axiosInstance.post(`${this.BASE_URL}/refresh`, { refreshToken });
+                return response.data;
+            },
+            'Failed to refresh token'
+        );
     }
 
-    async requestPasswordReset(data: PasswordResetRequest): Promise<void | AppError> {
-        try {
-            await axiosInstance.post(`${this.BASE_URL}/request-password-reset`, data);
-        } catch (error) {
-            return handleError(error);
-        }
+    async requestPasswordReset(data: PasswordResetRequest): Promise<void> {
+        return withErrorHandling(
+            async () => {
+                await axiosInstance.post(`${this.BASE_URL}/reset-password`, data);
+            },
+            'Failed to request password reset'
+        );
     }
 
-    async confirmPasswordReset(data: PasswordResetConfirm): Promise<void | AppError> {
-        try {
-            await axiosInstance.post(`${this.BASE_URL}/confirm-password-reset`, data);
-        } catch (error) {
-            return handleError(error);
-        }
+    async confirmPasswordReset(data: PasswordResetConfirm): Promise<void> {
+        return withErrorHandling(
+            async () => {
+                await axiosInstance.post(`${this.BASE_URL}/confirm-reset`, data);
+            },
+            'Failed to confirm password reset'
+        );
     }
 
-    async verifyEmail(token: string): Promise<void | AppError> {
-        try {
-            await axiosInstance.post(`${this.BASE_URL}/verify-email`, { token });
-        } catch (error) {
-            return handleError(error);
-        }
+    async verifyEmail(token: string): Promise<void> {
+        return withErrorHandling(
+            async () => {
+                await axiosInstance.post(`${this.BASE_URL}/verify-email`, { token });
+            },
+            'Failed to verify email'
+        );
     }
 
-    async getCurrentUser(): Promise<User | null | AppError> {
-        try {
-            const response = await axiosInstance.get(`${this.BASE_URL}/me`);
-            return response.data;
-        } catch (error) {
-            return handleError(error);
-        }
+    async getCurrentUser(): Promise<User | null> {
+        return withErrorHandling(
+            async () => {
+                const response = await axiosInstance.get(`${this.BASE_URL}/me`);
+                return response.data;
+            },
+            'Failed to get current user'
+        );
     }
 
-    async updatePassword(oldPassword: string, newPassword: string): Promise<void | AppError> {
-        try {
-            await axiosInstance.post(`${this.BASE_URL}/update-password`, {
-                oldPassword,
-                newPassword,
-            });
-        } catch (error) {
-            return handleError(error);
-        }
+    async updatePassword(oldPassword: string, newPassword: string): Promise<void> {
+        return withErrorHandling(
+            async () => {
+                await axiosInstance.put(`${this.BASE_URL}/password`, { oldPassword, newPassword });
+            },
+            'Failed to update password'
+        );
     }
 
-    async updateProfile(data: Partial<User>): Promise<User | AppError> {
-        try {
-            const response = await axiosInstance.patch(`${this.BASE_URL}/profile`, data);
-            return response.data;
-        } catch (error) {
-            return handleError(error);
-        }
+    async updateProfile(data: Partial<User>): Promise<User> {
+        return withErrorHandling(
+            async () => {
+                const response = await axiosInstance.put(`${this.BASE_URL}/profile`, data);
+                return response.data;
+            },
+            'Failed to update profile'
+        );
     }
 } 
