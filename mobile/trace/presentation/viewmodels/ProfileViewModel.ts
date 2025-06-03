@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { ProfileUseCase } from '../../domain/usecases/profile/ProfileUseCase';
+import { ProfileUseCase } from '../../domain/services/profile/ProfileService';
 import { User } from '../../domain/entities/User';
 
 export class ProfileViewModel {
