@@ -1,4 +1,5 @@
 import env from "@/config/env";
+import { AuthTokens } from "@/domain/entities/Auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const AuthStorage = {
@@ -20,5 +21,14 @@ export const AuthStorage = {
     removeRefreshToken: async (): Promise<void> => {
         return AsyncStorage.removeItem(env.REFRESH_TOKEN_KEY);
     },
-
+    storeTokens: async (tokens: AuthTokens): Promise<void> => {
+        return AsyncStorage.setItem(env.AUTH_TOKEN_KEY, JSON.stringify(tokens));
+    },
+    removeStoredTokens: async (): Promise<void> => {
+        return AsyncStorage.removeItem(env.AUTH_TOKEN_KEY);
+    },
+    getStoredTokens: async (): Promise<AuthTokens | null> => {
+        const tokensJson = await AsyncStorage.getItem(env.AUTH_TOKEN_KEY);
+        return tokensJson ? JSON.parse(tokensJson) : null;
+    },
 }
