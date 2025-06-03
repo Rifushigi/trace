@@ -4,6 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useStores } from '@/stores';
 import { colors } from '@/shared/constants/theme';
 import { observer } from 'mobx-react-lite';
+import { handleError } from '@/shared/errors/errorHandler';
 
 const LecturerLayout = observer(() => {
     const { authStore } = useStores();
@@ -26,6 +27,7 @@ const LecturerLayout = observer(() => {
                             router.replace('/welcome');
                         } catch (error) {
                             Alert.alert('Error', 'Failed to logout. Please try again.');
+                            handleError(error);
                         }
                     },
                 },
