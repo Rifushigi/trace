@@ -1,22 +1,10 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, ViewStyle, TextStyle, TextInputProps } from 'react-native';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { colors } from '@/shared/constants/theme';
-
-interface InputProps extends TextInputProps {
-    label?: string;
-    error?: string | null;
-    leftIcon?: React.ReactNode;
-    rightIcon?: React.ReactNode;
-    containerStyle?: ViewStyle;
-    inputContainerStyle?: ViewStyle;
-    inputStyle?: TextStyle;
-    labelStyle?: TextStyle;
-    errorStyle?: TextStyle;
-}
+import { InputProps } from '@/shared/types/input';
 
 export const Input: React.FC<InputProps> = ({
     label,
-    error,
     leftIcon,
     rightIcon,
     containerStyle,
@@ -29,7 +17,7 @@ export const Input: React.FC<InputProps> = ({
     return (
         <View style={[styles.container, containerStyle]}>
             {label && <Text style={[styles.label, labelStyle]}>{label}</Text>}
-            <View style={[styles.inputContainer, error && styles.inputContainerError, inputContainerStyle]}>
+            <View style={[styles.inputContainer && styles.inputContainerError, inputContainerStyle]}>
                 {leftIcon}
                 <TextInput
                     style={[
@@ -41,7 +29,6 @@ export const Input: React.FC<InputProps> = ({
                 />
                 {rightIcon}
             </View>
-            {error && <Text style={[styles.error, errorStyle]}>{error}</Text>}
         </View>
     );
 };
