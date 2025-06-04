@@ -17,3 +17,4 @@ export * from './useRoleGuard';
 export * from './useRouteParams';
 export * from './useSettings';
 export * from './useTheme';
+export * from './useBluetooth';
