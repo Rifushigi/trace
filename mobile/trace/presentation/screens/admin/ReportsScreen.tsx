@@ -1,40 +1,27 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     StyleSheet,
     Text,
     ScrollView,
     ActivityIndicator,
-    RefreshControl,
     Dimensions,
+    RefreshControl,
+    Alert,
 } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
-import { Card } from '../../../components/common/Card';
+import { useStores } from '@/stores';
+import { Card } from '@/components/common/Card';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 import { format } from 'date-fns';
+import { useRefresh } from '@/presentation/hooks/useRefresh';
+import { useErrorHandler } from '@/presentation/hooks/useErrorHandler';
+import { useApi } from '@/presentation/hooks';
+import { AttendanceMetrics } from '@/shared/types/attendance';
+import { features } from '@/config/features';
+import { getMockAttendanceMetrics } from '@/presentation/mocks/reportsMock';
 
-interface AttendanceMetrics {
-    totalStudents: number;
-    totalLecturers: number;
-    averageAttendanceRate: number;
-    totalClasses: number;
-    attendanceByProgram: {
-        program: string;
-        attendanceRate: number;
-        totalStudents: number;
-    }[];
-    attendanceByLevel: {
-        level: string;
-        attendanceRate: number;
-        totalStudents: number;
-    }[];
-    recentAttendanceRates: {
-        date: Date;
-        rate: number;
-    }[];
-}
 
 const BLUE = {
     primary: '#1976D2',
@@ -46,57 +33,39 @@ const BLUE = {
 
 export const ReportsScreen = observer(() => {
     const { authStore } = useStores();
-    const [isLoading, setIsLoading] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const [metrics, setMetrics] = useState<AttendanceMetrics | null>(null);
-    const screenWidth = Dimensions.get('window').width;
-
-    const fetchMetrics = useCallback(async () => {
-        try {
-            // TODO: Replace with actual API call
-            // For now, using mock data
-            const mockMetrics: AttendanceMetrics = {
-                totalStudents: 450,
-                totalLecturers: 32,
-                averageAttendanceRate: 88.5,
-                totalClasses: 128,
-                attendanceByProgram: [
-                    { program: 'Computer Science', attendanceRate: 92.3, totalStudents: 120 },
-                    { program: 'Electrical Engineering', attendanceRate: 87.8, totalStudents: 95 },
-                    { program: 'Mechanical Engineering', attendanceRate: 85.4, totalStudents: 88 },
-                    { program: 'Civil Engineering', attendanceRate: 89.1, totalStudents: 78 },
-                    { program: 'Chemical Engineering', attendanceRate: 86.9, totalStudents: 69 },
-                ],
-                attendanceByLevel: [
-                    { level: '100', attendanceRate: 84.2, totalStudents: 150 },
-                    { level: '200', attendanceRate: 87.5, totalStudents: 125 },
-                    { level: '300', attendanceRate: 89.8, totalStudents: 100 },
-                    { level: '400', attendanceRate: 92.4, totalStudents: 75 },
-                ],
-                recentAttendanceRates: Array.from({ length: 7 }, (_, i) => ({
-                    date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000),
-                    rate: 80 + Math.random() * 15,
-                })),
-            };
-            setMetrics(mockMetrics);
-        } catch (error) {
-            console.error('Failed to fetch metrics:', error);
+    const { handleError, isConnected } = useErrorHandler({
+        showErrorAlert: true,
+        onNetworkError: (error) => {
+            Alert.alert('Network Error', 'Please check your internet connection');
         }
-    }, []);
+    });
+
+    const [metrics, setMetrics] = useState<AttendanceMetrics | null>(null);
+
+    const { execute: fetchMetrics, isLoading, error } = useApi<AttendanceMetrics, any>({
+        store: authStore,
+        action: (store) => async () => {
+            // TODO: Replace with actual API call
+            const mockData = getMockAttendanceMetrics();
+            setMetrics(mockData);
+            return mockData;
+            
+        },
+    });
+
+    const { refreshing, handleRefresh } = useRefresh({
+        onRefresh: async () => {
+            await handleError(async () => {
+                await fetchMetrics();
+            }, 'Failed to refresh reports');
+        }
+    });
 
     useEffect(() => {
-        const loadData = async () => {
-            await fetchMetrics();
-            setIsLoading(false);
-        };
-        loadData();
-    }, [fetchMetrics]);
-
-    const onRefresh = useCallback(async () => {
-        setIsRefreshing(true);
-        await fetchMetrics();
-        setIsRefreshing(false);
-    }, [fetchMetrics]);
+        if (isConnected || features.useMockApi) {
+            fetchMetrics();
+        }
+    }, [fetchMetrics, isConnected]);
 
     if (isLoading) {
         return (
@@ -106,7 +75,7 @@ export const ReportsScreen = observer(() => {
         );
     }
 
-    if (!metrics) {
+    if (error || !metrics) {
         return (
             <View style={styles.errorContainer}>
                 <MaterialIcons name="error-outline" size={48} color={BLUE.primary} />
@@ -114,6 +83,8 @@ export const ReportsScreen = observer(() => {
             </View>
         );
     }
+
+    const screenWidth = Dimensions.get('window').width;
 
     const chartConfig = {
         backgroundColor: '#ffffff',
@@ -131,7 +102,7 @@ export const ReportsScreen = observer(() => {
             contentContainerStyle={{ paddingBottom: 16 }}
             style={styles.container}
             refreshControl={
-                <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+                <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
             }
         >
             {/* Overview Cards */}
@@ -163,11 +134,11 @@ export const ReportsScreen = observer(() => {
                 <Text style={styles.chartTitle}>Attendance Trend (Last 7 Days)</Text>
                 <LineChart
                     data={{
-                        labels: metrics.recentAttendanceRates.map(item => 
+                        labels: metrics.recentAttendanceRates.map((item: { date: Date }) => 
                             format(item.date, 'MM/dd')
                         ),
                         datasets: [{
-                            data: metrics.recentAttendanceRates.map(item => item.rate)
+                            data: metrics.recentAttendanceRates.map((item: { rate: number }) => item.rate)
                         }]
                     }}
                     width={screenWidth - 48}
@@ -181,7 +152,7 @@ export const ReportsScreen = observer(() => {
             {/* Program-wise Attendance */}
             <Card style={styles.statsCard}>
                 <Text style={styles.chartTitle}>Attendance by Program</Text>
-                {metrics.attendanceByProgram.map(item => (
+                {metrics.attendanceByProgram.map((item: { program: string; attendanceRate: number; totalStudents: number }) => (
                     <View key={item.program} style={styles.statRow}>
                         <View style={styles.statHeader}>
                             <Text style={styles.statLabel}>{item.program}</Text>
@@ -204,13 +175,13 @@ export const ReportsScreen = observer(() => {
                 ))}
             </Card>
 
-            {/* Level-wise Stats */}
+            {/* Level-wise Attendance */}
             <Card style={styles.statsCard}>
                 <Text style={styles.chartTitle}>Attendance by Level</Text>
-                {metrics.attendanceByLevel.map(item => (
+                {metrics.attendanceByLevel.map((item: { level: string; attendanceRate: number; totalStudents: number }) => (
                     <View key={item.level} style={styles.statRow}>
                         <View style={styles.statHeader}>
-                            <Text style={styles.statLabel}>{item.level} Level</Text>
+                            <Text style={styles.statLabel}>Level {item.level}</Text>
                             <Text style={styles.statSubtext}>
                                 {item.totalStudents} students
                             </Text>

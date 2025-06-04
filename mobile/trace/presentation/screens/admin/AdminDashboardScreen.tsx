@@ -1,83 +1,56 @@
-import React, { useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
-import { Card } from '../../../components/common/Card';
-import { colors } from '../../../shared/constants/theme';
+import { Card } from '@/components/common/Card';
+import { colors } from '@/shared/constants/theme';
 import { router } from 'expo-router';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRefresh } from '@/presentation/hooks/useRefresh';
+import { useErrorHandler } from '@/presentation/hooks/useErrorHandler';
+import { features } from '@/config/features';
+import { getMockAdminDashboardData } from '@/presentation/mocks/adminDashboardMock';
 
 export const AdminDashboardScreen = observer(() => {
-    const { authStore } = useStores();
-    const [refreshing, setRefreshing] = useState(false);
+    const { handleError, isConnected } = useErrorHandler({
+        showErrorAlert: true,
+        onNetworkError: (error) => {
+            Alert.alert('Network Error', 'Please check your internet connection');
+        }
+    });
 
-    // Mock data - replace with actual data from your backend
-    const systemStatus = {
-        status: 'Operational',
-        lastUpdate: '2024-02-20 10:00:00',
-        activeUsers: 150,
-        activeSessions: 12,
-        cpuUsage: '95%',
-        memoryUsage: '60%',
-        storageUsage: '35%',
-        uptime: '76.9%',
-    };
+    const [systemStatus, setSystemStatus] = useState(getMockAdminDashboardData().systemStatus);
+    const [userStatistics, setUserStatistics] = useState(getMockAdminDashboardData().userStatistics);
+    const [recentActivities, setRecentActivities] = useState(getMockAdminDashboardData().recentActivities);
 
-    const userStatistics = {
-        totalUsers: 1000,
-        activeUsers: 750,
-        newUsers: 25,
-        pendingApprovals: 5,
-        studentCount: 850,
-        lecturerCount: 145,
-        adminCount: 5,
-        verifiedUsers: 980,
-    };
+    const { refreshing, handleRefresh } = useRefresh({
+        onRefresh: async () => {
+            await handleError(async () => {
+                if (features.useMockApi) {
+                    const mockData = getMockAdminDashboardData();
+                    setSystemStatus(mockData.systemStatus);
+                    setUserStatistics(mockData.userStatistics);
+                    setRecentActivities(mockData.recentActivities);
+                    return;
+                }
+                // TODO: Implement refresh logic for dashboard data
+                await Promise.all([
+                    // Add your refresh operations here
+                ]);
+            }, 'Failed to refresh dashboard data');
+        }
+    });
 
-    const recentActivities = [
-        {
-            id: '1',
-            type: 'user_registration',
-            description: 'New student registration: John Doe',
-            timestamp: '2024-02-20 09:45:00',
-            icon: 'person-add',
-            color: colors.primary,
-        },
-        {
-            id: '2',
-            type: 'attendance_session',
-            description: 'Attendance session started: CS101',
-            timestamp: '2024-02-20 09:30:00',
-            icon: 'schedule',
-            color: colors.success,
-        },
-        {
-            id: '3',
-            type: 'system_update',
-            description: 'System maintenance completed',
-            timestamp: '2024-02-20 09:00:00',
-            icon: 'system-update',
-            color: colors.warning,
-        },
-        {
-            id: '4',
-            type: 'error_alert',
-            description: 'High server load detected',
-            timestamp: '2024-02-20 08:45:00',
-            icon: 'warning',
-            color: colors.error,
-        },
-    ];
-
-    const onRefresh = useCallback(() => {
-        setRefreshing(true);
-        // TODO: Implement refresh logic
-        setTimeout(() => {
-            setRefreshing(false);
-        }, 2000);
-    }, []);
+    useEffect(() => {
+        if (isConnected || features.useMockApi) {
+            handleRefresh();
+        }
+    }, [handleRefresh, isConnected]);
 
     const handleQuickAction = (action: string) => {
+        if (!isConnected && !features.useMockApi) {
+            return;
+        }
+
         switch (action) {
             case 'manage_users':
                 router.push('/(admin)/user-management');
@@ -120,7 +93,7 @@ export const AdminDashboardScreen = observer(() => {
             }}
             style={styles.container}
             refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
             }
         >
             {/* System Health */}

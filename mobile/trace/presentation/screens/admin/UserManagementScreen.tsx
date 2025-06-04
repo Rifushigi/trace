@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import {
     View,
     StyleSheet,
@@ -8,8 +8,8 @@ import {
     FlatList,
     Alert,
     ActivityIndicator,
-    RefreshControl,
     Image,
+    RefreshControl,
 } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
@@ -17,6 +17,12 @@ import { Card } from '../../../components/common/Card';
 import { MaterialIcons } from '@expo/vector-icons';
 import { User, Student, Lecturer } from '../../../domain/entities/User';
 import { formatDistanceToNow } from 'date-fns';
+import { useRefresh } from '../../../presentation/hooks/useRefresh';
+import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
+import { useForm } from '../../../presentation/hooks/useForm';
+import { useUser } from '../../../presentation/hooks/useUser';
+import { features } from '../../../config/features';
+import { getMockUsers } from '../../../presentation/mocks/userManagementMock';
 
 // move it to the theme file
 const BLUE = {
@@ -30,56 +36,84 @@ const BLUE = {
 type SortField = 'name' | 'email' | 'role' | 'date';
 type SortOrder = 'asc' | 'desc';
 
+type FormValues = {
+    searchQuery: string;
+    selectedRole: string | null;
+    sortField: SortField;
+    sortOrder: SortOrder;
+    selectedUser: User | null;
+};
+
 export const UserManagementScreen = observer(() => {
     const { authStore } = useStores();
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedRole, setSelectedRole] = useState<string | null>(null);
-    const [sortField, setSortField] = useState<SortField>('name');
-    const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const [users, setUsers] = useState<User[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const { handleError, isConnected } = useErrorHandler({
+        showErrorAlert: true,
+        onNetworkError: (error) => {
+            Alert.alert('Network Error', 'Please check your internet connection');
+        }
+    });
+
+    const { 
+        getAllUsers,
+        isFetchingUsers,
+        fetchUsersError,
+    } = useUser();
+
+    const { formState, setFieldValue } = useForm<FormValues, any>({
+        store: authStore,
+        action: async (store, values) => {
+            // Form submission logic if needed
+            return;
+        },
+        initialValues: {
+            searchQuery: '',
+            selectedRole: null,
+            sortField: 'name',
+            sortOrder: 'asc',
+            selectedUser: null,
+        }
+    });
+
+    const [users, setUsers] = React.useState<User[]>([]);
 
     const fetchUsers = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const fetchedUsers = await authStore.userUseCase.getAllUsers();
+        await handleError(async () => {
+            if (features.useMockApi) {
+                // Use mock data when useMockApi is enabled
+                const mockData = getMockUsers();
+                setUsers(mockData);
+                return;
+            }
+            // Use real API when useMockApi is disabled
+            const fetchedUsers = await getAllUsers();
             setUsers(fetchedUsers);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to fetch users');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [authStore]);
+        }, 'Failed to fetch users');
+    }, [getAllUsers, handleError]);
+
+    const { refreshing, handleRefresh } = useRefresh({
+        onRefresh: fetchUsers
+    });
 
     useEffect(() => {
-        fetchUsers();
-    }, [fetchUsers]);
-
-    const onRefresh = useCallback(async () => {
-        setIsRefreshing(true);
-        try {
-            await fetchUsers();
-        } finally {
-            setIsRefreshing(false);
+        if (isConnected || features.useMockApi) {
+            fetchUsers();
         }
-    }, [fetchUsers]);
+    }, [fetchUsers, isConnected]);
 
     const sortedAndFilteredUsers = useMemo(() => {
         let filtered = users.filter((user: User) => {
             const matchesSearch = (
-                (user.firstName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-                (user.lastName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-                user.email.toLowerCase().includes(searchQuery.toLowerCase())
+                (user.firstName?.toLowerCase() || '').includes(formState.searchQuery.value.toLowerCase()) ||
+                (user.lastName?.toLowerCase() || '').includes(formState.searchQuery.value.toLowerCase()) ||
+                user.email.toLowerCase().includes(formState.searchQuery.value.toLowerCase())
             );
-            const matchesRole = selectedRole ? user.role === selectedRole : true;
+            const matchesRole = formState.selectedRole.value ? user.role === formState.selectedRole.value : true;
             return matchesSearch && matchesRole;
         });
 
         return filtered.sort((a: User, b: User) => {
             let comparison = 0;
-            switch (sortField) {
+            switch (formState.sortField.value) {
                 case 'name':
                     comparison = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
                     break;
@@ -93,36 +127,36 @@ export const UserManagementScreen = observer(() => {
                     comparison = a.createdAt.getTime() - b.createdAt.getTime();
                     break;
             }
-            return sortOrder === 'asc' ? comparison : -comparison;
+            return formState.sortOrder.value === 'asc' ? comparison : -comparison;
         });
-    }, [users, searchQuery, selectedRole, sortField, sortOrder]);
+    }, [users, formState.searchQuery.value, formState.selectedRole.value, formState.sortField.value, formState.sortOrder.value]);
 
     const renderSortButton = (field: SortField, label: string) => (
         <TouchableOpacity
             style={[
                 styles.sortButton,
-                sortField === field && styles.sortButtonActive
+                formState.sortField.value === field && styles.sortButtonActive
             ]}
             onPress={() => {
-                if (sortField === field) {
-                    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                if (formState.sortField.value === field) {
+                    setFieldValue('sortOrder', formState.sortOrder.value === 'asc' ? 'desc' : 'asc');
                 } else {
-                    setSortField(field);
-                    setSortOrder('asc');
+                    setFieldValue('sortField', field);
+                    setFieldValue('sortOrder', 'asc');
                 }
             }}
         >
             <Text style={[
                 styles.sortButtonText,
-                sortField === field && styles.sortButtonTextActive
+                formState.sortField.value === field && styles.sortButtonTextActive
             ]}>
                 {label}
             </Text>
-            {sortField === field && (
+            {formState.sortField.value === field && (
                 <MaterialIcons
-                    name={sortOrder === 'asc' ? 'arrow-upward' : 'arrow-downward'}
+                    name={formState.sortOrder.value === 'asc' ? 'arrow-upward' : 'arrow-downward'}
                     size={16}
-                    color={sortField === field ? BLUE.primary : '#666666'}
+                    color={formState.sortField.value === field ? BLUE.primary : '#666666'}
                 />
             )}
         </TouchableOpacity>
@@ -225,10 +259,21 @@ export const UserManagementScreen = observer(() => {
         </Card>
     );
 
-    if (isLoading) {
+    if (isFetchingUsers) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={BLUE.primary} />
+            </View>
+        );
+    }
+
+    if (fetchUsersError) {
+        return (
+            <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>Failed to load users</Text>
+                <TouchableOpacity style={styles.retryButton} onPress={fetchUsers}>
+                    <Text style={styles.retryButtonText}>Retry</Text>
+                </TouchableOpacity>
             </View>
         );
     }
@@ -241,8 +286,8 @@ export const UserManagementScreen = observer(() => {
                     <TextInput
                         style={styles.searchInput}
                         placeholder="Search users..."
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
+                        value={formState.searchQuery.value}
+                        onChangeText={(text) => setFieldValue('searchQuery', text)}
                     />
                 </View>
 
@@ -251,37 +296,37 @@ export const UserManagementScreen = observer(() => {
                         <TouchableOpacity
                             style={[
                                 styles.roleButton,
-                                selectedRole === null && styles.roleButtonActive
+                                formState.selectedRole.value === null && styles.roleButtonActive
                             ]}
-                            onPress={() => setSelectedRole(null)}
+                            onPress={() => setFieldValue('selectedRole', null)}
                         >
                             <Text style={[
                                 styles.roleButtonText,
-                                selectedRole === null && styles.roleButtonTextActive
+                                formState.selectedRole.value === null && styles.roleButtonTextActive
                             ]}>All</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[
                                 styles.roleButton,
-                                selectedRole === 'student' && styles.roleButtonActive
+                                formState.selectedRole.value === 'student' && styles.roleButtonActive
                             ]}
-                            onPress={() => setSelectedRole('student')}
+                            onPress={() => setFieldValue('selectedRole', 'student')}
                         >
                             <Text style={[
                                 styles.roleButtonText,
-                                selectedRole === 'student' && styles.roleButtonTextActive
+                                formState.selectedRole.value === 'student' && styles.roleButtonTextActive
                             ]}>Students</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[
                                 styles.roleButton,
-                                selectedRole === 'lecturer' && styles.roleButtonActive
+                                formState.selectedRole.value === 'lecturer' && styles.roleButtonActive
                             ]}
-                            onPress={() => setSelectedRole('lecturer')}
+                            onPress={() => setFieldValue('selectedRole', 'lecturer')}
                         >
                             <Text style={[
                                 styles.roleButtonText,
-                                selectedRole === 'lecturer' && styles.roleButtonTextActive
+                                formState.selectedRole.value === 'lecturer' && styles.roleButtonTextActive
                             ]}>Lecturers</Text>
                         </TouchableOpacity>
                     </View>
@@ -302,8 +347,8 @@ export const UserManagementScreen = observer(() => {
                 contentContainerStyle={styles.listContainer}
                 refreshControl={
                     <RefreshControl
-                        refreshing={isRefreshing}
-                        onRefresh={onRefresh}
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
                         colors={[BLUE.primary]}
                     />
                 }
@@ -554,5 +599,27 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#333333',
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 16,
+        gap: 16,
+    },
+    errorText: {
+        fontSize: 16,
+        color: '#DC2626',
+        textAlign: 'center',
+    },
+    retryButton: {
+        padding: 12,
+        borderRadius: 8,
+        backgroundColor: BLUE.primary,
+    },
+    retryButtonText: {
+        fontSize: 16,
+        color: '#FFFFFF',
+        fontWeight: '500',
     },
 }); 

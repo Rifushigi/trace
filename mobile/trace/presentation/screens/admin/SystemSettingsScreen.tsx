@@ -1,28 +1,73 @@
 import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Card } from '../../../components/common/Card';
-import { colors } from '../../../shared/constants/theme';
+import { Card } from '@/components/common/Card';
+import { colors } from '@/shared/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '@/presentation/hooks/useAuth';
+import { useSettings } from '@/presentation/hooks/useSettings';
+import { useErrorHandler } from '@/presentation/hooks/useErrorHandler';
+
 
 export const SystemSettingsScreen = observer(() => {
-    const [settings, setSettings] = React.useState({
-        enableMockApi: false,
-        enableNotifications: true,
-        enableAutoBackup: true,
-        darkMode: false,
-        debugMode: false,
+    const { user, logout } = useAuth();
+    const { handleError } = useErrorHandler({
+        showErrorAlert: true,
+        onNetworkError: (error) => {
+            Alert.alert('Network Error', 'Please check your internet connection');
+        }
     });
 
-    const toggleSetting = (key: keyof typeof settings) => {
-        setSettings(prev => ({
-            ...prev,
-            [key]: !prev[key]
-        }));
+    const { 
+        settings,
+        updateTheme,
+        updateNotificationSettings,
+        updatePrivacySettings,
+        createBackup,
+        restoreSystem,
+        isCreatingBackup,
+        isRestoringSystem,
+    } = useSettings();
+
+    const handleThemeChange = async (value: boolean) => {
+        await updateTheme(value ? 'dark' : 'light');
     };
 
-    // TODO: Use this as the settings screen for all users
-    // use props to pass the settings to the screen
+    const handleNotificationChange = async (value: boolean) => {
+        await updateNotificationSettings({ pushNotifications: value });
+    };
+
+    const handleBiometricChange = async (value: boolean) => {
+        await updatePrivacySettings({ biometricAuth: value });
+    };
+
+    const handleNfcChange = async (value: boolean) => {
+        await updatePrivacySettings({ nfcEnabled: value });
+    };
+
+    const handleBleChange = async (value: boolean) => {
+        await updatePrivacySettings({ bleEnabled: value });
+    };
+
+    const handleBackup = async () => {
+        await handleError(async () => {
+            await createBackup();
+            Alert.alert('Success', 'System backup created successfully');
+        }, 'Failed to create backup');
+    };
+
+    const handleRestore = async () => {
+        await handleError(async () => {
+            await restoreSystem();
+            Alert.alert('Success', 'System restored successfully');
+        }, 'Failed to restore system');
+    };
+
+    const handleLogout = async () => {
+        await handleError(async () => {
+            await logout();
+        }, 'Failed to logout');
+    };
 
     return (
         <ScrollView style={styles.container}>
@@ -34,12 +79,12 @@ export const SystemSettingsScreen = observer(() => {
 
                 <View style={styles.settingItem}>
                     <View style={styles.settingInfo}>
-                        <Text style={styles.settingTitle}>Mock API</Text>
-                        <Text style={styles.settingDescription}>Use mock data for testing</Text>
+                        <Text style={styles.settingTitle}>Theme</Text>
+                        <Text style={styles.settingDescription}>Enable dark theme</Text>
                     </View>
                     <Switch
-                        value={settings.enableMockApi}
-                        onValueChange={() => toggleSetting('enableMockApi')}
+                        value={settings.theme === 'dark'}
+                        onValueChange={handleThemeChange}
                         trackColor={{ false: colors.border, true: colors.primary }}
                     />
                 </View>
@@ -50,46 +95,59 @@ export const SystemSettingsScreen = observer(() => {
                         <Text style={styles.settingDescription}>Enable system notifications</Text>
                     </View>
                     <Switch
-                        value={settings.enableNotifications}
-                        onValueChange={() => toggleSetting('enableNotifications')}
+                        value={settings.notifications.pushNotifications}
+                        onValueChange={handleNotificationChange}
                         trackColor={{ false: colors.border, true: colors.primary }}
                     />
                 </View>
 
                 <View style={styles.settingItem}>
                     <View style={styles.settingInfo}>
-                        <Text style={styles.settingTitle}>Auto Backup</Text>
-                        <Text style={styles.settingDescription}>Enable automatic system backup</Text>
+                        <Text style={styles.settingTitle}>Biometric Auth</Text>
+                        <Text style={styles.settingDescription}>Enable biometric authentication</Text>
                     </View>
                     <Switch
-                        value={settings.enableAutoBackup}
-                        onValueChange={() => toggleSetting('enableAutoBackup')}
+                        value={settings.privacy.biometricAuth}
+                        onValueChange={handleBiometricChange}
                         trackColor={{ false: colors.border, true: colors.primary }}
                     />
                 </View>
 
                 <View style={styles.settingItem}>
                     <View style={styles.settingInfo}>
-                        <Text style={styles.settingTitle}>Dark Mode</Text>
-                        <Text style={styles.settingDescription}>Enable dark theme</Text>
+                        <Text style={styles.settingTitle}>NFC</Text>
+                        <Text style={styles.settingDescription}>Enable NFC functionality</Text>
                     </View>
                     <Switch
-                        value={settings.darkMode}
-                        onValueChange={() => toggleSetting('darkMode')}
+                        value={settings.privacy.nfcEnabled}
+                        onValueChange={handleNfcChange}
                         trackColor={{ false: colors.border, true: colors.primary }}
                     />
                 </View>
 
                 <View style={styles.settingItem}>
                     <View style={styles.settingInfo}>
-                        <Text style={styles.settingTitle}>Debug Mode</Text>
-                        <Text style={styles.settingDescription}>Enable debug logging</Text>
+                        <Text style={styles.settingTitle}>Bluetooth</Text>
+                        <Text style={styles.settingDescription}>Enable Bluetooth functionality</Text>
                     </View>
                     <Switch
-                        value={settings.debugMode}
-                        onValueChange={() => toggleSetting('debugMode')}
+                        value={settings.privacy.bleEnabled}
+                        onValueChange={handleBleChange}
                         trackColor={{ false: colors.border, true: colors.primary }}
                     />
+                </View>
+
+                <View style={styles.settingItem}>
+                    <View style={styles.settingInfo}>
+                        <Text style={styles.settingTitle}>Account</Text>
+                        <Text style={styles.settingDescription}>Logged in as {user?.email}</Text>
+                    </View>
+                    <TouchableOpacity 
+                        style={styles.logoutButton}
+                        onPress={handleLogout}
+                    >
+                        <Text style={styles.logoutButtonText}>Logout</Text>
+                    </TouchableOpacity>
                 </View>
             </Card>
 
@@ -99,12 +157,24 @@ export const SystemSettingsScreen = observer(() => {
                     <Text style={styles.sectionTitle}>Backup & Restore</Text>
                 </View>
                 
-                <TouchableOpacity style={styles.actionButton}>
-                    <Text style={styles.actionButtonText}>Create Backup</Text>
+                <TouchableOpacity 
+                    style={[styles.actionButton, isCreatingBackup && styles.actionButtonDisabled]}
+                    onPress={handleBackup}
+                    disabled={isCreatingBackup}
+                >
+                    <Text style={styles.actionButtonText}>
+                        {isCreatingBackup ? 'Creating Backup...' : 'Create Backup'}
+                    </Text>
                 </TouchableOpacity>
                 
-                <TouchableOpacity style={styles.actionButton}>
-                    <Text style={styles.actionButtonText}>Restore System</Text>
+                <TouchableOpacity 
+                    style={[styles.actionButton, isRestoringSystem && styles.actionButtonDisabled]}
+                    onPress={handleRestore}
+                    disabled={isRestoringSystem}
+                >
+                    <Text style={styles.actionButtonText}>
+                        {isRestoringSystem ? 'Restoring System...' : 'Restore System'}
+                    </Text>
                 </TouchableOpacity>
             </Card>
         </ScrollView>
@@ -160,9 +230,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 12,
     },
+    actionButtonDisabled: {
+        opacity: 0.5,
+    },
     actionButtonText: {
         color: '#FFF',
         fontSize: 16,
+        fontWeight: '600',
+    },
+    logoutButton: {
+        backgroundColor: colors.error,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+    },
+    logoutButtonText: {
+        color: '#FFFFFF',
+        fontSize: 14,
         fontWeight: '600',
     },
 }); 
