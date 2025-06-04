@@ -1,10 +1,11 @@
 import { useStores } from '@/stores';
 import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
 import { useApi } from './useApi';
+import { useNetworkStatus } from './useNetworkStatus';
 
 export const useSettings = () => {
     const { settingsStore } = useStores();
-
+    const { isConnected, isInternetReachable } = useNetworkStatus();
     const { execute: loadSettings, isLoading: isLoadingSettings, error: loadSettingsError } = useApi<AppSettings, typeof settingsStore>({
         store: settingsStore,
         action: (store) => async () => {
@@ -63,6 +64,28 @@ export const useSettings = () => {
         },
     });
 
+    const { execute: createBackup, isLoading: isCreatingBackup } = useApi<void, any>({
+        store: null,
+        action: () => async () => {
+            if (!isConnected || !isInternetReachable) {
+                throw new Error('No internet connection');
+            }
+            // TODO: Implement backup creation
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        },
+    });
+
+    const { execute: restoreSystem, isLoading: isRestoringSystem } = useApi<void, any>({
+        store: null,
+        action: () => async () => {
+            if (!isConnected || !isInternetReachable) {
+                throw new Error('No internet connection');
+            }
+            // TODO: Implement system restore
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        },
+    });
+
     return {
         // State
         settings: settingsStore.settings,
@@ -74,6 +97,8 @@ export const useSettings = () => {
         isUpdatingNotifications,
         isUpdatingPrivacy,
         isResettingSettings,
+        isCreatingBackup,
+        isRestoringSystem,
 
         // Error States
         loadSettingsError,
@@ -90,5 +115,7 @@ export const useSettings = () => {
         updateNotificationSettings,
         updatePrivacySettings,
         resetSettings,
+        createBackup,
+        restoreSystem,
     };
 }; 
