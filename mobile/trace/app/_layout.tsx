@@ -7,10 +7,21 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import StoreProvider from '../stores/StoreProvider';
 import { Container } from '@/di/container';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { useAuthGuard } from '@/presentation/hooks/useAuthGuard';
+import { useRoleGuard } from '@/presentation/hooks/useRoleGuard';
+import * as SplashScreen from 'expo-splash-screen';
+import { CustomSplashScreen } from '@/components/SplashScreen';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 function RootLayoutContent() {
     const { authStore } = useStores();
     const { user, isLoading } = authStore.state;
+    const { isAuthenticated } = useAuthGuard();
+    const { isAuthorized } = useRoleGuard({
+        allowedRoles: ['admin', 'lecturer', 'student']
+    });
 
     if (isLoading) {
         return (
@@ -23,15 +34,15 @@ function RootLayoutContent() {
     return (
         <Stack screenOptions={{ headerShown: false }}>
             {/* Auth Stack */}
-            {!user && <Stack.Screen name="(auth)" />}
-            {!user && <Stack.Screen name="index" />}
+            {!isAuthenticated && <Stack.Screen name="(auth)" />}
+            {!isAuthenticated && <Stack.Screen name="index" />}
             
             {/* Role-based Stack */}
-            {user?.role === 'student' && <Stack.Screen name="student" />}
-            {user?.role === 'lecturer' && <Stack.Screen name="(lecturer)" />}
-            {user?.role === 'admin' && <Stack.Screen name="(admin)" />}
-            {user && <Stack.Screen name="(profile)" />}
-            {user && <Stack.Screen name="(settings)" />}
+            {isAuthorized && user?.role === 'student' && <Stack.Screen name="student" />}
+            {isAuthorized && user?.role === 'lecturer' && <Stack.Screen name="(lecturer)" />}
+            {isAuthorized && user?.role === 'admin' && <Stack.Screen name="(admin)" />}
+            {isAuthenticated && <Stack.Screen name="(profile)" />}
+            {isAuthenticated && <Stack.Screen name="(settings)" />}
         </Stack>
     );
 }
@@ -39,40 +50,35 @@ function RootLayoutContent() {
 const ObservedRootLayoutContent = observer(RootLayoutContent);
 
 export default function RootLayout() {
-    const [isReady, setIsReady] = useState(false);
     const [container, setContainer] = useState<Container | null>(null);
+    const [showSplash, setShowSplash] = useState(true);
 
     useEffect(() => {
-        const init = async () => {
-            try {
-                const containerInstance = Container.getInstance();
-                setContainer(containerInstance);
-                setIsReady(true);
-            } catch (error) {
-                console.error('Failed to initialize container:', error);
-            }
-        };
-
-        init();
+        const containerInstance = Container.getInstance();
+        setContainer(containerInstance);
     }, []);
 
-    if (!isReady || !container) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" />
-            </View>
-        );
+    const handleSplashComplete = async () => {
+        setShowSplash(false);
+        await SplashScreen.hideAsync();
+    };
+
+    if (!container) {
+        return null;
+    }
+
+    if (showSplash) {
+        return <CustomSplashScreen onAnimationComplete={handleSplashComplete} />;
     }
 
     return (
         <ErrorBoundary>
             <StoreProvider
-                authUseCase={container.getAuthUseCase()}
-                profileUseCase={container.getProfileUseCase()}
-                settingsUseCase={container.getSettingsUseCase()}
-                classUseCase={container.getClassUseCase()}
-                attendanceUseCase={container.getAttendanceUseCase()}
-                userUseCase={container.getUserUseCase()}
+                authService={container.getAuthService()}
+                userService={container.getUserService()}
+                settingsService={container.getSettingsService()}
+                classService={container.getClassService()}
+                attendanceService={container.getAttendanceService()}
             >
                 <SafeAreaProvider>
                     <ObservedRootLayoutContent />

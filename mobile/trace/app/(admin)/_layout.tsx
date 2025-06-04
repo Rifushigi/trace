@@ -1,15 +1,26 @@
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
-import { useStores } from '@/stores';
 import { colors } from '@/shared/constants/theme';
+import { useRoleGuard } from '@/presentation/hooks/useRoleGuard';
+import { useAuth } from '@/presentation/hooks/useAuth';
+import { observer } from 'mobx-react-lite';
 
-export default function AdminLayout() {
-    const { authStore } = useStores();
+export default observer(function AdminLayout() {
 
-    const handleLogout = () => {
-        authStore.logout();
+    const { logout } = useAuth();
+    const { isAuthorized } = useRoleGuard({
+        allowedRoles: ['admin'],
+        redirectTo: '/login'
+    });
+
+    const handleLogout = async () => {
+        await logout();
     };
+
+    if (!isAuthorized) {
+        return null;
+    }
 
     return (
         <Tabs>
@@ -62,4 +73,4 @@ export default function AdminLayout() {
             />
         </Tabs>
     );
-} 
+}); 
