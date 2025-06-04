@@ -1,18 +1,15 @@
-import { makeAutoObservable, action, runInAction } from 'mobx';
-import { AuthUseCase } from '../domain/services/auth/AuthService';
-import { ProfileUseCase } from '../domain/services/profile/ProfileService';
-import { UserUseCase } from '../domain/services/user/UserService';
+import { makeAutoObservable, action } from 'mobx';
+import { AuthService } from '../domain/services/auth/AuthService';
+import { UserService } from '../domain/services/user/UserService';
 import { AuthState, LoginCredentials, RegisterData, PasswordResetRequest, PasswordResetConfirm } from '../domain/entities/Auth';
 import { User } from '../domain/entities/User';
-import { features } from '../config/features';
-import { MockAuthApi } from '../data/datasources/mock/MockAuthApi';
-import { AuthApi } from '../data/datasources/remote/AuthApi';
+import { AuthStorage } from '@/infrastructure/storage/AuthStorage';
 
 export class AuthStore {
-    public readonly authUseCase: AuthUseCase;
-    public readonly profileUseCase: ProfileUseCase;
-    public readonly userUseCase: UserUseCase;
-    private authApi: AuthApi | MockAuthApi;
+    public readonly authService: AuthService;
+    public readonly userService: UserService;
+    private readonly storage = AuthStorage;
+
     private authState: AuthState = {
         user: null,
         tokens: null,
@@ -25,11 +22,9 @@ export class AuthStore {
         return this.authState;
     }
 
-    constructor(authUseCase: AuthUseCase, profileUseCase: ProfileUseCase, userUseCase: UserUseCase) {
-        this.authUseCase = authUseCase;
-        this.profileUseCase = profileUseCase;
-        this.userUseCase = userUseCase;
-        this.authApi = features.useMockApi ? new MockAuthApi() : new AuthApi();
+    constructor(authService: AuthService, userService: UserService) {
+        this.authService = authService;
+        this.userService = userService;
         makeAutoObservable(this);
     }
 
@@ -38,26 +33,24 @@ export class AuthStore {
     });
 
     private setLoading = action((loading: boolean) => {
-        this.authState.isLoading = loading;
+        this.setAuthState({ isLoading: loading });
     });
 
     private setError = action((error: string | null) => {
-        this.authState.error = error;
+        this.setAuthState({ error });
     });
 
     async login(credentials: LoginCredentials) {
         this.setLoading(true);
         this.setError(null);
         try {
-            const result = await this.authUseCase.login(credentials);
-            runInAction(() => {
-                this.authState = {
-                    user: result.user,
-                    tokens: result.tokens,
-                    isAuthenticated: true,
-                    isLoading: false,
-                    error: null
-                };
+            const result = await this.authService.login(credentials);
+            this.setAuthState({
+                user: result.user,
+                tokens: result.tokens,
+                isAuthenticated: true,
+                isLoading: false,
+                error: null
             });
         } catch (error) {
             this.setError(error instanceof Error ? error.message : 'An error occurred during login');
@@ -71,15 +64,13 @@ export class AuthStore {
         this.setLoading(true);
         this.setError(null);
         try {
-            const result = await this.authUseCase.register(data);
-            runInAction(() => {
-                this.authState = {
-                    user: result.user,
-                    tokens: result.tokens,
-                    isAuthenticated: true,
-                    isLoading: false,
-                    error: null
-                };
+            const result = await this.authService.register(data);
+            this.setAuthState({
+                user: result.user,
+                tokens: result.tokens,
+                isAuthenticated: true,
+                isLoading: false,
+                error: null
             });
         } catch (error) {
             this.setError(error instanceof Error ? error.message : 'An error occurred during registration');
@@ -93,15 +84,13 @@ export class AuthStore {
         this.setLoading(true);
         this.setError(null);
         try {
-            await this.authUseCase.logout();
-            runInAction(() => {
-                this.authState = {
-                    user: null,
-                    tokens: null,
-                    isAuthenticated: false,
-                    isLoading: false,
-                    error: null
-                };
+            await this.authService.logout();
+            this.setAuthState({
+                user: null,
+                tokens: null,
+                isAuthenticated: false,
+                isLoading: false,
+                error: null
             });
         } catch (error) {
             this.setError(error instanceof Error ? error.message : 'An error occurred during logout');
@@ -113,21 +102,18 @@ export class AuthStore {
 
     async refreshToken() {
         if (!this.authState.tokens?.refreshToken) {
-            throw new Error('No refresh token available');
+            return;
         }
 
         this.setLoading(true);
         this.setError(null);
         try {
-            const tokens = await this.authUseCase.refreshToken(this.authState.tokens.refreshToken);
-            runInAction(() => {
-                this.authState = {
-                    ...this.authState,
-                    tokens,
-                    isAuthenticated: true,
-                    isLoading: false,
-                    error: null
-                };
+            const tokens = await this.authService.refreshToken(this.authState.tokens.refreshToken);
+            this.setAuthState({
+                tokens,
+                isAuthenticated: true,
+                isLoading: false,
+                error: null
             });
         } catch (error) {
             this.setError(error instanceof Error ? error.message : 'An error occurred while refreshing token');
@@ -141,7 +127,7 @@ export class AuthStore {
         this.setLoading(true);
         this.setError(null);
         try {
-            await this.authUseCase.requestPasswordReset(request);
+            await this.authService.requestPasswordReset(request);
         } catch (error) {
             this.setError(error instanceof Error ? error.message : 'An error occurred while requesting password reset');
             throw error;
@@ -154,7 +140,7 @@ export class AuthStore {
         this.setLoading(true);
         this.setError(null);
         try {
-            await this.authUseCase.confirmPasswordReset(confirm);
+            await this.authService.confirmPasswordReset(confirm);
         } catch (error) {
             this.setError(error instanceof Error ? error.message : 'An error occurred while confirming password reset');
             throw error;
@@ -167,7 +153,7 @@ export class AuthStore {
         this.setLoading(true);
         this.setError(null);
         try {
-            await this.authUseCase.verifyEmail(token);
+            await this.authService.verifyEmail(token);
         } catch (error) {
             this.setError(error instanceof Error ? error.message : 'An error occurred while verifying email');
             throw error;
@@ -181,18 +167,15 @@ export class AuthStore {
         this.setError(null);
         try {
             // First try to get user from cookie-based session
-            const user = await this.authUseCase.getCurrentUser();
+            const user = await this.authService.getCurrentUser();
 
             if (user) {
                 // If we have a valid cookie session, update state
-                runInAction(() => {
-                    this.authState = {
-                        ...this.authState,
-                        user,
-                        isAuthenticated: true,
-                        isLoading: false,
-                        error: null
-                    };
+                this.setAuthState({
+                    user,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null
                 });
                 return user;
             }
@@ -202,42 +185,34 @@ export class AuthStore {
                 try {
                     await this.refreshToken();
                     // After successful refresh, try getting user again
-                    const userAfterRefresh = await this.authUseCase.getCurrentUser();
-                    runInAction(() => {
-                        this.authState = {
-                            ...this.authState,
-                            user: userAfterRefresh,
-                            isAuthenticated: !!userAfterRefresh,
-                            isLoading: false,
-                            error: null
-                        };
+                    const userAfterRefresh = await this.authService.getCurrentUser();
+                    this.setAuthState({
+                        user: userAfterRefresh,
+                        isAuthenticated: !!userAfterRefresh,
+                        isLoading: false,
+                        error: null
                     });
                     return userAfterRefresh;
-                } catch (refreshError) {
+                } catch {
                     // If refresh fails, clear tokens and update state
                     await this.clearStoredTokens();
-                    runInAction(() => {
-                        this.authState = {
-                            user: null,
-                            tokens: null,
-                            isAuthenticated: false,
-                            isLoading: false,
-                            error: null
-                        };
+                    this.setAuthState({
+                        user: null,
+                        tokens: null,
+                        isAuthenticated: false,
+                        isLoading: false,
+                        error: null
                     });
-
                 }
             }
 
             // No valid session or tokens
-            runInAction(() => {
-                this.authState = {
-                    user: null,
-                    tokens: null,
-                    isAuthenticated: false,
-                    isLoading: false,
-                    error: null
-                };
+            this.setAuthState({
+                user: null,
+                tokens: null,
+                isAuthenticated: false,
+                isLoading: false,
+                error: null
             });
             return null;
         } catch (error) {
@@ -250,15 +225,11 @@ export class AuthStore {
 
     async isAuthenticated() {
         try {
-            // First check if we have a valid cookie session
-            const user = await this.authUseCase.getCurrentUser();
+            const user = await this.authService.getCurrentUser();
             if (user) {
-                runInAction(() => {
-                    this.authState = {
-                        ...this.authState,
-                        user,
-                        isAuthenticated: true
-                    };
+                this.setAuthState({
+                    user,
+                    isAuthenticated: true
                 });
                 return true;
             }
@@ -282,7 +253,7 @@ export class AuthStore {
 
     async getStoredTokens() {
         // First check if tokens in state are still valid
-        if (this.authState.tokens) {
+        if (this.authState.tokens?.refreshToken) {
             try {
                 await this.refreshToken();
                 return this.authState.tokens;
@@ -296,20 +267,17 @@ export class AuthStore {
 
     async clearStoredTokens() {
         // Clear tokens from state
-        runInAction(() => {
-            this.authState = {
-                ...this.authState,
-                tokens: null,
-                isAuthenticated: false
-            };
+        this.setAuthState({
+            tokens: null,
+            isAuthenticated: false
         });
 
         // Also clear tokens from storage
-        await this.authUseCase.clearStoredTokens();
+        await this.storage.removeStoredTokens();
 
         // Try to logout to clear cookies as well
         try {
-            await this.authUseCase.logout();
+            await this.authService.logout();
         } catch (error) {
             console.error('Error clearing cookies during token clear:', error);
         }
@@ -319,7 +287,7 @@ export class AuthStore {
         this.setLoading(true);
         this.setError(null);
         try {
-            await this.authUseCase.updatePassword(oldPassword, newPassword);
+            await this.authService.updatePassword(oldPassword, newPassword);
         } catch (error) {
             this.setError(error instanceof Error ? error.message : 'An error occurred while updating password');
             throw error;
@@ -332,14 +300,11 @@ export class AuthStore {
         this.setLoading(true);
         this.setError(null);
         try {
-            const updatedUser = await this.authUseCase.updateProfile(data);
-            runInAction(() => {
-                this.authState = {
-                    ...this.authState,
-                    user: updatedUser,
-                    isLoading: false,
-                    error: null
-                };
+            const updatedUser = await this.authService.updateProfile(data);
+            this.setAuthState({
+                user: updatedUser,
+                isLoading: false,
+                error: null
             });
         } catch (error) {
             this.setError(error instanceof Error ? error.message : 'An error occurred while updating profile');

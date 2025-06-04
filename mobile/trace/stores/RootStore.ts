@@ -1,9 +1,8 @@
-import { AuthUseCase } from '@/domain/services/auth/AuthService';
-import { ProfileUseCase } from '@/domain/services/profile/ProfileService';
-import { SettingsUseCase } from '@/domain/services/settings/SettingService';
-import { ClassUseCase } from '@/domain/services/class/ClassService';
-import { AttendanceUseCase } from '@/domain/services/attendance/AttendanceService';
-import { UserUseCase } from '@/domain/services/user/UserService';
+import { AuthService } from '@/domain/services/auth/AuthService';
+import { UserService } from '@/domain/services/user/UserService';
+import { SettingsService } from '@/domain/services/settings/SettingService';
+import { ClassService } from '@/domain/services/class/ClassService';
+import { AttendanceService } from '@/domain/services/attendance/AttendanceService';
 import { AuthStore } from '@/stores/AuthStore';
 import { SettingsStore } from '@/stores/SettingsStore';
 import { ClassStore } from '@/stores/ClassStore';
@@ -14,30 +13,27 @@ export class RootStore {
     public readonly settingsStore: SettingsStore;
     public readonly classStore: ClassStore;
     public readonly attendanceStore: AttendanceStore;
-    public readonly authUseCase: AuthUseCase;
-    public readonly profileUseCase: ProfileUseCase;
-    public readonly settingsUseCase: SettingsUseCase;
-    public readonly classUseCase: ClassUseCase;
-    public readonly attendanceUseCase: AttendanceUseCase;
-    public readonly userUseCase: UserUseCase;
+    public readonly authService: AuthService;
+    public readonly userService: UserService;
+    public readonly settingsService: SettingsService;
+    public readonly classService: ClassService;
+    public readonly attendanceService: AttendanceService;
 
     constructor(
-        authUseCase: AuthUseCase,
-        profileUseCase: ProfileUseCase,
-        settingsUseCase: SettingsUseCase,
-        classUseCase: ClassUseCase,
-        attendanceUseCase: AttendanceUseCase,
-        userUseCase: UserUseCase
+        authService: AuthService,
+        userService: UserService,
+        settingsService: SettingsService,
+        classService: ClassService,
+        attendanceService: AttendanceService
     ) {
-        this.authUseCase = authUseCase;
-        this.profileUseCase = profileUseCase;
-        this.settingsUseCase = settingsUseCase;
-        this.classUseCase = classUseCase;
-        this.attendanceUseCase = attendanceUseCase;
-        this.userUseCase = userUseCase;
-        this.authStore = new AuthStore(authUseCase, profileUseCase, userUseCase);
-        this.settingsStore = new SettingsStore(settingsUseCase);
-        this.classStore = new ClassStore(classUseCase);
-        this.attendanceStore = new AttendanceStore(attendanceUseCase);
+        this.authService = authService;
+        this.userService = userService;
+        this.settingsService = settingsService;
+        this.classService = classService;
+        this.attendanceService = attendanceService;
+        this.authStore = new AuthStore(authService, userService);
+        this.settingsStore = new SettingsStore(settingsService);
+        this.classStore = new ClassStore(classService);
+        this.attendanceStore = new AttendanceStore(attendanceService);
     }
 } 

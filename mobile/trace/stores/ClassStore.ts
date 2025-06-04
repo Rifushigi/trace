@@ -1,15 +1,15 @@
 import { makeAutoObservable } from 'mobx';
-import { ClassUseCase } from '@/domain/services/class/ClassService';
+import { ClassService } from '@/domain/services/class/ClassService';
 import { Class } from '@/domain/entities/Class';
 
 export class ClassStore {
-    public readonly classUseCase: ClassUseCase;
+    public readonly classService: ClassService;
     public classes: Class[] = [];
     public isLoading: boolean = false;
     public error: string | null = null;
 
-    constructor(classUseCase: ClassUseCase) {
-        this.classUseCase = classUseCase;
+    constructor(classService: ClassService) {
+        this.classService = classService;
         makeAutoObservable(this);
     }
 
@@ -17,7 +17,7 @@ export class ClassStore {
         this.isLoading = true;
         this.error = null;
         try {
-            this.classes = await this.classUseCase.getClasses();
+            this.classes = await this.classService.getClasses();
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to fetch classes';
             throw error;
@@ -30,7 +30,7 @@ export class ClassStore {
         this.isLoading = true;
         this.error = null;
         try {
-            return await this.classUseCase.getClass(id);
+            return await this.classService.getClass(id);
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to fetch class';
             throw error;
@@ -43,7 +43,7 @@ export class ClassStore {
         this.isLoading = true;
         this.error = null;
         try {
-            const newClass = await this.classUseCase.createClass(data);
+            const newClass = await this.classService.createClass(data);
             this.classes.push(newClass);
             return newClass;
         } catch (error) {
@@ -58,7 +58,7 @@ export class ClassStore {
         this.isLoading = true;
         this.error = null;
         try {
-            const updatedClass = await this.classUseCase.updateClass(id, data);
+            const updatedClass = await this.classService.updateClass(id, data);
             const index = this.classes.findIndex(c => c.id === id);
             if (index !== -1) {
                 this.classes[index] = updatedClass;
@@ -76,7 +76,7 @@ export class ClassStore {
         this.isLoading = true;
         this.error = null;
         try {
-            await this.classUseCase.deleteClass(id);
+            await this.classService.deleteClass(id);
             this.classes = this.classes.filter(c => c.id !== id);
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to delete class';

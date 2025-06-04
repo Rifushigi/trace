@@ -1,17 +1,17 @@
 import { makeAutoObservable } from 'mobx';
-import { SettingsUseCase } from '@/domain/services/settings/SettingService';
+import { SettingsService } from '@/domain/services/settings/SettingService';
 import { AppSettings, Theme, Language, NotificationSettings, PrivacySettings } from '@/domain/entities/Settings';
 import { SettingsError } from '@/shared/errors/AppError';
 import { handleError } from '@/shared/errors/errorHandler';
 
 export class SettingsStore {
-    public readonly settingsUseCase: SettingsUseCase;
+    public readonly settingsService: SettingsService;
     public settings: AppSettings;
     public isLoading: boolean = false;
     public error: SettingsError | null = null;
 
-    constructor(settingsUseCase: SettingsUseCase) {
-        this.settingsUseCase = settingsUseCase;
+    constructor(settingsService: SettingsService) {
+        this.settingsService = settingsService;
         this.settings = {
             id: '',
             userId: '',
@@ -42,7 +42,7 @@ export class SettingsStore {
         this.isLoading = true;
         this.error = null;
         try {
-            const settings = await this.settingsUseCase.loadSettings();
+            const settings = await this.settingsService.loadSettings();
             this.settings = settings;
         } catch (error) {
             this.error = handleError(error) as SettingsError;
@@ -56,7 +56,7 @@ export class SettingsStore {
         this.isLoading = true;
         this.error = null;
         try {
-            const updatedSettings = await this.settingsUseCase.updateTheme(theme);
+            const updatedSettings = await this.settingsService.updateTheme(theme);
             this.settings = updatedSettings;
         } catch (error) {
             this.error = handleError(error) as SettingsError;
@@ -71,7 +71,7 @@ export class SettingsStore {
         this.isLoading = true;
         this.error = null;
         try {
-            const updatedSettings = await this.settingsUseCase.updateLanguage(language);
+            const updatedSettings = await this.settingsService.updateLanguage(language);
             this.settings = updatedSettings;
         } catch (error) {
             this.error = handleError(error) as SettingsError;
@@ -86,7 +86,7 @@ export class SettingsStore {
         this.isLoading = true;
         this.error = null;
         try {
-            const updatedSettings = await this.settingsUseCase.updateNotificationSettings(notifications);
+            const updatedSettings = await this.settingsService.updateNotificationSettings(notifications);
             this.settings = updatedSettings;
         } catch (error) {
             this.error = handleError(error) as SettingsError;
@@ -101,7 +101,7 @@ export class SettingsStore {
         this.isLoading = true;
         this.error = null;
         try {
-            const updatedSettings = await this.settingsUseCase.updatePrivacySettings(privacy);
+            const updatedSettings = await this.settingsService.updatePrivacySettings(privacy);
             this.settings = updatedSettings;
         } catch (error) {
             this.error = handleError(error) as SettingsError;
@@ -116,7 +116,7 @@ export class SettingsStore {
         this.isLoading = true;
         this.error = null;
         try {
-            const defaultSettings = await this.settingsUseCase.resetSettings();
+            const defaultSettings = await this.settingsService.resetSettings();
             this.settings = defaultSettings;
         } catch (error) {
             this.error = handleError(error) as SettingsError;
