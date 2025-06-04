@@ -1,22 +1,75 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
 import { router } from 'expo-router';
 import { Student } from '../../../domain/entities/User';
+import { useUser } from '../../../presentation/hooks/useUser';
+import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
+import { useNetworkStatus } from '../../../presentation/hooks/useNetworkStatus';
+import { useRefresh } from '../../../presentation/hooks/useRefresh';
 
 export const StudentProfileScreen = observer(() => {
     const { authStore } = useStores();
     const user = authStore.state.user as Student;
 
+    const {
+        isFetchingProfile,
+        getProfile,
+    } = useUser();
+
+    const { handleError, error, isHandlingError } = useErrorHandler({
+        showErrorAlert: true,
+        onNetworkError: (error: Error) => {
+            Alert.alert('Network Error', 'Please check your internet connection');
+        },
+    });
+
+    const { isConnected } = useNetworkStatus();
+
+    const { refreshing, handleRefresh } = useRefresh({
+        onRefresh: async () => {
+            await handleError(async () => {
+                await getProfile();
+            }, 'Failed to refresh profile');
+        }
+    });
+
+    useEffect(() => {
+        handleError(async () => {
+            await getProfile();
+        }, 'Failed to load profile');
+    }, []);
+
     if (!user) {
         return null;
     }
 
+    if (isFetchingProfile || isHandlingError) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        );
+    }
+
+    if (!isConnected) {
+        return (
+            <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>No internet connection available</Text>
+            </View>
+        );
+    }
+
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView 
+            style={styles.container}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+            }
+        >
             {/* Academic Information */}
             <Card style={styles.section}>
                 <Text style={styles.sectionTitle}>Academic Information</Text>
@@ -149,5 +202,23 @@ const styles = StyleSheet.create({
     },
     secondaryButtonText: {
         color: colors.text,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.background,
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.background,
+        padding: 16,
+    },
+    errorText: {
+        fontSize: 16,
+        color: colors.error,
+        textAlign: 'center',
     },
 }); 

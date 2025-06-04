@@ -1,114 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Alert, Platform } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { check, request, RESULTS, PERMISSIONS } from 'react-native-permissions';
-import { BleManager } from 'react-native-ble-plx';
+import { useBluetooth } from '../../../presentation/hooks/useBluetooth';
 
-const bleManager = new BleManager();
-
-export const DeviceSetupScreen = observer(() => {
-    const { authStore } = useStores();
-    const user = authStore.state.user;
-    const [bluetoothStatus, setBluetoothStatus] = useState<'checking' | 'granted' | 'denied'>('checking');
-    const [isScanning, setIsScanning] = useState(false);
-    const [nearbyBeacons, setNearbyBeacons] = useState<any[]>([]);
-
-    useEffect(() => {
-        checkBluetoothPermissions();
-        return () => {
-            bleManager.destroy();
-        };
-    }, []);
-
-    const checkBluetoothPermissions = async () => {
-        try {
-            if (Platform.OS === 'ios') {
-                const result = await check(PERMISSIONS.IOS.BLUETOOTH);
-                if (result === RESULTS.GRANTED) {
-                    setBluetoothStatus('granted');
-                } else if (result === RESULTS.DENIED) {
-                    setBluetoothStatus('denied');
-                }
-            } else {
-                const result = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-                if (result === RESULTS.GRANTED) {
-                    setBluetoothStatus('granted');
-                } else if (result === RESULTS.DENIED) {
-                    setBluetoothStatus('denied');
-                }
-            }
-        } catch (error) {
-            console.error('Error checking permissions:', error);
-            setBluetoothStatus('denied');
-        }
-    };
-
-    const requestBluetoothPermissions = async () => {
-        try {
-            if (Platform.OS === 'ios') {
-                const result = await request(PERMISSIONS.IOS.BLUETOOTH);
-                if (result === RESULTS.GRANTED) {
-                    setBluetoothStatus('granted');
-                }
-            } else {
-                const result = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-                if (result === RESULTS.GRANTED) {
-                    setBluetoothStatus('granted');
-                }
-            }
-        } catch (error) {
-            console.error('Error requesting permissions:', error);
-            Alert.alert('Error', 'Failed to request Bluetooth permissions');
-        }
-    };
-
-    const startScanning = async () => {
-        if (bluetoothStatus !== 'granted') {
-            Alert.alert('Permission Required', 'Please grant Bluetooth permissions to scan for beacons');
-            return;
-        }
-
-        setIsScanning(true);
-        try {
-            bleManager.startDeviceScan(null, null, (error, device) => {
-                if (error) {
-                    console.error('Scan error:', error);
-                    return;
-                }
-                if (device) {
-                    setNearbyBeacons(prev => {
-                        const exists = prev.some(d => d.id === device.id);
-                        if (!exists) {
-                            return [...prev, device];
-                        }
-                        return prev;
-                    });
-                }
-            });
-        } catch (error) {
-            console.error('Error starting scan:', error);
-            Alert.alert('Error', 'Failed to start scanning for beacons');
-        }
-    };
-
-    const stopScanning = () => {
-        setIsScanning(false);
-        bleManager.stopDeviceScan();
-    };
-
-    const connectToBeacon = async (deviceId: string) => {
-        try {
-            const device = await bleManager.connectToDevice(deviceId);
-            Alert.alert('Success', 'Connected to beacon successfully');
-            // TODO: Update user's beacon ID in the backend
-        } catch (error) {
-            console.error('Error connecting to device:', error);
-            Alert.alert('Error', 'Failed to connect to beacon');
-        }
-    };
+const DeviceSetupScreen = observer(() => {
+    const {
+        bluetoothStatus,
+        isScanning,
+        nearbyBeacons,
+        requestBluetoothPermissions,
+        startScanning,
+        stopScanning,
+        connectToBeacon,
+    } = useBluetooth();
 
     return (
         <ScrollView style={styles.container}>
@@ -264,4 +170,6 @@ const styles = StyleSheet.create({
         color: colors.text,
         lineHeight: 24,
     },
-}); 
+});
+
+export default DeviceSetupScreen; 

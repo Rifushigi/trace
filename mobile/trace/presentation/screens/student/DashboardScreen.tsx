@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, Image, Animated, Pressable } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, Image, Animated, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
@@ -8,6 +8,12 @@ import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Student } from '../../../domain/entities/User';
 import { router } from 'expo-router';
 import { getStatusColor } from '@/utils/reuseables';
+import { useAttendance } from '../../../presentation/hooks/useAttendance';
+import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
+import { useNetworkStatus } from '../../../presentation/hooks/useNetworkStatus';
+import { useRefresh } from '../../../presentation/hooks/useRefresh';
+import { useClass } from '../../../presentation/hooks/useClass';
+import { getMockDataForToday } from '../../../presentation/mocks/dashboardMock';
 
 const CARD_MARGIN = 12;
 
@@ -25,10 +31,64 @@ interface ClassItem {
 export const DashboardScreen = observer(() => {
     const { authStore } = useStores();
     const user = authStore.state.user as Student;
-    const [refreshing, setRefreshing] = React.useState(false);
     const [clickCount, setClickCount] = React.useState(0);
     const scaleAnim = React.useRef(new Animated.Value(1)).current;
     const pulseAnim = React.useRef(new Animated.Value(1)).current;
+
+    const {
+        sessions,
+        isLoadingSessions,
+        getStudentAttendance,
+        isLoadingStudentAttendance,
+    } = useAttendance();
+
+    const {
+        classes,
+        isLoadingClasses,
+        getClasses,
+    } = useClass();
+
+    const { handleError, error, isHandlingError } = useErrorHandler({
+        showErrorAlert: true,
+        onNetworkError: (error: Error) => {
+            Alert.alert('Network Error', 'Please check your internet connection');
+        },
+    });
+
+    const { isConnected } = useNetworkStatus();
+
+    const { refreshing, handleRefresh } = useRefresh({
+        onRefresh: async () => {
+            if (__DEV__) {
+                // In development, simulate a delay for mock data
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return;
+            }
+            await handleError(async () => {
+                if (user) {
+                    await Promise.all([
+                        getClasses(),
+                        getStudentAttendance(user.id, 'all')
+                    ]);
+                }
+            }, 'Failed to refresh dashboard');
+        }
+    });
+
+    useEffect(() => {
+        if (__DEV__) {
+            // In development, we don't need to fetch data
+            return;
+        }
+        handleError(async () => {
+            if (user) {
+                await Promise.all([
+                    getClasses(),
+                    getStudentAttendance(user.id, 'all')
+                ]);
+            }
+        }, 'Failed to load dashboard data');
+    }, [user]);
 
     const startPulseAnimation = React.useCallback(() => {
         if (clickCount >= 10) return;
@@ -79,41 +139,61 @@ export const DashboardScreen = observer(() => {
         router.push('/(profile)');
     };
 
-    const onRefresh = React.useCallback(() => {
-        setRefreshing(true);
-        // TODO: Implement refresh logic
-        setTimeout(() => {
-            setRefreshing(false);
-        }, 2000);
-    }, []);
+    if (!user) {
+        return null;
+    }
 
-    // Mock data - replace with actual data
-    const todayClasses: ClassItem[] = [
-        {
-            id: '1',
-            course: 'Data Structures & Algorithms',
-            time: '09:00 - 10:30',
-            room: 'Room 101',
-            status: 'upcoming',
-            instructor: 'Dr. Smith'
-        },
-        {
-            id: '2',
-            course: 'Advanced Algorithms',
-            time: '11:00 - 12:30',
-            room: 'Room 202',
-            status: 'active',
-            instructor: 'Prof. Johnson'
-        }
-    ];
+    if (!__DEV__ && (isLoadingSessions || isLoadingClasses || isLoadingStudentAttendance || isHandlingError)) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        );
+    }
 
-    const attendanceStats = {
-        weekly: 85,
-        monthly: 90,
-        overall: 88
+    if (!__DEV__ && !isConnected) {
+        return (
+            <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>No internet connection available</Text>
+            </View>
+        );
+    }
+
+    // Get data based on environment
+    const data = __DEV__ ? getMockDataForToday() : {
+        classes,
+        sessions,
+        student: user
     };
 
+    // Calculate attendance stats
+    const attendanceStats = {
+        weekly: data.sessions.length > 0 
+            ? Math.round((data.sessions.filter(s => 
+                new Date(s.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+            ).reduce((acc, s) => acc + (s.records?.length || 0), 0) / (data.sessions.length * 30)) * 100)
+            : 0,
+        monthly: data.sessions.length > 0
+            ? Math.round((data.sessions.filter(s => 
+                new Date(s.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+            ).reduce((acc, s) => acc + (s.records?.length || 0), 0) / (data.sessions.length * 30)) * 100)
+            : 0,
+        overall: data.sessions.length > 0
+            ? Math.round((data.sessions.reduce((acc, s) => acc + (s.records?.length || 0), 0) / (data.sessions.length * 30)) * 100)
+            : 0
+    };
 
+    // Transform classes to today's schedule
+    const todayClasses: ClassItem[] = data.classes
+        .filter(cls => cls.schedule?.day === new Date().toLocaleDateString('en-US', { weekday: 'long' }))
+        .map(cls => ({
+            id: cls.id,
+            course: cls.name,
+            time: `${cls.schedule?.startTime}-${cls.schedule?.endTime}`,
+            room: cls.schedule?.room || 'TBD',
+            status: cls.schedule ? 'upcoming' : 'completed',
+            instructor: cls.lecturer.firstName + ' ' + cls.lecturer.lastName
+        }));
 
     return (
         <ScrollView 
@@ -121,7 +201,7 @@ export const DashboardScreen = observer(() => {
             refreshControl={
                 <RefreshControl 
                     refreshing={refreshing} 
-                    onRefresh={onRefresh}
+                    onRefresh={handleRefresh}
                     tintColor={colors.primary}
                     colors={[colors.primary]}
                 />
@@ -193,7 +273,6 @@ export const DashboardScreen = observer(() => {
                     <Card 
                         variant='elevated'
                         style={styles.statsCard} 
-                       
                     >
                         <View style={[styles.iconContainer, { backgroundColor: `${colors.primary}15` }]}>
                             <MaterialCommunityIcons name="calendar-week" size={20} color={colors.primary} />
@@ -688,5 +767,28 @@ const styles = StyleSheet.create({
     logoutButton: {
         padding: 8,
         marginBottom: 8,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.background,
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.background,
+        padding: 16,
+    },
+    errorText: {
+        fontSize: 16,
+        color: colors.error,
+        textAlign: 'center',
+    },
+    noClassesText: {
+        textAlign: 'center',
+        color: colors.textSecondary,
+        fontSize: 14,
     },
 });
