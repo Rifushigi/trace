@@ -1,6 +1,25 @@
 import { User, Student, Lecturer, IUserApi } from '@/domain/entities/User';
+import { AppError } from '@/shared/errors/AppError';
 
 export class MockUserApi implements IUserApi {
+    getProfile(): Promise<User | AppError> {
+        throw new Error('Method not implemented.');
+    }
+    updateProfile(data: Partial<User>): Promise<User | AppError> {
+        throw new Error('Method not implemented.');
+    }
+    updateProfilePicture(imageUri: string): Promise<User | AppError> {
+        throw new Error('Method not implemented.');
+    }
+    deleteProfilePicture(): Promise<User | AppError> {
+        throw new Error('Method not implemented.');
+    }
+    updatePassword(oldPassword: string, newPassword: string): Promise<void | AppError> {
+        throw new Error('Method not implemented.');
+    }
+    deleteAccount(): Promise<void | AppError> {
+        throw new Error('Method not implemented.');
+    }
     private readonly BASE_URL = '/api/users';
     private mockUsers: (Student | Lecturer)[] = [
         {
