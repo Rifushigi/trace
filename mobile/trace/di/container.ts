@@ -1,32 +1,27 @@
-import { AuthUseCase } from '@/domain/services/auth/AuthService';
-import { AuthUseCaseImpl } from '@/domain/services/auth/impl/AuthServiceImpl';
+import { AuthService } from '@/domain/services/auth/AuthService';
+import { AuthServiceImpl } from '@/domain/services/auth/impl/AuthServiceImpl';
 import { AuthRepository } from '@/domain/repositories/AuthRepository';
 import { AuthRepositoryImpl } from '@/data/repositories/AuthRepositoryImpl';
 import { AuthApi } from '@/data/datasources/remote/AuthApi';
-import { ProfileUseCase } from '@/domain/services/profile/ProfileService';
-import { ProfileUseCaseImpl } from '@/domain/services/profile/impl/ProfileServiceImpl';
-import { ProfileRepository } from '@/domain/repositories/ProfileRepository';
-import { ProfileRepositoryImpl } from '@/data/repositories/ProfileRepositoryImpl';
-import { ProfileApi } from '@/data/datasources/remote/ProfileApi';
-import { SettingsUseCase } from '@/domain/services/settings/SettingService';
-import { SettingsUseCaseImpl } from '@/domain/services/settings/impl/SettingServiceImpl';
+import { SettingsService } from '@/domain/services/settings/SettingService';
+import { SettingsServiceImpl } from '@/domain/services/settings/impl/SettingServiceImpl';
 import { SettingsRepository } from '@/domain/repositories/SettingsRepository';
 import { SettingsRepositoryImpl } from '@/data/repositories/SettingsRepositoryImpl';
 import { SettingsApi } from '@/data/datasources/remote/SettingsApi';
 import { ClassApi } from '@/data/datasources/remote/ClassApi';
 import { ClassRepository } from '@/domain/repositories/ClassRepository';
 import { ClassRepositoryImpl } from '@/data/repositories/ClassRepositoryImpl';
-import { ClassUseCaseImpl } from '@/domain/services/class/impl/ClassServiceImpl';
-import { ClassUseCase } from '@/domain/services/class/ClassService';
+import { ClassServiceImpl } from '@/domain/services/class/impl/ClassServiceImpl';
+import { ClassService } from '@/domain/services/class/ClassService';
 import { AttendanceApi } from '@/data/datasources/remote/AttendanceApi';
 import { AttendanceRepositoryImpl } from '@/data/repositories/AttendanceRepositoryImpl';
 import { AttendanceRepository } from '@/domain/repositories/AttendanceRepository';
-import { AttendanceUseCaseImpl } from '@/domain/services/attendance/impl/AttendanceServiceImpl';
-import { AttendanceUseCase } from '@/domain/services/attendance/AttendanceService';
+import { AttendanceServiceImpl } from '@/domain/services/attendance/impl/AttendanceServiceImpl';
+import { AttendanceService } from '@/domain/services/attendance/AttendanceService';
 import { features } from '@/config/features';
 import { MockAuthApi } from '@/data/datasources/mock/MockAuthApi';
-import { UserUseCase } from '@/domain/services/user/UserService';
-import { UserUseCaseImpl } from '@/domain/services/user/impl/UserServiceImpl';
+import { UserService } from '@/domain/services/user/UserService';
+import { UserServiceImpl } from '@/domain/services/user/impl/UserServiceImpl';
 import { UserRepository } from '@/domain/repositories/UserRepository';
 import { UserRepositoryImpl } from '@/data/repositories/UserRepositoryImpl';
 import { UserApi } from '@/data/datasources/remote/UserApi';
@@ -39,37 +34,31 @@ export class Container {
     // Auth 
     private authApi: AuthApi | MockAuthApi;
     private authRepository: AuthRepository;
-    private authUseCase: AuthUseCase;
-
-    // Profile
-    private profileApi: ProfileApi;
-    private profileRepository: ProfileRepository;
-    private profileUseCase: ProfileUseCase;
+    private authService: AuthService;
 
     // Settings
     private settingsApi: SettingsApi;
     private settingsRepository: SettingsRepository;
-    private settingsUseCase: SettingsUseCase;
+    private settingsService: SettingsService;
 
     // Class
     private classApi: ClassApi;
     private classRepository: ClassRepository;
-    private classUseCase: ClassUseCase;
+    private classService: ClassService;
 
     // Attendance
     private attendanceApi: AttendanceApi;
     private attendanceRepository: AttendanceRepository;
-    private attendanceUseCase: AttendanceUseCase;
+    private attendanceService: AttendanceService;
 
     // User
     private userApi: UserApi | MockUserApi;
     private userRepository: UserRepository;
-    private userUseCase: UserUseCase;
+    private userService: UserService;
 
     private constructor() {
         // Initialize APIs
         this.authApi = features.useMockApi ? new MockAuthApi() : new AuthApi();
-        this.profileApi = new ProfileApi();
         this.settingsApi = new SettingsApi();
         this.classApi = new ClassApi();
         this.attendanceApi = new AttendanceApi();
@@ -77,19 +66,17 @@ export class Container {
 
         // Initialize Repositories
         this.authRepository = new AuthRepositoryImpl(this.authApi);
-        this.profileRepository = new ProfileRepositoryImpl(this.profileApi);
         this.settingsRepository = new SettingsRepositoryImpl(this.settingsApi);
         this.classRepository = new ClassRepositoryImpl(this.classApi);
         this.attendanceRepository = new AttendanceRepositoryImpl(this.attendanceApi);
         this.userRepository = new UserRepositoryImpl(this.userApi);
 
         // Initialize Use Cases
-        this.authUseCase = new AuthUseCaseImpl(this.authRepository);
-        this.profileUseCase = new ProfileUseCaseImpl(this.profileRepository);
-        this.settingsUseCase = new SettingsUseCaseImpl(this.settingsRepository);
-        this.classUseCase = new ClassUseCaseImpl(this.classRepository);
-        this.attendanceUseCase = new AttendanceUseCaseImpl(this.attendanceRepository);
-        this.userUseCase = new UserUseCaseImpl(this.userRepository);
+        this.authService = new AuthServiceImpl(this.authRepository);
+        this.settingsService = new SettingsServiceImpl(this.settingsRepository);
+        this.classService = new ClassServiceImpl(this.classRepository);
+        this.attendanceService = new AttendanceServiceImpl(this.attendanceRepository);
+        this.userService = new UserServiceImpl(this.userRepository);
     }
 
     public static getInstance(): Container {
@@ -99,27 +86,23 @@ export class Container {
         return Container.instance;
     }
 
-    public getAuthUseCase(): AuthUseCase {
-        return this.authUseCase;
+    public getAuthService(): AuthService {
+        return this.authService;
     }
 
-    public getProfileUseCase(): ProfileUseCase {
-        return this.profileUseCase;
+    public getSettingsService(): SettingsService {
+        return this.settingsService;
     }
 
-    public getSettingsUseCase(): SettingsUseCase {
-        return this.settingsUseCase;
+    public getClassService(): ClassService {
+        return this.classService;
     }
 
-    public getClassUseCase(): ClassUseCase {
-        return this.classUseCase;
+    public getAttendanceService(): AttendanceService {
+        return this.attendanceService;
     }
 
-    public getAttendanceUseCase(): AttendanceUseCase {
-        return this.attendanceUseCase;
-    }
-
-    public getUserUseCase(): UserUseCase {
-        return this.userUseCase;
+    public getUserService(): UserService {
+        return this.userService;
     }
 }
