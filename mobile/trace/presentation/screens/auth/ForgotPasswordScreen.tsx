@@ -1,41 +1,60 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
 import { Input } from '../../../components/common/Input';
 import { colors } from '../../../shared/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '../../../presentation/hooks/useAuth';
+import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
+import { useNetworkStatus } from '../../../presentation/hooks/useNetworkStatus';
+import { useForm } from '../../../presentation/hooks/useForm';
 
 const { height } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 24;
 
+interface FormValues {
+    email: string;
+}
+
+interface FormErrors {
+    [key: string]: string;
+}
+
 export const ForgotPasswordScreen = observer(() => {
-    const { authStore } = useStores();
-    const [email, setEmail] = useState('');
+    const { requestPasswordReset, isRequestingReset } = useAuth();
+    const { handleError } = useErrorHandler({
+        showErrorAlert: true
+    });
+    const { isConnected } = useNetworkStatus();
 
-    const handleSubmit = async () => {
-        if (!email) {
-            Alert.alert('Error', 'Please enter your email address');
-            return;
+    const { formState, setFieldValue, handleSubmit, isSubmitting } = useForm<FormValues, FormErrors>({
+        store: {} as FormErrors,
+        initialValues: {
+            email: ''
+        },
+        validationRules: {
+            email: [
+                { validate: (value: string): boolean => !!value, message: 'Email is required' },
+                { validate: (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), message: 'Invalid email format' }
+            ]
+        },
+        action: async (_, values) => {
+            await handleError(async () => {
+                await requestPasswordReset(values);
+                Alert.alert(
+                    'Success',
+                    'Password reset instructions have been sent to your email',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => router.back(),
+                        },
+                    ]
+                );
+            });
         }
-
-        try {
-            await authStore.requestPasswordReset({ email });
-            Alert.alert(
-                'Success',
-                'Password reset instructions have been sent to your email',
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => router.back(),
-                    },
-                ]
-            );
-        } catch (error) {
-            Alert.alert('Error', 'Failed to send reset instructions. Please try again.');
-        }
-    };
+    });
 
     return (
         <KeyboardAvoidingView 
@@ -64,22 +83,26 @@ export const ForgotPasswordScreen = observer(() => {
                             </View>
                             <Input
                                 placeholder="Email"
-                                value={email}
-                                onChangeText={setEmail}
+                                value={formState.email?.value}
+                                onChangeText={(value) => setFieldValue('email', value)}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                                 inputContainerStyle={styles.inputField}
+                                error={formState.email?.error}
                             />
                         </View>
                     </View>
 
                     <View style={styles.footer}>
                         <TouchableOpacity
-                            style={styles.submitButton}
+                            style={[styles.submitButton, (!isConnected || isSubmitting) && styles.buttonDisabled]}
                             onPress={handleSubmit}
                             activeOpacity={0.8}
+                            disabled={!isConnected || isSubmitting}
                         >
-                            <Text style={styles.submitButtonText}>Send Instructions</Text>
+                            <Text style={styles.submitButtonText}>
+                                {isSubmitting ? 'Sending...' : 'Send Instructions'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -172,6 +195,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 8,
         elevation: 4,
+    },
+    buttonDisabled: {
+        opacity: 0.5,
     },
     submitButtonText: {
         color: '#FFFFFF',

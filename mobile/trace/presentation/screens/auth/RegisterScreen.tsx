@@ -1,67 +1,132 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, Dimensions, SafeAreaView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
 import { Input } from '../../../components/common/Input';
 import { colors } from '../../../shared/constants/theme';
 import { RegisterData } from '../../../domain/entities/Auth';
 import { UserRole } from './RoleSelectionScreen';
 import { MaterialIcons } from '@expo/vector-icons';
-
-type Step = 'basic' | 'role-specific' | 'password';
-
-interface FormData extends RegisterData {
-    confirmPassword: string;
-}
+import { useAuth } from '../../../presentation/hooks/useAuth';
+import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
+import { useNetworkStatus } from '../../../presentation/hooks/useNetworkStatus';
+import { useForm } from '../../../presentation/hooks/useForm';
 
 const { height } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 24;
 
+type Step = 'basic' | 'role-specific' | 'password';
+
+interface FormValues extends RegisterData {
+    confirmPassword: string;
+}
+
+interface FormErrors {
+    [key: string]: string;
+}
+
 export const RegisterScreen = observer(() => {
     const { role } = useLocalSearchParams<{ role: UserRole }>();
-    const { authStore } = useStores();
-    const [currentStep, setCurrentStep] = useState<Step>('basic');
-    const [formData, setFormData] = useState<FormData>({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: role as UserRole,
-        matricNo: '',
-        program: '',
-        level: '',
-        staffId: '',
-        college: '',
+    const { register, isRegistering } = useAuth();
+    const { handleError } = useErrorHandler({
+        showErrorAlert: true
     });
+    const { isConnected } = useNetworkStatus();
+    const [currentStep, setCurrentStep] = React.useState<Step>('basic');
 
-    const updateForm = (key: keyof FormData, value: string) => {
-        setFormData(prev => ({ ...prev, [key]: value }));
-    };
+    const { formState, setFieldValue, handleSubmit, isSubmitting } = useForm<FormValues, FormErrors>({
+        store: {} as FormErrors,
+        initialValues: {
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            role: role as UserRole,
+            matricNo: '',
+            program: '',
+            level: '',
+            staffId: '',
+            college: ''
+        },
+        validationRules: {
+            firstName: [{ validate: (value: string): boolean => !!value, message: 'First name is required' }],
+            lastName: [{ validate: (value: string): boolean => !!value, message: 'Last name is required' }],
+            email: [
+                { validate: (value: string): boolean => !!value, message: 'Email is required' },
+                { validate: (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), message: 'Invalid email format' }
+            ],
+            password: [
+                { validate: (value: string): boolean => !!value, message: 'Password is required' },
+                { validate: (value: string): boolean => value.length >= 8, message: 'Password must be at least 8 characters' }
+            ],
+            confirmPassword: [
+                { validate: (value: string): boolean => !!value, message: 'Please confirm your password' },
+                { validate: (value: string): boolean => value === formState.password?.value, message: 'Passwords do not match' }
+            ],
+            matricNo: [
+                { 
+                    validate: (value: string): boolean => !formState.role?.value || formState.role.value !== 'student' || !!value,
+                    message: 'Matric number is required for students'
+                }
+            ],
+            program: [
+                {
+                    validate: (value: string): boolean => !formState.role?.value || formState.role.value !== 'student' || !!value,
+                    message: 'Program is required for students'
+                }
+            ],
+            level: [
+                {
+                    validate: (value: string): boolean => !formState.role?.value || formState.role.value !== 'student' || !!value,
+                    message: 'Level is required for students'
+                }
+            ],
+            staffId: [
+                {
+                    validate: (value: string): boolean => !formState.role?.value || formState.role.value !== 'lecturer' || !!value,
+                    message: 'Staff ID is required for lecturers'
+                }
+            ],
+            college: [
+                {
+                    validate: (value: string): boolean => !formState.role?.value || formState.role.value !== 'lecturer' || !!value,
+                    message: 'College is required for lecturers'
+                }
+            ]
+        },
+        action: async (_, values) => {
+            await handleError(async () => {
+                const { confirmPassword, ...registrationData } = values;
+                await register(registrationData);
+            });
+        }
+    });
 
     const handleNext = () => {
         switch (currentStep) {
             case 'basic':
-                if (!formData.firstName || !formData.lastName || !formData.email) {
+                if (!formState.firstName?.value || !formState.lastName?.value || !formState.email?.value) {
                     Alert.alert('Error', 'Please fill in all fields');
                     return;
                 }
                 setCurrentStep('role-specific');
                 break;
             case 'role-specific':
-                if (formData.role === 'student' && (!formData.matricNo || !formData.program || !formData.level)) {
+                if (formState.role?.value === 'student' && 
+                    (!formState.matricNo?.value || !formState.program?.value || !formState.level?.value)) {
                     Alert.alert('Error', 'Please fill in all student details');
                     return;
                 }
-                if (formData.role === 'lecturer' && (!formData.staffId || !formData.college)) {
+                if (formState.role?.value === 'lecturer' && 
+                    (!formState.staffId?.value || !formState.college?.value)) {
                     Alert.alert('Error', 'Please fill in all lecturer details');
                     return;
                 }
                 setCurrentStep('password');
                 break;
             case 'password':
-                handleRegister();
+                handleSubmit();
                 break;
         }
     };
@@ -77,21 +142,6 @@ export const RegisterScreen = observer(() => {
             case 'basic':
                 router.back();
                 break;
-        }
-    };
-
-    const handleRegister = async () => {
-        if (formData.password !== formData.confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
-            return;
-        }
-
-        try {
-            const { confirmPassword, ...registrationData } = formData;
-            await authStore.register(registrationData);
-            // Navigation will be handled by the root layout based on user role
-        } catch (error) {
-            Alert.alert('Error', 'Registration failed. Please try again.');
         }
     };
 
@@ -125,9 +175,10 @@ export const RegisterScreen = observer(() => {
                     </View>
                     <Input
                         placeholder="First Name"
-                        value={formData.firstName}
-                        onChangeText={(value) => updateForm('firstName', value)}
+                        value={formState.firstName?.value}
+                        onChangeText={(value) => setFieldValue('firstName', value)}
                         inputContainerStyle={styles.inputField}
+                        error={formState.firstName?.error}
                     />
                 </View>
                 <View style={styles.inputContainer}>
@@ -136,9 +187,10 @@ export const RegisterScreen = observer(() => {
                     </View>
                     <Input
                         placeholder="Last Name"
-                        value={formData.lastName}
-                        onChangeText={(value) => updateForm('lastName', value)}
+                        value={formState.lastName?.value}
+                        onChangeText={(value) => setFieldValue('lastName', value)}
                         inputContainerStyle={styles.inputField}
+                        error={formState.lastName?.error}
                     />
                 </View>
                 <View style={styles.inputContainer}>
@@ -147,11 +199,12 @@ export const RegisterScreen = observer(() => {
                     </View>
                     <Input
                         placeholder="Email"
-                        value={formData.email}
-                        onChangeText={(value) => updateForm('email', value)}
+                        value={formState.email?.value}
+                        onChangeText={(value) => setFieldValue('email', value)}
                         keyboardType="email-address"
                         autoCapitalize="none"
                         inputContainerStyle={styles.inputField}
+                        error={formState.email?.error}
                     />
                 </View>
             </View>
@@ -162,17 +215,17 @@ export const RegisterScreen = observer(() => {
         <View style={styles.stepContainer}>
             <View style={styles.header}>
                 <Text style={styles.title}>
-                    {formData.role === 'student' ? 'Student Details' : 'Lecturer Details'}
+                    {formState.role?.value === 'student' ? 'Student Details' : 'Lecturer Details'}
                 </Text>
                 <Text style={styles.subtitle}>
-                    {formData.role === 'student' 
+                    {formState.role?.value === 'student' 
                         ? 'Complete your student profile'
                         : 'Complete your lecturer profile'
                     }
                 </Text>
             </View>
             <View style={styles.formContainer}>
-                {formData.role === 'student' ? (
+                {formState.role?.value === 'student' ? (
                     <>
                         <View style={styles.inputContainer}>
                             <View style={styles.iconWrapper}>
@@ -180,10 +233,11 @@ export const RegisterScreen = observer(() => {
                             </View>
                             <Input
                                 placeholder="Matric Number"
-                                value={formData.matricNo}
-                                onChangeText={(value) => updateForm('matricNo', value)}
+                                value={formState.matricNo?.value}
+                                onChangeText={(value) => setFieldValue('matricNo', value)}
                                 autoCapitalize="characters"
                                 inputContainerStyle={styles.inputField}
+                                error={formState.matricNo?.error}
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -192,9 +246,10 @@ export const RegisterScreen = observer(() => {
                             </View>
                             <Input
                                 placeholder="Program"
-                                value={formData.program}
-                                onChangeText={(value) => updateForm('program', value)}
+                                value={formState.program?.value}
+                                onChangeText={(value) => setFieldValue('program', value)}
                                 inputContainerStyle={styles.inputField}
+                                error={formState.program?.error}
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -203,10 +258,10 @@ export const RegisterScreen = observer(() => {
                             </View>
                             <Input
                                 placeholder="Level"
-                                value={formData.level}
-                                onChangeText={(value) => updateForm('level', value)}
-                                keyboardType="numeric"
+                                value={formState.level?.value}
+                                onChangeText={(value) => setFieldValue('level', value)}
                                 inputContainerStyle={styles.inputField}
+                                error={formState.level?.error}
                             />
                         </View>
                     </>
@@ -218,10 +273,11 @@ export const RegisterScreen = observer(() => {
                             </View>
                             <Input
                                 placeholder="Staff ID"
-                                value={formData.staffId}
-                                onChangeText={(value) => updateForm('staffId', value)}
+                                value={formState.staffId?.value}
+                                onChangeText={(value) => setFieldValue('staffId', value)}
                                 autoCapitalize="characters"
                                 inputContainerStyle={styles.inputField}
+                                error={formState.staffId?.error}
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -230,9 +286,10 @@ export const RegisterScreen = observer(() => {
                             </View>
                             <Input
                                 placeholder="College"
-                                value={formData.college}
-                                onChangeText={(value) => updateForm('college', value)}
+                                value={formState.college?.value}
+                                onChangeText={(value) => setFieldValue('college', value)}
                                 inputContainerStyle={styles.inputField}
+                                error={formState.college?.error}
                             />
                         </View>
                     </>
@@ -254,10 +311,11 @@ export const RegisterScreen = observer(() => {
                     </View>
                     <Input
                         placeholder="Password"
-                        value={formData.password}
-                        onChangeText={(value) => updateForm('password', value)}
+                        value={formState.password?.value}
+                        onChangeText={(value) => setFieldValue('password', value)}
                         secureTextEntry
                         inputContainerStyle={styles.inputField}
+                        error={formState.password?.error}
                     />
                 </View>
                 <View style={styles.inputContainer}>
@@ -266,10 +324,11 @@ export const RegisterScreen = observer(() => {
                     </View>
                     <Input
                         placeholder="Confirm Password"
-                        value={formData.confirmPassword}
-                        onChangeText={(value) => updateForm('confirmPassword', value)}
+                        value={formState.confirmPassword?.value}
+                        onChangeText={(value) => setFieldValue('confirmPassword', value)}
                         secureTextEntry
                         inputContainerStyle={styles.inputField}
+                        error={formState.confirmPassword?.error}
                     />
                 </View>
             </View>
@@ -292,7 +351,7 @@ export const RegisterScreen = observer(() => {
             <KeyboardAvoidingView 
                 style={styles.container}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
             >
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <ScrollView 
@@ -308,33 +367,37 @@ export const RegisterScreen = observer(() => {
                         
                         <View style={styles.footer}>
                             <View style={styles.buttonContainer}>
-            <TouchableOpacity
+                                <TouchableOpacity
                                     style={[styles.button, styles.backButton]}
                                     onPress={handleBack}
                                     activeOpacity={0.8}
-            >
+                                >
                                     <Text style={[styles.buttonText, styles.backButtonText]}>Back</Text>
-            </TouchableOpacity>
+                                </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, styles.nextButton]}
+                                    style={[styles.button, styles.nextButton, (!isConnected || isSubmitting) && styles.buttonDisabled]}
                                     onPress={handleNext}
                                     activeOpacity={0.8}
+                                    disabled={!isConnected || isSubmitting}
                                 >
                                     <Text style={styles.buttonText}>
-                                        {currentStep === 'password' ? 'Register' : 'Next'}
+                                        {currentStep === 'password' 
+                                            ? (isSubmitting ? 'Registering...' : 'Register')
+                                            : 'Next'
+                                        }
                                     </Text>
                                 </TouchableOpacity>
                             </View>
 
-            <TouchableOpacity
-                onPress={() => router.push('/login')}
+                            <TouchableOpacity
+                                onPress={() => router.push('/login')}
                                 style={styles.loginLink}
                                 activeOpacity={0.6}
-            >
+                            >
                                 <Text style={styles.loginLinkText}>Already have an account?</Text>
                                 <Text style={styles.loginLinkTextBold}>Sign In</Text>
-            </TouchableOpacity>
-        </View>
+                            </TouchableOpacity>
+                        </View>
                     </ScrollView>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
@@ -473,6 +536,9 @@ const styles = StyleSheet.create({
     nextButton: {
         flex: 2,
         backgroundColor: colors.primary,
+    },
+    buttonDisabled: {
+        opacity: 0.5,
     },
     buttonText: {
         color: '#FFFFFF',

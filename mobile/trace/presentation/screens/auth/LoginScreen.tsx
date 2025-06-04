@@ -1,28 +1,49 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
 import { Input } from '../../../components/common/Input';
 import { colors } from '../../../shared/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '../../../presentation/hooks/useAuth';
+import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
+import { useNetworkStatus } from '../../../presentation/hooks/useNetworkStatus';
+import { useForm } from '../../../presentation/hooks/useForm';
 
 const { height } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 24;
 
 export const LoginScreen = observer(() => {
-    const { authStore } = useStores();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-
-    const handleLogin = async () => {
-        try {
-            await authStore.login({ email, password });
-            // Navigation will be handled by the root layout based on user role
-        } catch (error) {
+    const { login } = useAuth();
+    const { handleError } = useErrorHandler({
+        showErrorAlert: true,
+        onAuthError: (error) => {
             Alert.alert('Error', 'Invalid email or password');
         }
-    };
+    });
+    const { isConnected } = useNetworkStatus();
+
+    const { formState, setFieldValue, handleSubmit, isSubmitting } = useForm({
+        store: null,
+        initialValues: {
+            email: '',
+            password: ''
+        },
+        validationRules: {
+            email: [
+                { validate: (value) => !!value, message: 'Email is required' },
+                { validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), message: 'Invalid email format' }
+            ],
+            password: [
+                { validate: (value) => !!value, message: 'Password is required' }
+            ]
+        },
+        action: async (_, values) => {
+            await handleError(async () => {
+                await login(values);
+            });
+        }
+    });
 
     return (
         <KeyboardAvoidingView 
@@ -44,30 +65,41 @@ export const LoginScreen = observer(() => {
 
                     <View style={styles.formContainer}>
                         <View style={styles.inputContainer}>
-                            <View style={styles.iconWrapper}>
-                                <MaterialIcons name="email" size={20} color={colors.textSecondary} />
+                            <View style={styles.inputWrapper}>
+                                <View style={styles.iconWrapper}>
+                                    <MaterialIcons name="email" size={20} color={colors.textSecondary} />
+                                </View>
+                                <Input
+                                    placeholder="Email"
+                                    value={formState.email.value}
+                                    onChangeText={(value) => setFieldValue('email', value)}
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                    inputContainerStyle={styles.inputField}
+                                />
                             </View>
-                            <Input
-                                placeholder="Email"
-                                value={email}
-                                onChangeText={setEmail}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                inputContainerStyle={styles.inputField}
-                            />
+                            { 
+                                <Text style={styles.errorText}>{formState.email.error}</Text>
+                            }
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <View style={styles.iconWrapper}>
-                                <MaterialIcons name="lock" size={20} color={colors.textSecondary} />
+                            <View style={styles.inputWrapper}>
+                                <View style={styles.iconWrapper}>
+                                    <MaterialIcons name="lock" size={20} color={colors.textSecondary} />
+                                </View>
+                                <Input
+                                    placeholder="Password"
+                                    value={formState.password.value}
+                                    onChangeText={(value) => setFieldValue('password', value)}
+                                    secureTextEntry
+                                    inputContainerStyle={styles.inputField}
+                                    error={formState.password.error}
+                                />
                             </View>
-                            <Input
-                                placeholder="Password"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry
-                                inputContainerStyle={styles.inputField}
-                            />
+                            { (
+                                <Text style={styles.errorText}>{formState.password.error}</Text>
+                            )}
                         </View>
 
                         <TouchableOpacity
@@ -81,11 +113,14 @@ export const LoginScreen = observer(() => {
 
                     <View style={styles.footer}>
                         <TouchableOpacity
-                            style={styles.loginButton}
-                            onPress={handleLogin}
+                            style={[styles.loginButton, (!isConnected || isSubmitting) && styles.buttonDisabled]}
+                            onPress={handleSubmit}
                             activeOpacity={0.8}
+                            disabled={!isConnected || isSubmitting}
                         >
-                            <Text style={styles.loginButtonText}>Login</Text>
+                            <Text style={styles.loginButtonText}>
+                                {isSubmitting ? 'Signing in...' : 'Login'}
+                            </Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -106,6 +141,7 @@ export const LoginScreen = observer(() => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#FAFAFA',
     },
     scrollView: {
         flex: 1,
@@ -133,9 +169,13 @@ const styles = StyleSheet.create({
         fontWeight: '400',
     },
     formContainer: {
-        gap: 16,
+        gap: 10,
     },
     inputContainer: {
+        flexDirection: 'column',
+
+    },
+    inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#FFFFFF',
@@ -168,7 +208,7 @@ const styles = StyleSheet.create({
     },
     forgotPassword: {
         alignItems: 'flex-end',
-        paddingVertical: 8,
+        paddingVertical: 2,
     },
     forgotPasswordText: {
         color: colors.primary,
@@ -194,6 +234,9 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 4,
     },
+    buttonDisabled: {
+        opacity: 0.5,
+    },
     loginButtonText: {
         color: '#FFFFFF',
         fontSize: 16,
@@ -217,5 +260,11 @@ const styles = StyleSheet.create({
         color: colors.primary,
         fontSize: 15,
         fontWeight: '600',
+    },
+    errorText: {
+        fontSize: 14,
+        color: colors.error,
+        marginTop: 6,
+        marginLeft: 40,
     },
 }); 

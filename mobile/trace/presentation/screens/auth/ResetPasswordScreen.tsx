@@ -1,48 +1,69 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView, Dimensions } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
 import { Input } from '../../../components/common/Input';
 import { colors } from '../../../shared/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '../../../presentation/hooks/useAuth';
+import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
+import { useNetworkStatus } from '../../../presentation/hooks/useNetworkStatus';
+import { useForm } from '../../../presentation/hooks/useForm';
 
 const { height } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 24;
 
+interface FormValues {
+    password: string;
+    confirmPassword: string;
+}
+
+interface FormErrors {
+    [key: string]: string;
+}
+
 export const ResetPasswordScreen = observer(() => {
     const { token } = useLocalSearchParams<{ token: string }>();
-    const { authStore } = useStores();
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const { confirmPasswordReset, isConfirmingReset } = useAuth();
+    const { handleError } = useErrorHandler({
+        showErrorAlert: true
+    });
+    const { isConnected } = useNetworkStatus();
 
-    const handleSubmit = async () => {
-        if (!password || !confirmPassword) {
-            Alert.alert('Error', 'Please fill in all fields');
-            return;
+    const { formState, setFieldValue, handleSubmit, isSubmitting } = useForm<FormValues, FormErrors>({
+        store: {} as FormErrors,
+        initialValues: {
+            password: '',
+            confirmPassword: ''
+        },
+        validationRules: {
+            password: [
+                { validate: (value: string): boolean => !!value, message: 'Password is required' },
+                { validate: (value: string): boolean => value.length >= 8, message: 'Password must be at least 8 characters' },
+                { validate: (value: string): boolean => /[A-Z]/.test(value), message: 'Password must contain at least one uppercase letter' },
+                { validate: (value: string): boolean => /[0-9]/.test(value), message: 'Password must contain at least one number' }
+            ],
+            confirmPassword: [
+                { validate: (value: string): boolean => !!value, message: 'Please confirm your password' },
+                { validate: (value: string): boolean => value === formState.password?.value, message: 'Passwords do not match' }
+            ]
+        },
+        action: async (_, values) => {
+            await handleError(async () => {
+                await confirmPasswordReset({ token, newPassword: values.password });
+                Alert.alert(
+                    'Success',
+                    'Your password has been reset successfully',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => router.push('/login'),
+                        },
+                    ]
+                );
+            });
         }
-
-        if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
-            return;
-        }
-
-        try {
-            await authStore.confirmPasswordReset({ token, newPassword: password });
-            Alert.alert(
-                'Success',
-                'Your password has been reset successfully',
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => router.push('/login'),
-                    },
-                ]
-            );
-        } catch (error) {
-            Alert.alert('Error', 'Failed to reset password. Please try again.');
-        }
-    };
+    });
 
     return (
         <KeyboardAvoidingView 
@@ -71,10 +92,11 @@ export const ResetPasswordScreen = observer(() => {
                             </View>
                             <Input
                                 placeholder="New Password"
-                                value={password}
-                                onChangeText={setPassword}
+                                value={formState.password?.value}
+                                onChangeText={(value) => setFieldValue('password', value)}
                                 secureTextEntry
                                 inputContainerStyle={styles.inputField}
+                                error={formState.password?.error}
                             />
                         </View>
 
@@ -84,10 +106,11 @@ export const ResetPasswordScreen = observer(() => {
                             </View>
                             <Input
                                 placeholder="Confirm New Password"
-                                value={confirmPassword}
-                                onChangeText={setConfirmPassword}
+                                value={formState.confirmPassword?.value}
+                                onChangeText={(value) => setFieldValue('confirmPassword', value)}
                                 secureTextEntry
                                 inputContainerStyle={styles.inputField}
+                                error={formState.confirmPassword?.error}
                             />
                         </View>
 
@@ -95,25 +118,25 @@ export const ResetPasswordScreen = observer(() => {
                             <Text style={styles.requirementsTitle}>Password Requirements:</Text>
                             <View style={styles.requirementItem}>
                                 <MaterialIcons 
-                                    name={password.length >= 8 ? "check-circle" : "radio-button-unchecked"} 
+                                    name={formState.password?.value?.length >= 8 ? "check-circle" : "radio-button-unchecked"} 
                                     size={16} 
-                                    color={password.length >= 8 ? colors.success : colors.textSecondary} 
+                                    color={formState.password?.value?.length >= 8 ? colors.success : colors.textSecondary} 
                                 />
                                 <Text style={styles.requirementText}>At least 8 characters</Text>
                             </View>
                             <View style={styles.requirementItem}>
                                 <MaterialIcons 
-                                    name={/[A-Z]/.test(password) ? "check-circle" : "radio-button-unchecked"} 
+                                    name={/[A-Z]/.test(formState.password?.value || '') ? "check-circle" : "radio-button-unchecked"} 
                                     size={16} 
-                                    color={/[A-Z]/.test(password) ? colors.success : colors.textSecondary} 
+                                    color={/[A-Z]/.test(formState.password?.value || '') ? colors.success : colors.textSecondary} 
                                 />
                                 <Text style={styles.requirementText}>One uppercase letter</Text>
                             </View>
                             <View style={styles.requirementItem}>
                                 <MaterialIcons 
-                                    name={/[0-9]/.test(password) ? "check-circle" : "radio-button-unchecked"} 
+                                    name={/[0-9]/.test(formState.password?.value || '') ? "check-circle" : "radio-button-unchecked"} 
                                     size={16} 
-                                    color={/[0-9]/.test(password) ? colors.success : colors.textSecondary} 
+                                    color={/[0-9]/.test(formState.password?.value || '') ? colors.success : colors.textSecondary} 
                                 />
                                 <Text style={styles.requirementText}>One number</Text>
                             </View>
@@ -122,11 +145,14 @@ export const ResetPasswordScreen = observer(() => {
 
                     <View style={styles.footer}>
                         <TouchableOpacity
-                            style={styles.submitButton}
+                            style={[styles.submitButton, (!isConnected || isSubmitting) && styles.buttonDisabled]}
                             onPress={handleSubmit}
                             activeOpacity={0.8}
+                            disabled={!isConnected || isSubmitting}
                         >
-                            <Text style={styles.submitButtonText}>Reset Password</Text>
+                            <Text style={styles.submitButtonText}>
+                                {isSubmitting ? 'Resetting...' : 'Reset Password'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -243,6 +269,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 8,
         elevation: 4,
+    },
+    buttonDisabled: {
+        opacity: 0.5,
     },
     submitButtonText: {
         color: '#FFFFFF',
