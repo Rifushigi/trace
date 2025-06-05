@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { ClassService } from '@/domain/services/class/ClassService';
 import { Class } from '@/domain/entities/Class';
+import { NotFoundError } from '@/shared/errors/AppError';
 
 export class ClassStore {
     public readonly classService: ClassService;
@@ -30,7 +31,11 @@ export class ClassStore {
         this.isLoading = true;
         this.error = null;
         try {
-            return await this.classService.getClass(id);
+            const result = await this.classService.getClass(id);
+            if (result) {
+                return result;
+            }
+            throw new NotFoundError("Class not found");
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Failed to fetch class';
             throw error;

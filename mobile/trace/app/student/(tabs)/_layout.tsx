@@ -45,6 +45,15 @@ export default function TabsLayout() {
                     ),
                 }} 
             />
+                <Tabs.Screen
+                    name="classes"
+                    options={{ 
+                        title: 'Classes',
+                        tabBarIcon: ({ color, size }) => (
+                            <MaterialIcons name="school" size={size} color={color} />
+                        ),
+                    }} 
+                />
             <Tabs.Screen
                 name="attendance-status"
                 options={{ 
