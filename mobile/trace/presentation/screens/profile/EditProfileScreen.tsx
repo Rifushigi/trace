@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, TouchableOpacity, Alert, ScrollView } from 'rea
 import { router } from 'expo-router';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
-import { Input } from '../../../components/common/Input';
+import { Input } from '../../components/Input';
 import { colors } from '../../../shared/constants/theme';
 
 export const EditProfileScreen = observer(() => {
