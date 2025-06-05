@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, ViewStyle } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Card } from '../../../components/common/Card';
+import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
 import { router } from 'expo-router';
 import { features } from '../../../config/features';

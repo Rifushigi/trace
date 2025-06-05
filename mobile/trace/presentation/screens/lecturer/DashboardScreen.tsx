@@ -1,22 +1,59 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, Image, Animated, Pressable } from 'react-native';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, Image, Animated, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
-import { Card } from '../../../components/common/Card';
+import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
 import { Lecturer } from '../../../domain/entities/User';
 import { router } from 'expo-router';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { features } from '../../../config/features';
+import { getMockLecturerDashboard, stopSession } from '../../../presentation/mocks/lecturerDashboardMock';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+import { useRefresh } from '../../hooks/useRefresh';
+
+const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+};
 
 export const DashboardScreen = observer(() => {
     const { authStore } = useStores();
     const user = authStore.state.user as Lecturer;
-    const [refreshing, setRefreshing] = React.useState(false);
-    const [clickCount, setClickCount] = React.useState(0);
-    const scaleAnim = React.useRef(new Animated.Value(1)).current;
-    const pulseAnim = React.useRef(new Animated.Value(1)).current;
+    const [clickCount, setClickCount] = useState(0);
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const pulseAnim = useRef(new Animated.Value(1)).current;
 
-    const startPulseAnimation = React.useCallback(() => {
+    const { handleError, isHandlingError } = useErrorHandler({
+        showErrorAlert: true,
+        onNetworkError: (error) => {
+            Alert.alert('Network Error', 'Please check your internet connection');
+        }
+    });
+
+    const { isConnected } = useNetworkStatus();
+
+    const { refreshing, handleRefresh } = useRefresh({
+        onRefresh: async () => {
+            if (features.useMockApi) {
+                // In development, simulate a delay for mock data
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return;
+            }
+            // TODO: Implement real API refresh logic
+        }
+    });
+
+    useEffect(() => {
+        if (isConnected || features.useMockApi) {
+            handleRefresh();
+        }
+    }, []);
+
+    const startPulseAnimation = useCallback(() => {
         if (clickCount >= 10) return;
         
         Animated.loop(
@@ -35,47 +72,27 @@ export const DashboardScreen = observer(() => {
         ).start();
     }, [clickCount, pulseAnim]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         startPulseAnimation();
     }, [startPulseAnimation]);
-
-    // Mock data - replace with actual data from your backend
-    const todayClasses = [
-        { id: '1', course: 'Computer Science 101', time: '09:00 - 10:30', room: 'Room 101', status: 'upcoming', students: 45 },
-        { id: '2', course: 'Data Structures', time: '11:00 - 12:30', room: 'Room 202', status: 'active', students: 50 },
-        { id: '3', course: 'Algorithms', time: '14:00 - 15:30', room: 'Room 303', status: 'completed', students: 38 },
-    ];
-
-    const activeSessions = [
-        { id: '1', course: 'Data Structures', startTime: '11:00', attendance: '45/50', progress: 90 },
-    ];
-
-    const recentActivities = [
-        { id: '1', type: 'session_started', course: 'Data Structures', time: '11:00 AM', icon: 'play-circle-filled', color: colors.success },
-        { id: '2', type: 'session_ended', course: 'Computer Science 101', time: '10:30 AM', icon: 'stop-circle', color: colors.error },
-        { id: '3', type: 'attendance_exported', course: 'Algorithms', time: 'Yesterday', icon: 'cloud-download', color: colors.success },
-    ];
-
-    const classStatistics = {
-        totalClasses: 12,
-        activeSessions: 1,
-        totalStudents: 150,
-        averageAttendance: '85%',
-    };
-
-    const onRefresh = React.useCallback(() => {
-        setRefreshing(true);
-        // TODO: Implement refresh logic
-        setTimeout(() => {
-            setRefreshing(false);
-        }, 2000);
-    }, []);
 
     const handleStartSession = (classId: string) => {
         router.push({
             pathname: '/session-control',
             params: { classId }
         });
+    };
+
+    const handleStopSession = (sessionId: string) => {
+        if (features.useMockApi) {
+            const success = stopSession(sessionId);
+            if (success) {
+                handleRefresh();
+            }
+        } else {
+            // TODO: Implement real API call to stop session
+            Alert.alert('Not Implemented', 'This feature is not yet implemented in the real API');
+        }
     };
 
     const handleViewClassDetails = (classId: string) => {
@@ -111,6 +128,41 @@ export const DashboardScreen = observer(() => {
         router.push('/(profile)');
     };
 
+    if (!user) {
+        return null;
+    }
+
+    if (!features.useMockApi && isHandlingError) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        );
+    }
+
+    if (!features.useMockApi && !isConnected) {
+        return (
+            <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>No internet connection available</Text>
+            </View>
+        );
+    }
+
+    // Get mock data
+    const { todayClasses, activeSessions, recentActivities, classStatistics } = features.useMockApi 
+        ? getMockLecturerDashboard()
+        : {
+            todayClasses: [],
+            activeSessions: [],
+            recentActivities: [],
+            classStatistics: {
+                totalClasses: 0,
+                activeSessions: 0,
+                totalStudents: 0,
+                averageAttendance: '0%'
+            }
+        };
+
     return (
         <ScrollView
             style={styles.container}
@@ -119,7 +171,12 @@ export const DashboardScreen = observer(() => {
                 paddingBottom: 16,
             }}
             refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                <RefreshControl 
+                    refreshing={refreshing} 
+                    onRefresh={handleRefresh}
+                    tintColor={colors.primary}
+                    colors={[colors.primary]}
+                />
             }
         >
             {/* Header Section */}
@@ -127,7 +184,7 @@ export const DashboardScreen = observer(() => {
                 <View style={styles.headerContent}>
                     <View style={styles.welcomeSection}>
                         <Text style={styles.welcomeText}>
-                            Good morning,{'\n'}
+                            {getGreeting()},{'\n'}
                             <Text style={styles.nameText}>{user?.firstName}!</Text>
                         </Text>
                         <Text style={styles.dateText}>
@@ -182,67 +239,85 @@ export const DashboardScreen = observer(() => {
             {/* Today's Classes */}
             <Card style={styles.section}>
                 <View style={styles.sectionHeader}>
-                    <MaterialIcons name="class" size={24} color={colors.primary} />
+                    <MaterialIcons name="schedule" size={24} color={colors.primary} />
                     <Text style={styles.sectionTitle}>Today&apos;s Classes</Text>
                 </View>
-                {todayClasses.map((classItem) => (
-                    <TouchableOpacity
-                        key={classItem.id}
-                        style={styles.classItem}
-                        onPress={() => handleViewClassDetails(classItem.id)}
-                    >
-                        <View style={styles.classInfo}>
-                            <Text style={styles.className}>{classItem.course}</Text>
-                            <Text style={styles.classDetails}>
-                                <MaterialIcons name="access-time" size={14} color={colors.textSecondary} />
-                                {' '}{classItem.time} • {classItem.room} • {classItem.students} students
-                            </Text>
-                        </View>
-                        <View style={[
-                            styles.statusBadge,
-                            classItem.status === 'active' ? styles.activeBadge :
-                            classItem.status === 'upcoming' ? styles.upcomingBadge :
-                            styles.completedBadge
-                        ]}>
-                            <Text style={styles.statusText}>
-                                {classItem.status.charAt(0).toUpperCase() + classItem.status.slice(1)}
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
-                ))}
+                {todayClasses.length > 0 ? (
+                    todayClasses.map((cls) => (
+                        <TouchableOpacity
+                            key={cls.id}
+                            style={styles.classItem}
+                            onPress={() => handleViewClassDetails(cls.id)}
+                        >
+                            <View style={styles.classInfo}>
+                                <Text style={styles.className}>{cls.course}</Text>
+                                <Text style={styles.classDetails}>
+                                    {cls.time} • {cls.room}
+                                </Text>
+                            </View>
+                            <View style={styles.classStatus}>
+                                <Text style={[
+                                    styles.statusText,
+                                    { color: cls.status === 'active' ? colors.success : colors.textSecondary }
+                                ]}>
+                                    {cls.status}
+                                </Text>
+                                <Text style={styles.studentCount}>
+                                    {cls.students} students
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    ))
+                ) : (
+                    <Text style={styles.noClassesText}>No classes scheduled for today</Text>
+                )}
             </Card>
 
             {/* Active Sessions */}
-            <Card style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <MaterialIcons name="wifi-tethering" size={24} color={colors.primary} />
-                    <Text style={styles.sectionTitle}>Active Sessions</Text>
-                </View>
-                {activeSessions.map((session) => (
-                    <TouchableOpacity
-                        key={session.id}
-                        style={styles.sessionItem}
-                        onPress={() => handleStartSession(session.id)}
-                    >
-                        <View style={styles.sessionInfo}>
-                            <Text style={styles.sessionName}>{session.course}</Text>
-                            <Text style={styles.sessionDetails}>
-                                Started at {session.startTime} • {session.attendance} students
-                            </Text>
-                            <View style={styles.progressBar}>
-                                <View style={[styles.progressFill, { width: `${session.progress}%` }]} />
-                            </View>
-                        </View>
+            {activeSessions.length > 0 && (
+                <Card style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <MaterialIcons name="play-circle-filled" size={24} color={colors.success} />
+                        <Text style={styles.sectionTitle}>Active Sessions</Text>
+                    </View>
+                    {activeSessions.map((session) => (
                         <TouchableOpacity
-                            style={styles.controlButton}
+                            key={session.id}
+                            style={styles.sessionItem}
                             onPress={() => handleStartSession(session.id)}
                         >
-                            <MaterialIcons name="settings" size={20} color="#FFF" />
-                            <Text style={styles.controlButtonText}>Control</Text>
+                            <View style={styles.sessionInfo}>
+                                <Text style={styles.sessionName}>{session.course}</Text>
+                                <Text style={styles.sessionDetails}>
+                                    Started at {session.startTime}
+                                </Text>
+                            </View>
+                            <View style={styles.sessionStats}>
+                                <Text style={styles.attendanceText}>
+                                    {session.attendance}
+                                </Text>
+                                <View style={styles.progressBar}>
+                                    <View 
+                                        style={[
+                                            styles.progressFill,
+                                            { width: `${session.progress}%` }
+                                        ]} 
+                                    />
+                                </View>
+                                {session.status === 'active' && (
+                                    <TouchableOpacity
+                                        style={styles.stopButton}
+                                        onPress={() => handleStopSession(session.id)}
+                                    >
+                                        <MaterialIcons name="stop-circle" size={20} color="#FFF" />
+                                        <Text style={styles.stopButtonText}>Stop</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </TouchableOpacity>
-                    </TouchableOpacity>
-                ))}
-            </Card>
+                    ))}
+                </Card>
+            )}
 
             {/* Class Statistics */}
             <Card style={styles.section}>
@@ -274,6 +349,54 @@ export const DashboardScreen = observer(() => {
                 </View>
             </Card>
 
+            {/* Recent Activities */}
+            <Card style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="history" size={24} color={colors.primary} />
+                    <Text style={styles.sectionTitle}>Recent Activities</Text>
+                </View>
+                {recentActivities.map((activity) => (
+                    <View key={activity.id} style={styles.activityItem}>
+                        <View style={[styles.activityIcon, { backgroundColor: activity.color + '15' }]}>
+                            <MaterialIcons name={activity.icon as any} size={20} color={activity.color} />
+                        </View>
+                        <View style={styles.activityInfo}>
+                            <Text style={styles.activityTitle}>{activity.course}</Text>
+                            <Text style={styles.activityTime}>{activity.time}</Text>
+                            <Text style={styles.activityDetails}>
+                                {activity.icon === 'play-circle-filled' ? 'Session started' :
+                                 activity.icon === 'stop-circle' ? 'Session ended' :
+                                 activity.icon === 'cloud-download' ? 'Attendance exported' :
+                                 'Manual attendance update'}
+                            </Text>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.activityAction}
+                            onPress={() => {
+                                if (activity.icon === 'play-circle-filled' || activity.icon === 'stop-circle') {
+                                    router.push({
+                                        pathname: '/session-details',
+                                        params: { sessionId: activity.id.split('-')[1] }
+                                    });
+                                } else if (activity.icon === 'cloud-download') {
+                                    // TODO: Implement download functionality
+                                    Alert.alert('Not Implemented', 'Download functionality will be implemented soon');
+                                }
+                            }}
+                        >
+                            <MaterialIcons name="chevron-right" size={24} color={colors.textSecondary} />
+                        </TouchableOpacity>
+                    </View>
+                ))}
+                <TouchableOpacity
+                    style={styles.viewAllButton}
+                    onPress={() => router.push('/activity-history' as any)}
+                >
+                    <Text style={styles.viewAllText}>View All Activities</Text>
+                    <MaterialIcons name="arrow-forward" size={16} color={colors.primary} />
+                </TouchableOpacity>
+            </Card>
+
             {/* Quick Actions */}
             <Card style={styles.section}>
                 <View style={styles.sectionHeader}>
@@ -297,37 +420,6 @@ export const DashboardScreen = observer(() => {
                     </TouchableOpacity>
                 </View>
             </Card>
-
-            {/* Recent Activities */}
-            <Card style={styles.section}>
-                <View style={styles.activityHeader}>
-                    <MaterialIcons name="notifications" size={24} color={colors.primary} />
-                    <Text style={styles.sectionTitle}>Recent Activities</Text>
-                </View>
-                <View>
-                    {recentActivities.map((activity) => (
-                        <View key={activity.id} style={styles.activityItem}>
-                            <View style={styles.activityIconContainer}>
-                                <MaterialIcons name={activity.icon as any} size={24} color={activity.color} />
-                            </View>
-                            <View style={styles.activityContent}>
-                                <Text style={styles.activityType}>
-                                    {activity.type.split('_').map(word => 
-                                        word.charAt(0).toUpperCase() + word.slice(1)
-                                    ).join(' ')}
-                                </Text>
-                                <Text style={styles.activityDetails}>
-                                    {activity.course} • {activity.time}
-                                </Text>
-                            </View>
-                        </View>
-                    ))}
-                </View>
-                    <TouchableOpacity style={styles.viewAllButton}>
-                    <Text style={[styles.viewAllText, { color: '#666666' }]}>View All Activities</Text>
-                    <MaterialIcons name="arrow-forward" size={16} color="#666666" />
-                </TouchableOpacity>
-            </Card>
         </ScrollView>
     );
 });
@@ -350,11 +442,6 @@ const styles = StyleSheet.create({
     },
     welcomeSection: {
         flex: 1,
-    },
-    timeText: {
-        fontSize: 14,
-        color: colors.textSecondary,
-        marginBottom: 4,
     },
     welcomeText: {
         fontSize: 28,
@@ -444,32 +531,28 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: colors.textSecondary,
     },
-    statusBadge: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 12,
-    },
-    activeBadge: {
-        backgroundColor: colors.success + '20',
-    },
-    upcomingBadge: {
-        backgroundColor: colors.warning + '20',
-    },
-    completedBadge: {
-        backgroundColor: colors.primary + '20',
+    classStatus: {
+        alignItems: 'flex-end',
     },
     statusText: {
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: '500',
-        color: colors.text,
+        marginBottom: 4,
+    },
+    studentCount: {
+        fontSize: 12,
+        color: colors.textSecondary,
     },
     sessionItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
     },
     sessionInfo: {
-        marginBottom: 12,
+        flex: 1,
     },
     sessionName: {
         fontSize: 16,
@@ -480,9 +563,18 @@ const styles = StyleSheet.create({
     sessionDetails: {
         fontSize: 14,
         color: colors.textSecondary,
-        marginBottom: 8,
+    },
+    sessionStats: {
+        alignItems: 'flex-end',
+    },
+    attendanceText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: colors.text,
+        marginBottom: 4,
     },
     progressBar: {
+        width: 80,
         height: 4,
         backgroundColor: colors.border,
         borderRadius: 2,
@@ -492,21 +584,6 @@ const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: colors.success,
     },
-    controlButton: {
-        backgroundColor: colors.primary,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
-        alignSelf: 'flex-start',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    controlButtonText: {
-        color: '#FFF',
-        fontSize: 14,
-        fontWeight: '600',
-    },
     statsContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -515,40 +592,21 @@ const styles = StyleSheet.create({
     statItem: {
         flex: 1,
         minWidth: '45%',
-        backgroundColor: colors.background,
-        padding: 16,
-        borderRadius: 12,
         alignItems: 'center',
+        padding: 16,
+        backgroundColor: colors.background,
+        borderRadius: 8,
     },
     statValue: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontWeight: '600',
         color: colors.text,
-        marginVertical: 4,
+        marginTop: 8,
+        marginBottom: 4,
     },
     statLabel: {
-        fontSize: 12,
+        fontSize: 14,
         color: colors.textSecondary,
-        textAlign: 'center',
-    },
-    actionsGrid: {
-        flexDirection: 'row',
-        gap: 16,
-    },
-    actionButton: {
-        flex: 1,
-        backgroundColor: colors.primary,
-        padding: 16,
-        borderRadius: 12,
-        alignItems: 'center',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 8,
-    },
-    actionButtonText: {
-        color: '#FFF',
-        fontSize: 16,
-        fontWeight: '600',
     },
     activityItem: {
         flexDirection: 'row',
@@ -557,46 +615,102 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
     },
-    activityIconContainer: {
+    activityIcon: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: colors.primary + '10',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
     },
-    activityContent: {
+    activityInfo: {
         flex: 1,
     },
-    activityType: {
-        fontSize: 14,
+    activityTitle: {
+        fontSize: 16,
         fontWeight: '500',
         color: colors.text,
+        marginBottom: 4,
+    },
+    activityTime: {
+        fontSize: 14,
+        color: colors.textSecondary,
         marginBottom: 2,
     },
     activityDetails: {
         fontSize: 12,
         color: colors.textSecondary,
     },
-    activityHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-        logoutButton: {
+    activityAction: {
         padding: 8,
-        marginBottom: 8,
     },
     viewAllButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 8,
-        marginTop: 16,
+        padding: 12,
+        marginTop: 8,
     },
     viewAllText: {
         fontSize: 14,
+        color: colors.primary,
         marginRight: 4,
+    },
+    actionsGrid: {
+        flexDirection: 'row',
+        gap: 16,
+    },
+    actionButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        backgroundColor: colors.primary,
+        borderRadius: 8,
+        gap: 8,
+    },
+    actionButtonText: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#FFF',
+    },
+    noClassesText: {
+        textAlign: 'center',
+        color: colors.textSecondary,
+        fontSize: 14,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.background,
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.background,
+        padding: 16,
+    },
+    errorText: {
+        fontSize: 16,
+        color: colors.error,
+        textAlign: 'center',
+    },
+    stopButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.error,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 6,
+        marginTop: 8,
+        gap: 4,
+    },
+    stopButtonText: {
+        color: '#FFF',
+        fontSize: 14,
+        fontWeight: '500',
     },
 }); 

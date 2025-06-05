@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Card } from '../../../components/common/Card';
+import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
 import { router, useLocalSearchParams } from 'expo-router';
 import { features } from '../../../config/features';
@@ -24,7 +24,6 @@ export const AttendanceManagementScreen = observer(() => {
             setClassDetails(mockClass);
             return;
         }
-        // TODO: Implement actual API call
     }, [classId]);
 
     useEffect(() => {
@@ -49,7 +48,7 @@ export const AttendanceManagementScreen = observer(() => {
 
     const handleViewSession = (sessionId: string) => {
         router.push({
-            pathname: '/session-details',
+            pathname: '/(lecturer)/session-details',
             params: { sessionId }
         });
     };
@@ -86,7 +85,6 @@ export const AttendanceManagementScreen = observer(() => {
             }
         >
             <View style={styles.header}>
-                <Text style={styles.title}>Attendance Management</Text>
                 {classDetails && (
                     <View style={styles.classInfo}>
                         <Text style={styles.className}>{classDetails.name}</Text>
@@ -187,12 +185,12 @@ const styles = StyleSheet.create({
     },
     header: {
         padding: 16,
-        backgroundColor: colors.primary,
+        backgroundColor: colors.background,
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: colors.white,
+        color: colors.text,
         marginBottom: 8,
     },
     classInfo: {
@@ -200,13 +198,15 @@ const styles = StyleSheet.create({
     },
     className: {
         fontSize: 18,
-        color: colors.white,
-        fontWeight: '500',
+        color: colors.text,
+        fontWeight: '600',
     },
     classCode: {
-        fontSize: 14,
-        color: colors.white,
+        fontSize: 18,
+        fontWeight: '600',
+        color: colors.text,
         opacity: 0.8,
+        marginTop: 4,
     },
     statsCard: {
         margin: 16,
