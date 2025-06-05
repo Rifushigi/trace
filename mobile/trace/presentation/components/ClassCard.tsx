@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Class } from '../../domain/entities/Class';
-import { colors } from '../../shared/constants/theme';
+import { Class } from '@/domain/entities/Class';
+import { colors } from '@/shared/constants/theme';
 
 interface ClassCardProps {
   class: Class;
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    ...colors.shadows.sm,
+    ...colors.shadows.small,
   },
   header: {
     marginBottom: 12,
