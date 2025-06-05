@@ -37,6 +37,7 @@ export const mockClasses: Class[] = [
             avatar: 'https://i.pravatar.cc/150?img=2',
             staffId: 'LEC001',
             college: 'College of Engineering',
+            office: 'Room 301, Engineering Building',
             isVerified: true,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -63,7 +64,7 @@ export const mockClasses: Class[] = [
         code: 'CSC302',
         name: 'Advanced Algorithms',
         schedule: {
-            day: 'Monday',
+            day: 'Thursday',
             startTime: '11:00',
             endTime: '12:30',
             room: 'Room 202'

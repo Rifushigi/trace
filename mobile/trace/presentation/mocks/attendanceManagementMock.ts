@@ -18,7 +18,7 @@ const createMockStudent = (index: number): Student => ({
 });
 
 const createMockClass = (index: number): Class => ({
-    id: `class-${index}`,
+    id: `${index + 1}`,
     code: `CSC${300 + index}`,
     name: ['Data Structures', 'Algorithms', 'Database Systems', 'Web Development', 'Mobile Development'][index % 5],
     schedule: {
@@ -36,6 +36,7 @@ const createMockClass = (index: number): Class => ({
         avatar: 'https://i.pravatar.cc/150?img=2',
         staffId: 'LEC001',
         college: 'College of Engineering',
+        office: 'Room 301, Engineering Building',
         isVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
