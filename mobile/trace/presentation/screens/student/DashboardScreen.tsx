@@ -1,19 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, Image, Animated, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
-import { Card } from '../../../components/common/Card';
+import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Student } from '../../../domain/entities/User';
 import { router } from 'expo-router';
 import { getStatusColor } from '@/utils/reuseables';
-import { useAttendance } from '../../../presentation/hooks/useAttendance';
-import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
-import { useNetworkStatus } from '../../../presentation/hooks/useNetworkStatus';
-import { useRefresh } from '../../../presentation/hooks/useRefresh';
-import { useClass } from '../../../presentation/hooks/useClass';
+import { useAttendance } from '../../hooks/useAttendance';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+import { useRefresh } from '../../hooks/useRefresh';
+import { useClass } from '../../hooks/useClass';
 import { getMockDataForToday } from '../../../presentation/mocks/dashboardMock';
+import { features } from '../../../config/features';
+import { getMockSchedule } from '../../../presentation/mocks/scheduleMock';
 
 const CARD_MARGIN = 12;
 
@@ -22,18 +24,26 @@ type ClassStatus = 'active' | 'upcoming' | 'completed';
 interface ClassItem {
     id: string;
     course: string;
+    code: string;
     time: string;
     room: string;
     status: ClassStatus;
     instructor: string;
 }
 
+const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+};
+
 export const DashboardScreen = observer(() => {
     const { authStore } = useStores();
     const user = authStore.state.user as Student;
-    const [clickCount, setClickCount] = React.useState(0);
-    const scaleAnim = React.useRef(new Animated.Value(1)).current;
-    const pulseAnim = React.useRef(new Animated.Value(1)).current;
+    const [clickCount, setClickCount] = useState(0);
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const pulseAnim = useRef(new Animated.Value(1)).current;
 
     const {
         sessions,
@@ -43,7 +53,6 @@ export const DashboardScreen = observer(() => {
     } = useAttendance();
 
     const {
-        classes,
         isLoadingClasses,
         getClasses,
     } = useClass();
@@ -59,7 +68,7 @@ export const DashboardScreen = observer(() => {
 
     const { refreshing, handleRefresh } = useRefresh({
         onRefresh: async () => {
-            if (__DEV__) {
+            if (features.useMockApi) {
                 // In development, simulate a delay for mock data
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return;
@@ -76,8 +85,7 @@ export const DashboardScreen = observer(() => {
     });
 
     useEffect(() => {
-        if (__DEV__) {
-            // In development, we don't need to fetch data
+        if (features.useMockApi) {
             return;
         }
         handleError(async () => {
@@ -90,7 +98,7 @@ export const DashboardScreen = observer(() => {
         }, 'Failed to load dashboard data');
     }, [user]);
 
-    const startPulseAnimation = React.useCallback(() => {
+    const startPulseAnimation = useCallback(() => {
         if (clickCount >= 10) return;
         
         Animated.loop(
@@ -109,7 +117,7 @@ export const DashboardScreen = observer(() => {
         ).start();
     }, [clickCount, pulseAnim]);
 
-    React.useEffect(() => {
+        useEffect(() => {
         startPulseAnimation();
     }, [startPulseAnimation]);
 
@@ -143,7 +151,7 @@ export const DashboardScreen = observer(() => {
         return null;
     }
 
-    if (!__DEV__ && (isLoadingSessions || isLoadingClasses || isLoadingStudentAttendance || isHandlingError)) {
+    if (!features.useMockApi && (isLoadingSessions || isLoadingClasses || isLoadingStudentAttendance || isHandlingError)) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={colors.primary} />
@@ -151,7 +159,7 @@ export const DashboardScreen = observer(() => {
         );
     }
 
-    if (!__DEV__ && !isConnected) {
+    if (!features.useMockApi && !isConnected) {
         return (
             <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>No internet connection available</Text>
@@ -160,11 +168,12 @@ export const DashboardScreen = observer(() => {
     }
 
     // Get data based on environment
-    const data = __DEV__ ? getMockDataForToday() : {
-        classes,
+    const data = features.useMockApi ? getMockDataForToday() : {
         sessions,
         student: user
     };
+
+    const mockClasses = getMockSchedule()
 
     // Calculate attendance stats
     const attendanceStats = {
@@ -184,14 +193,15 @@ export const DashboardScreen = observer(() => {
     };
 
     // Transform classes to today's schedule
-    const todayClasses: ClassItem[] = data.classes
-        .filter(cls => cls.schedule?.day === new Date().toLocaleDateString('en-US', { weekday: 'long' }))
+    const todayClasses: ClassItem[] = mockClasses
+        .filter(cls => cls.schedule.day === new Date().toLocaleDateString('en-US', { weekday: 'long' }))
         .map(cls => ({
             id: cls.id,
-            course: cls.name,
-            time: `${cls.schedule?.startTime}-${cls.schedule?.endTime}`,
-            room: cls.schedule?.room || 'TBD',
-            status: cls.schedule ? 'upcoming' : 'completed',
+            course: cls.course,
+            code: cls.code,
+            time: `${cls.schedule.startTime}-${cls.schedule.endTime}`,
+            room: cls.schedule.room || 'TBD',
+            status: cls.status,
             instructor: cls.lecturer.firstName + ' ' + cls.lecturer.lastName
         }));
 
@@ -214,7 +224,7 @@ export const DashboardScreen = observer(() => {
                 <View style={styles.headerContent}>
                     <View style={styles.welcomeSection}>
                         <Text style={styles.welcomeText}>
-                            Good morning,{'\n'}
+                            {getGreeting()},{'\n'}
                             <Text style={styles.nameText}>{user?.firstName}!</Text>
                         </Text>
                         <Text style={styles.dateText}>
@@ -367,6 +377,7 @@ export const DashboardScreen = observer(() => {
                         <View style={styles.classMainContent}>
                             <View style={styles.classInfo}>
                                 <Text style={styles.className}>{classItem.course}</Text>
+                                <Text style={styles.classCode}>{classItem.code}</Text>
                                 <View style={styles.classMetaRow}>
                                     <View style={styles.classMeta}>
                                         <MaterialIcons name="room" size={14} color={colors.textSecondary} />
@@ -790,5 +801,10 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: colors.textSecondary,
         fontSize: 14,
+    },
+    classCode: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        marginBottom: 4,
     },
 });

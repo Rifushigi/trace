@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Card } from '../../../components/common/Card';
+import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
+import { getMockClasses } from '../../mocks/classMock';
+import { getMockSchedule } from '../../mocks/scheduleMock';
 
 type AttendanceStatus = 'present' | 'late' | 'absent';
 
@@ -15,34 +17,45 @@ type AttendanceRecord = {
     verificationMethod: string;
 };
 
-// Mock data for demonstration
-const mockAttendanceRecords: AttendanceRecord[] = [
-    {
-        id: '1',
-        courseName: 'Introduction to Computer Science',
-        date: '2024-01-15',
-        status: 'present',
-        time: '09:00',
-        verificationMethod: 'Face Recognition',
-    },
-    {
-        id: '2',
-        courseName: 'Data Structures',
-        date: '2024-01-15',
-        status: 'late',
-        time: '11:15',
-        verificationMethod: 'NFC',
-    },
-    {
-        id: '3',
-        courseName: 'Introduction to Computer Science',
-        date: '2024-01-16',
-        status: 'absent',
-        time: '09:00',
-        verificationMethod: 'None',
-    },
-    // Add more mock data as needed
-];
+// Generate mock attendance records from class and schedule data
+const generateMockAttendanceRecords = (): AttendanceRecord[] => {
+    const classes = getMockClasses();
+    const schedules = getMockSchedule();
+    const records: AttendanceRecord[] = [];
+
+    // Generate records for the past 30 days
+    for (let i = 0; i < 30; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+
+        // Find classes scheduled for this day
+        const daySchedules = schedules.filter(schedule => schedule.schedule.day === dayName);
+
+        daySchedules.forEach(schedule => {
+            const classDetails = classes.find(cls => cls.id === schedule.id);
+            if (classDetails) {
+                // Generate random attendance status
+                const statuses: AttendanceStatus[] = ['present', 'late', 'absent'];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const verificationMethods = ['Face Recognition', 'NFC', 'QR Code', 'Manual'];
+
+                records.push({
+                    id: `${schedule.id}-${date.toISOString()}`,
+                    courseName: schedule.course,
+                    date: date.toISOString().split('T')[0],
+                    status,
+                    time: schedule.schedule.startTime,
+                    verificationMethod: verificationMethods[Math.floor(Math.random() * verificationMethods.length)]
+                });
+            }
+        });
+    }
+
+    return records;
+};
+
+const mockAttendanceRecords = generateMockAttendanceRecords();
 
 const statusColors: Record<AttendanceStatus, string> = {
     present: colors.success,

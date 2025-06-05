@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
-import { Card } from '../../../components/common/Card';
+import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
 import { router } from 'expo-router';
 

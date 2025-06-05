@@ -1,66 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Card } from '../../../components/common/Card';
+import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
-import { router, useLocalSearchParams } from 'expo-router';
-
-// Mock data for demonstration
-const mockClassDetails = {
-    id: '1',
-    courseName: 'Introduction to Computer Science',
-    courseCode: 'CS101',
-    lecturer: {
-        name: 'Dr. John Smith',
-        email: 'john.smith@university.edu',
-        office: 'Room 301',
-    },
-    schedule: {
-        day: 'Monday',
-        startTime: '09:00',
-        endTime: '10:30',
-        room: 'Room 101',
-    },
-    attendance: {
-        total: 15,
-        present: 12,
-        absent: 2,
-        late: 1,
-    },
-    materials: [
-        {
-            id: '1',
-            title: 'Course Syllabus',
-            type: 'PDF',
-            date: '2024-01-15',
-        },
-        {
-            id: '2',
-            title: 'Week 1 Lecture Notes',
-            type: 'PDF',
-            date: '2024-01-16',
-        },
-        {
-            id: '3',
-            title: 'Assignment 1',
-            type: 'DOC',
-            date: '2024-01-20',
-        },
-    ],
-};
+import { useLocalSearchParams } from 'expo-router';
+import { ClassDetails, getMockClasses } from '../../mocks/classMock';
 
 export const ClassDetailsScreen = observer(() => {
     const { classId } = useLocalSearchParams<{ classId: string }>();
     const [isLoading, setIsLoading] = useState(true);
-    const [classDetails, setClassDetails] = useState(mockClassDetails);
+    const [classDetails, setClassDetails] = useState<ClassDetails | null>(null);
 
     useEffect(() => {
-        // TODO: Fetch class details from API
         const fetchClassDetails = async () => {
             try {
                 // Simulate API call
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                setClassDetails(mockClassDetails);
+                const mockClasses = getMockClasses();
+                const details = mockClasses.find(c => c.id === classId);
+                if (details) {
+                    setClassDetails(details);
+                }
             } catch (error) {
                 console.error('Error fetching class details:', error);
             } finally {
@@ -80,12 +40,66 @@ export const ClassDetailsScreen = observer(() => {
         );
     }
 
+    if (!classDetails) {
+        return (
+            <View style={styles.loadingContainer}>
+                <Text style={styles.loadingText}>Class not found</Text>
+            </View>
+        );
+    }
+
     return (
         <ScrollView style={styles.container}>
             {/* Course Information */}
             <Card style={styles.section}>
-                <Text style={styles.courseName}>{classDetails.courseName}</Text>
-                <Text style={styles.courseCode}>{classDetails.courseCode}</Text>
+                <Text style={styles.courseName}>{classDetails.course}</Text>
+                <Text style={styles.courseCode}>{classDetails.code}</Text>
+                <Text style={styles.description}>{classDetails.description}</Text>
+            </Card>
+
+            {/* Course Objectives */}
+            <Card style={styles.section}>
+                <Text style={styles.sectionTitle}>Course Objectives</Text>
+                {classDetails.objectives.map((objective, index) => (
+                    <View key={index} style={styles.objectiveItem}>
+                        <Text style={styles.bulletPoint}>•</Text>
+                        <Text style={styles.objectiveText}>{objective}</Text>
+                    </View>
+                ))}
+            </Card>
+
+            {/* Prerequisites */}
+            <Card style={styles.section}>
+                <Text style={styles.sectionTitle}>Prerequisites</Text>
+                {classDetails.prerequisites.map((prerequisite, index) => (
+                    <View key={index} style={styles.prerequisiteItem}>
+                        <Text style={styles.bulletPoint}>•</Text>
+                        <Text style={styles.prerequisiteText}>{prerequisite}</Text>
+                    </View>
+                ))}
+            </Card>
+
+            {/* Grading System */}
+            <Card style={styles.section}>
+                <Text style={styles.sectionTitle}>Grading System</Text>
+                <View style={styles.gradingGrid}>
+                    <View style={styles.gradingItem}>
+                        <Text style={styles.gradingLabel}>Assignments</Text>
+                        <Text style={styles.gradingValue}>{classDetails.grading.assignments}%</Text>
+                    </View>
+                    <View style={styles.gradingItem}>
+                        <Text style={styles.gradingLabel}>Midterm</Text>
+                        <Text style={styles.gradingValue}>{classDetails.grading.midterm}%</Text>
+                    </View>
+                    <View style={styles.gradingItem}>
+                        <Text style={styles.gradingLabel}>Final</Text>
+                        <Text style={styles.gradingValue}>{classDetails.grading.final}%</Text>
+                    </View>
+                    <View style={styles.gradingItem}>
+                        <Text style={styles.gradingLabel}>Participation</Text>
+                        <Text style={styles.gradingValue}>{classDetails.grading.participation}%</Text>
+                    </View>
+                </View>
             </Card>
 
             {/* Lecturer Details */}
@@ -93,7 +107,7 @@ export const ClassDetailsScreen = observer(() => {
                 <Text style={styles.sectionTitle}>Lecturer Information</Text>
                 <View style={styles.infoRow}>
                     <Text style={styles.label}>Name:</Text>
-                    <Text style={styles.value}>{classDetails.lecturer.name}</Text>
+                    <Text style={styles.value}>{`${classDetails.lecturer.firstName} ${classDetails.lecturer.lastName}`}</Text>
                 </View>
                 <View style={styles.infoRow}>
                     <Text style={styles.label}>Email:</Text>
@@ -105,48 +119,16 @@ export const ClassDetailsScreen = observer(() => {
                 </View>
             </Card>
 
-            {/* Schedule Information */}
+            {/* Announcements */}
             <Card style={styles.section}>
-                <Text style={styles.sectionTitle}>Schedule</Text>
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Day:</Text>
-                    <Text style={styles.value}>{classDetails.schedule.day}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Time:</Text>
-                    <Text style={styles.value}>
-                        {classDetails.schedule.startTime} - {classDetails.schedule.endTime}
-                    </Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Room:</Text>
-                    <Text style={styles.value}>{classDetails.schedule.room}</Text>
-                </View>
-            </Card>
-
-            {/* Attendance History */}
-            <Card style={styles.section}>
-                <Text style={styles.sectionTitle}>Attendance History</Text>
-                <View style={styles.attendanceStats}>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{classDetails.attendance.present}</Text>
-                        <Text style={styles.statLabel}>Present</Text>
+                <Text style={styles.sectionTitle}>Announcements</Text>
+                {classDetails.announcements.map((announcement) => (
+                    <View key={announcement.id} style={styles.announcementItem}>
+                        <Text style={styles.announcementTitle}>{announcement.title}</Text>
+                        <Text style={styles.announcementDate}>{announcement.date}</Text>
+                        <Text style={styles.announcementContent}>{announcement.content}</Text>
                     </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{classDetails.attendance.absent}</Text>
-                        <Text style={styles.statLabel}>Absent</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{classDetails.attendance.late}</Text>
-                        <Text style={styles.statLabel}>Late</Text>
-                    </View>
-                </View>
-                <TouchableOpacity
-                    style={styles.viewMoreButton}
-                    onPress={() => router.push('/student/attendance-history')}
-                >
-                    <Text style={styles.viewMoreText}>View Detailed History</Text>
-                </TouchableOpacity>
+                ))}
             </Card>
 
             {/* Course Materials */}
@@ -163,7 +145,7 @@ export const ClassDetailsScreen = observer(() => {
                         <View style={styles.materialInfo}>
                             <Text style={styles.materialTitle}>{material.title}</Text>
                             <Text style={styles.materialMeta}>
-                                {material.type} • {material.date}
+                                {material.type} • {material.uploadDate.toLocaleDateString()}
                             </Text>
                         </View>
                         <Text style={styles.downloadText}>Download</Text>
@@ -203,12 +185,66 @@ const styles = StyleSheet.create({
     courseCode: {
         fontSize: 16,
         color: colors.textSecondary,
+        marginBottom: 8,
+        fontWeight: 'bold',
+    },
+    description: {
+        fontSize: 16,
+        color: colors.text,
+        lineHeight: 24,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: colors.text,
         marginBottom: 16,
+    },
+    objectiveItem: {
+        flexDirection: 'row',
+        marginBottom: 8,
+    },
+    bulletPoint: {
+        fontSize: 16,
+        color: colors.primary,
+        marginRight: 8,
+    },
+    objectiveText: {
+        flex: 1,
+        fontSize: 16,
+        color: colors.text,
+        lineHeight: 24,
+    },
+    prerequisiteItem: {
+        flexDirection: 'row',
+        marginBottom: 8,
+    },
+    prerequisiteText: {
+        flex: 1,
+        fontSize: 16,
+        color: colors.text,
+        lineHeight: 24,
+    },
+    gradingGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 16,
+    },
+    gradingItem: {
+        flex: 1,
+        minWidth: '45%',
+        backgroundColor: colors.background,
+        padding: 12,
+        borderRadius: 8,
+    },
+    gradingLabel: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        marginBottom: 4,
+    },
+    gradingValue: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: colors.primary,
     },
     infoRow: {
         flexDirection: 'row',
@@ -224,48 +260,42 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: colors.text,
     },
-    attendanceStats: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 16,
+    announcementItem: {
+        backgroundColor: colors.background,
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 12,
     },
-    statItem: {
-        alignItems: 'center',
+    announcementTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: colors.text,
+        marginBottom: 4,
     },
-    statValue: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: colors.primary,
-    },
-    statLabel: {
+    announcementDate: {
         fontSize: 14,
         color: colors.textSecondary,
-        marginTop: 4,
+        marginBottom: 8,
     },
-    viewMoreButton: {
-        alignItems: 'center',
-        padding: 12,
-        borderTopWidth: 1,
-        borderTopColor: colors.border,
-    },
-    viewMoreText: {
-        color: colors.primary,
+    announcementContent: {
         fontSize: 16,
-        fontWeight: '500',
+        color: colors.text,
+        lineHeight: 24,
     },
     materialItem: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
+        backgroundColor: colors.background,
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 12,
     },
     materialInfo: {
         flex: 1,
     },
     materialTitle: {
         fontSize: 16,
+        fontWeight: '600',
         color: colors.text,
         marginBottom: 4,
     },
@@ -274,8 +304,8 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
     },
     downloadText: {
-        color: colors.primary,
         fontSize: 14,
+        color: colors.primary,
         fontWeight: '500',
     },
 }); 

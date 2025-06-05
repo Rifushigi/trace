@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
-import { Card } from '../../../components/common/Card';
+import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
 import { router } from 'expo-router';
 import { Student } from '../../../domain/entities/User';
-import { useUser } from '../../../presentation/hooks/useUser';
-import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
-import { useNetworkStatus } from '../../../presentation/hooks/useNetworkStatus';
-import { useRefresh } from '../../../presentation/hooks/useRefresh';
+import { useUser } from '../../hooks/useUser';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+import { useRefresh } from '../../hooks/useRefresh';
 
 export const StudentProfileScreen = observer(() => {
     const { authStore } = useStores();
