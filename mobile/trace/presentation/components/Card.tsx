@@ -76,4 +76,4 @@ const styles = StyleSheet.create({
     filled: {
         backgroundColor: colors.primary + '10',
     },
-}); 
+});
