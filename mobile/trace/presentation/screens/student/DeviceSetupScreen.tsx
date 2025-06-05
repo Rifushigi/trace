@@ -1,11 +1,15 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Alert } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Card } from '../../../components/common/Card';
+import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
-import { useBluetooth } from '../../../presentation/hooks/useBluetooth';
+import { useBluetooth } from '../../hooks/useBluetooth';
+import { useLocation } from '../../hooks/useLocation';
+import { useNFC } from '../../hooks/useNFC';
+import { useFaceRecognition } from '../../hooks/useFaceRecognition';
+import { MaterialIcons } from '@expo/vector-icons';
 
-const DeviceSetupScreen = observer(() => {
+export const DeviceSetupScreen = observer(() => {
     const {
         bluetoothStatus,
         isScanning,
@@ -16,11 +20,37 @@ const DeviceSetupScreen = observer(() => {
         connectToBeacon,
     } = useBluetooth();
 
+    const {
+        location,
+        error: locationError,
+        isLoading: isLocationLoading,
+        permissionStatus: locationPermissionStatus,
+        requestPermission: requestLocationPermission,
+        getCurrentLocation,
+    } = useLocation();
+
+    const {
+        status: nfcStatus,
+        isAvailable: isNFCAvailable,
+        requestPermission: requestNfcPermissions,
+    } = useNFC();
+
+    const {
+        status: faceRecognitionStatus,
+        isAvailable: isFaceRecognitionAvailable,
+        isEnrolled,
+        requestPermission: requestFaceRecognitionPermissions,
+        verifyFace,
+    } = useFaceRecognition();
+
     return (
         <ScrollView style={styles.container}>
             {/* Bluetooth Status */}
             <Card style={styles.section}>
-                <Text style={styles.sectionTitle}>Bluetooth Status</Text>
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="bluetooth" size={24} color={colors.primary} />
+                    <Text style={styles.sectionTitle}>Bluetooth Status</Text>
+                </View>
                 <View style={styles.statusContainer}>
                     <View style={[styles.statusDot, bluetoothStatus === 'granted' ? styles.statusActive : styles.statusInactive]} />
                     <Text style={styles.statusText}>
@@ -39,9 +69,102 @@ const DeviceSetupScreen = observer(() => {
                 )}
             </Card>
 
+            {/* NFC Status */}
+            <Card style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="nfc" size={24} color={colors.primary} />
+                    <Text style={styles.sectionTitle}>NFC Status</Text>
+                </View>
+                <View style={styles.statusContainer}>
+                    <View style={[styles.statusDot, nfcStatus === 'granted' ? styles.statusActive : styles.statusInactive]} />
+                    <Text style={styles.statusText}>
+                        {nfcStatus === 'checking' ? 'Checking...' :
+                         nfcStatus === 'granted' ? 'NFC Access Granted' :
+                         nfcStatus === 'unavailable' ? 'NFC Not Available' :
+                         'NFC Access Required'}
+                    </Text>
+                </View>
+                {nfcStatus === 'denied' && isNFCAvailable && (
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={requestNfcPermissions}
+                    >
+                        <Text style={styles.actionButtonText}>Grant Permission</Text>
+                    </TouchableOpacity>
+                )}
+            </Card>
+
+            {/* Face Recognition Status */}
+            <Card style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="face" size={24} color={colors.primary} />
+                    <Text style={styles.sectionTitle}>Face Recognition Status</Text>
+                </View>
+                <View style={styles.statusContainer}>
+                    <View style={[styles.statusDot, faceRecognitionStatus === 'granted' ? styles.statusActive : styles.statusInactive]} />
+                    <Text style={styles.statusText}>
+                        {faceRecognitionStatus === 'checking' ? 'Checking...' :
+                         faceRecognitionStatus === 'granted' ? 'Face Recognition Access Granted' :
+                         faceRecognitionStatus === 'unavailable' ? 'Face Recognition Not Available' :
+                         'Face Recognition Access Required'}
+                    </Text>
+                </View>
+                {faceRecognitionStatus === 'denied' && isFaceRecognitionAvailable && (
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={requestFaceRecognitionPermissions}
+                    >
+                        <Text style={styles.actionButtonText}>Grant Permission</Text>
+                    </TouchableOpacity>
+                )}
+                {faceRecognitionStatus === 'granted' && !isEnrolled && (
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={verifyFace}
+                    >
+                        <Text style={styles.actionButtonText}>Register Face</Text>
+                    </TouchableOpacity>
+                )}
+            </Card>
+
+            {/* Location Status */}
+            <Card style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="location-on" size={24} color={colors.primary} />
+                    <Text style={styles.sectionTitle}>Location Status</Text>
+                </View>
+                <View style={styles.statusContainer}>
+                    <View style={[styles.statusDot, locationPermissionStatus === 'granted' ? styles.statusActive : styles.statusInactive]} />
+                    <Text style={styles.statusText}>
+                        {locationPermissionStatus === 'granted' ? 'Location Access Granted' :
+                         locationPermissionStatus === 'denied' ? 'Location Access Required' :
+                         'Checking Location Access...'}
+                    </Text>
+                </View>
+                {locationPermissionStatus !== 'granted' && (
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={requestLocationPermission}
+                    >
+                        <Text style={styles.actionButtonText}>Grant Permission</Text>
+                    </TouchableOpacity>
+                )}
+                {locationPermissionStatus === 'granted' && (
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={getCurrentLocation}
+                    >
+                        <Text style={styles.actionButtonText}>Update Location</Text>
+                    </TouchableOpacity>
+                )}
+            </Card>
+
             {/* Beacon Scanner */}
             <Card style={styles.section}>
-                <Text style={styles.sectionTitle}>Nearby Beacons</Text>
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="bluetooth-searching" size={24} color={colors.primary} />
+                    <Text style={styles.sectionTitle}>Nearby Beacons</Text>
+                </View>
                 {isScanning ? (
                     <>
                         <Text style={styles.scanningText}>Scanning for beacons...</Text>
@@ -79,12 +202,17 @@ const DeviceSetupScreen = observer(() => {
 
             {/* Instructions */}
             <Card style={styles.section}>
-                <Text style={styles.sectionTitle}>Instructions</Text>
+                <View style={styles.sectionHeader}>
+                    <MaterialIcons name="info" size={24} color={colors.primary} />
+                    <Text style={styles.sectionTitle}>Instructions</Text>
+                </View>
                 <Text style={styles.instructionText}>
-                    1. Grant Bluetooth permissions if not already granted{'\n'}
+                    1. Grant all required permissions (Bluetooth, NFC, Face Recognition, Location){'\n'}
                     2. Start scanning for nearby beacons{'\n'}
                     3. Select your classroom&apos;s beacon from the list{'\n'}
-                    4. Wait for successful connection confirmation
+                    4. Wait for successful connection confirmation{'\n'}
+                    5. Ensure your face is registered for attendance{'\n'}
+                    6. Verify your location is being tracked correctly
                 </Text>
             </Card>
         </ScrollView>
@@ -100,11 +228,16 @@ const styles = StyleSheet.create({
         margin: 16,
         padding: 16,
     },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         color: colors.text,
-        marginBottom: 16,
+        marginLeft: 8,
     },
     statusContainer: {
         flexDirection: 'row',
