@@ -1,51 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, ViewStyle } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
 import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
-import { Lecturer } from '../../../domain/entities/User';
 import { router } from 'expo-router';
+import { features } from '../../../config/features';
+import { getMockClasses } from '../../../presentation/mocks/classManagementMock';
+import { Class } from '../../../domain/entities/Class';
 
 export const ClassManagementScreen = observer(() => {
-    const { authStore } = useStores();
-    const user = authStore.state.user as Lecturer;
     const [refreshing, setRefreshing] = useState(false);
+    const [classes, setClasses] = useState<Class[]>([]);
 
-    // Mock data - replace with actual data from your backend
-    const classes = [
-        {
-            id: '1',
-            course: 'Computer Science 101',
-            schedule: 'Mon, Wed 09:00 - 10:30',
-            room: 'Room 101',
-            students: 50,
-            status: 'active',
-        },
-        {
-            id: '2',
-            course: 'Data Structures',
-            schedule: 'Tue, Thu 11:00 - 12:30',
-            room: 'Room 202',
-            students: 45,
-            status: 'upcoming',
-        },
-        {
-            id: '3',
-            course: 'Algorithms',
-            schedule: 'Fri 14:00 - 15:30',
-            room: 'Room 303',
-            students: 40,
-            status: 'completed',
-        },
-    ];
+    const fetchClasses = async () => {
+        if (features.useMockApi) {
+            const mockData = getMockClasses();
+            setClasses(mockData);
+            return;
+        }
+        // TODO: Implement actual API call
+    };
 
-    const onRefresh = React.useCallback(() => {
+    useEffect(() => {
+        fetchClasses();
+    }, []);
+
+    const onRefresh = useCallback(() => {
         setRefreshing(true);
-        // TODO: Implement refresh logic
-        setTimeout(() => {
+        fetchClasses().finally(() => {
             setRefreshing(false);
-        }, 2000);
+        });
     }, []);
 
     const handleStartSession = (classId: string) => {
@@ -62,11 +46,33 @@ export const ClassManagementScreen = observer(() => {
         });
     };
 
-    const handleViewDetails = (classId: string) => {
-        router.push({
-            pathname: '/class-details',
-            params: { classId }
-        });
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'active':
+                return colors.success;
+            case 'upcoming':
+                return colors.warning;
+            case 'completed':
+                return colors.text;
+            default:
+                return colors.text;
+        }
+    };
+
+    const getClassStatus = (cls: Class) => {
+        const now = new Date();
+        const day = cls.schedule.day;
+        const [startHour, startMinute] = cls.schedule.startTime.split(':').map(Number);
+        const [endHour, endMinute] = cls.schedule.endTime.split(':').map(Number);
+
+        const classStart = new Date();
+        classStart.setHours(startHour, startMinute, 0, 0);
+        const classEnd = new Date();
+        classEnd.setHours(endHour, endMinute, 0, 0);
+
+        if (now > classEnd) return 'completed';
+        if (now >= classStart && now <= classEnd) return 'active';
+        return 'upcoming';
     };
 
     return (
@@ -76,62 +82,47 @@ export const ClassManagementScreen = observer(() => {
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
         >
-            {/* Class List */}
-            {classes.map((classItem) => (
-                <Card key={classItem.id} style={styles.classCard}>
-                    <View style={styles.classHeader}>
-                        <View style={styles.classInfo}>
-                            <Text style={styles.className}>{classItem.course}</Text>
-                            <Text style={styles.classDetails}>
-                                {classItem.schedule} • {classItem.room}
-                            </Text>
-                            <Text style={styles.studentCount}>
-                                {classItem.students} students
-                            </Text>
-                        </View>
-                        <View style={[styles.statusBadge, styles[`${classItem.status}Badge` as keyof typeof styles] as ViewStyle]}>
-                            <Text style={styles.statusText}>
-                                {classItem.status.charAt(0).toUpperCase() + classItem.status.slice(1)}
-                            </Text>
-                        </View>
-                    </View>
+            <View style={styles.header}>
+                <Text style={styles.title}>Class Management</Text>
+            </View>
 
-                    <View style={styles.actions}>
-                        {classItem.status === 'upcoming' && (
+            {classes.map((cls) => {
+                const status = getClassStatus(cls);
+                return (
+                    <Card key={cls.id} style={styles.classCard}>
+                        <View style={styles.classHeader}>
+                            <View>
+                                <Text style={styles.courseName}>{cls.name}</Text>
+                                <Text style={styles.courseCode}>{cls.code}</Text>
+                            </View>
+                            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}>
+                                <Text style={styles.statusText}>{status}</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.classDetails}>
+                            <Text style={styles.detailText}>Schedule: {cls.schedule.day}, {cls.schedule.startTime} - {cls.schedule.endTime}</Text>
+                            <Text style={styles.detailText}>Room: {cls.schedule.room}</Text>
+                            <Text style={styles.detailText}>Students: {cls.students.length}</Text>
+                        </View>
+
+                        <View style={styles.actions}>
                             <TouchableOpacity
-                                style={[styles.actionButton, styles.primaryButton]}
-                                onPress={() => handleStartSession(classItem.id)}
+                                style={[styles.actionButton, styles.startButton]}
+                                onPress={() => handleStartSession(cls.id)}
                             >
                                 <Text style={styles.actionButtonText}>Start Session</Text>
                             </TouchableOpacity>
-                        )}
-                        {classItem.status === 'active' && (
                             <TouchableOpacity
-                                style={[styles.actionButton, styles.primaryButton]}
-                                onPress={() => handleStartSession(classItem.id)}
+                                style={[styles.actionButton, styles.viewButton]}
+                                onPress={() => handleViewAttendance(cls.id)}
                             >
-                                <Text style={styles.actionButtonText}>Control Session</Text>
+                                <Text style={styles.actionButtonText}>View Attendance</Text>
                             </TouchableOpacity>
-                        )}
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.secondaryButton]}
-                            onPress={() => handleViewAttendance(classItem.id)}
-                        >
-                            <Text style={[styles.actionButtonText, styles.secondaryButtonText]}>
-                                View Attendance
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.secondaryButton]}
-                            onPress={() => handleViewDetails(classItem.id)}
-                        >
-                            <Text style={[styles.actionButtonText, styles.secondaryButtonText]}>
-                                View Details
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </Card>
-            ))}
+                        </View>
+                    </Card>
+                );
+            })}
         </ScrollView>
     );
 });
@@ -141,83 +132,77 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background,
     },
+    header: {
+        padding: 16,
+        backgroundColor: colors.primary,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: colors.white,
+    },
     classCard: {
         margin: 16,
         padding: 16,
+        backgroundColor: colors.white,
+        borderRadius: 8,
+        elevation: 2,
     },
     classHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        marginBottom: 16,
+        marginBottom: 12,
     },
-    classInfo: {
-        flex: 1,
-    },
-    className: {
+    courseName: {
         fontSize: 18,
         fontWeight: 'bold',
         color: colors.text,
-        marginBottom: 4,
     },
-    classDetails: {
+    courseCode: {
         fontSize: 14,
         color: colors.textSecondary,
-        marginBottom: 4,
-    },
-    studentCount: {
-        fontSize: 14,
-        color: colors.textSecondary,
+        marginTop: 4,
     },
     statusBadge: {
         paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 12,
-        marginLeft: 8,
-    },
-    upcomingBadge: {
-        backgroundColor: colors.warning,
-    },
-    activeBadge: {
-        backgroundColor: colors.success,
-    },
-    completedBadge: {
-        backgroundColor: colors.textSecondary,
+        borderRadius: 16,
     },
     statusText: {
+        color: colors.white,
         fontSize: 12,
-        color: '#FFFFFF',
         fontWeight: '500',
+        textTransform: 'capitalize',
+    },
+    classDetails: {
+        marginBottom: 16,
+    },
+    detailText: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        marginBottom: 4,
     },
     actions: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginTop: 8,
+        justifyContent: 'space-between',
+        gap: 12,
     },
     actionButton: {
         flex: 1,
         padding: 12,
         borderRadius: 8,
-        marginHorizontal: 4,
-        marginBottom: 8,
-        minWidth: '45%',
         alignItems: 'center',
     },
-    primaryButton: {
+    startButton: {
         backgroundColor: colors.primary,
     },
-    secondaryButton: {
-        backgroundColor: colors.card,
-        borderWidth: 1,
-        borderColor: colors.border,
+    viewButton: {
+        backgroundColor: colors.secondary,
     },
     actionButtonText: {
+        color: colors.white,
         fontSize: 14,
-        fontWeight: '600',
-        textAlign: 'center',
-        color: '#FFFFFF',
-    },
-    secondaryButtonText: {
-        color: colors.text,
+        fontWeight: '500',
     },
 }); 

@@ -1,84 +1,175 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
+import { Card } from '../../../components/common/Card';
 import { colors } from '../../../shared/constants/theme';
+import { router, useLocalSearchParams } from 'expo-router';
+import { features } from '../../../config/features';
+import { getMockAttendanceSessions, getMockClass } from '../../../presentation/mocks/attendanceManagementMock';
+import { AttendanceSession } from '../../../domain/entities/Attendance';
+import { format } from 'date-fns';
 
 export const AttendanceManagementScreen = observer(() => {
     const { classId } = useLocalSearchParams<{ classId: string }>();
-    const { authStore } = useStores();
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [refreshing, setRefreshing] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [sessions, setSessions] = useState<AttendanceSession[]>([]);
+    const [classDetails, setClassDetails] = useState<any>(null);
 
-    const handleViewSessionDetails = (sessionId: string) => {
+    const fetchData = useCallback(async () => {
+        if (features.useMockApi) {
+            const mockSessions = getMockAttendanceSessions(classId);
+            const mockClass = getMockClass(classId);
+            setSessions(mockSessions);
+            setClassDetails(mockClass);
+            return;
+        }
+        // TODO: Implement actual API call
+    }, [classId]);
+
+    useEffect(() => {
+        fetchData().finally(() => {
+            setLoading(false);
+        });
+    }, [classId, fetchData]);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        fetchData().finally(() => {
+            setRefreshing(false);
+        });
+    }, [fetchData]);
+
+    const handleStartSession = () => {
         router.push({
-            pathname: '/(lecturer)/session-details',
+            pathname: '/session-control',
+            params: { classId }
+        });
+    };
+
+    const handleViewSession = (sessionId: string) => {
+        router.push({
+            pathname: '/session-details',
             params: { sessionId }
         });
     };
 
-    const handleExportAttendance = () => {
-        // Export attendance logic here
-        Alert.alert('Success', 'Attendance data exported successfully');
+    const calculateAttendanceStats = (session: AttendanceSession) => {
+        const total = session.records.length;
+        const present = session.records.filter(r => r.status === 'present').length;
+        const late = session.records.filter(r => r.status === 'late').length;
+        const absent = session.records.filter(r => r.status === 'absent').length;
+        const attendanceRate = (present / total) * 100;
+
+        return {
+            total,
+            present,
+            late,
+            absent,
+            attendanceRate
+        };
     };
 
-    return (
-        <ScrollView style={styles.container}>
-            <Text style={styles.title}>Attendance Management</Text>
-            <Text style={styles.classId}>Class ID: {classId}</Text>
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        );
+    }
 
-            <View style={styles.dateSelector}>
+    return (
+        <ScrollView
+            style={styles.container}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+        >
+            <View style={styles.header}>
+                <Text style={styles.title}>Attendance Management</Text>
+                {classDetails && (
+                    <View style={styles.classInfo}>
+                        <Text style={styles.className}>{classDetails.name}</Text>
+                        <Text style={styles.classCode}>{classDetails.code}</Text>
+                    </View>
+                )}
+            </View>
+
+            <Card style={styles.statsCard}>
+                <Text style={styles.statsTitle}>Overall Statistics</Text>
+                <View style={styles.statsGrid}>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statValue}>{sessions.length}</Text>
+                        <Text style={styles.statLabel}>Total Sessions</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statValue}>
+                            {Math.round(sessions.reduce((acc, session) => 
+                                acc + calculateAttendanceStats(session).attendanceRate, 0) / sessions.length)}%
+                        </Text>
+                        <Text style={styles.statLabel}>Average Attendance</Text>
+                    </View>
+                </View>
+            </Card>
+
+            <View style={styles.sessionsHeader}>
+                <Text style={styles.sessionsTitle}>Attendance Sessions</Text>
                 <TouchableOpacity
-                    style={styles.dateButton}
-                    onPress={() => {
-                        // Date selection logic here
-                    }}
+                    style={styles.startButton}
+                    onPress={handleStartSession}
                 >
-                    <Text style={styles.dateButtonText}>
-                        {selectedDate.toLocaleDateString()}
-                    </Text>
+                    <Text style={styles.startButtonText}>Start New Session</Text>
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.statsContainer}>
-                <View style={styles.statCard}>
-                    <Text style={styles.statValue}>85%</Text>
-                    <Text style={styles.statLabel}>Attendance Rate</Text>
-                </View>
-                <View style={styles.statCard}>
-                    <Text style={styles.statValue}>15</Text>
-                    <Text style={styles.statLabel}>Total Sessions</Text>
-                </View>
-            </View>
-
-            <View style={styles.sessionsList}>
-                <Text style={styles.sectionTitle}>Recent Sessions</Text>
-                {/* Mock session data */}
-                {[1, 2, 3].map((session) => (
-                    <TouchableOpacity
-                        key={session}
-                        style={styles.sessionCard}
-                        onPress={() => handleViewSessionDetails(session.toString())}
-                    >
-                        <View style={styles.sessionInfo}>
-                            <Text style={styles.sessionDate}>
-                                Session {session} - {new Date().toLocaleDateString()}
-                            </Text>
-                            <Text style={styles.sessionStats}>
-                                25/30 students present
-                            </Text>
+            {sessions.map((session) => {
+                const stats = calculateAttendanceStats(session);
+                return (
+                    <Card key={session.id} style={styles.sessionCard}>
+                        <View style={styles.sessionHeader}>
+                            <View>
+                                <Text style={styles.sessionDate}>
+                                    {format(session.date, 'MMMM d, yyyy')}
+                                </Text>
+                                <Text style={styles.sessionTime}>
+                                    {format(session.startTime, 'h:mm a')} - {format(session.endTime, 'h:mm a')}
+                                </Text>
+                            </View>
+                            <View style={[styles.statusBadge, { backgroundColor: colors.success }]}>
+                                <Text style={styles.statusText}>{session.status}</Text>
+                            </View>
                         </View>
-                        <Text style={styles.arrow}>→</Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
 
-            <TouchableOpacity
-                style={styles.exportButton}
-                onPress={handleExportAttendance}
-            >
-                <Text style={styles.exportButtonText}>Export Attendance Data</Text>
-            </TouchableOpacity>
+                        <View style={styles.attendanceStats}>
+                            <View style={styles.statRow}>
+                                <View style={styles.statItem}>
+                                    <Text style={styles.statValue}>{stats.present}</Text>
+                                    <Text style={styles.statLabel}>Present</Text>
+                                </View>
+                                <View style={styles.statItem}>
+                                    <Text style={styles.statValue}>{stats.late}</Text>
+                                    <Text style={styles.statLabel}>Late</Text>
+                                </View>
+                                <View style={styles.statItem}>
+                                    <Text style={styles.statValue}>{stats.absent}</Text>
+                                    <Text style={styles.statLabel}>Absent</Text>
+                                </View>
+                            </View>
+                            <View style={styles.attendanceRate}>
+                                <Text style={styles.rateValue}>{Math.round(stats.attendanceRate)}%</Text>
+                                <Text style={styles.rateLabel}>Attendance Rate</Text>
+                            </View>
+                        </View>
+
+                        <TouchableOpacity
+                            style={styles.viewButton}
+                            onPress={() => handleViewSession(session.id)}
+                        >
+                            <Text style={styles.viewButtonText}>View Details</Text>
+                        </TouchableOpacity>
+                    </Card>
+                );
+            })}
         </ScrollView>
     );
 });
@@ -88,107 +179,156 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background,
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.background,
+    },
+    header: {
+        padding: 16,
+        backgroundColor: colors.primary,
+    },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: colors.text,
-        marginBottom: 16,
-        marginTop: 16,
-        marginLeft: 16,
+        color: colors.white,
+        marginBottom: 8,
     },
-    classId: {
-        fontSize: 16,
-        color: colors.textSecondary,
-        marginBottom: 16,
-        marginLeft: 16,
+    classInfo: {
+        marginTop: 8,
     },
-    dateSelector: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
-        marginLeft: 16,
+    className: {
+        fontSize: 18,
+        color: colors.white,
+        fontWeight: '500',
     },
-    dateButton: {
-        padding: 12,
-        backgroundColor: colors.primary,
+    classCode: {
+        fontSize: 14,
+        color: colors.white,
+        opacity: 0.8,
+    },
+    statsCard: {
+        margin: 16,
+        padding: 16,
+        backgroundColor: colors.white,
         borderRadius: 8,
-        marginRight: 8,
+        elevation: 2,
     },
-    dateButtonText: {
-        color: '#FFFFFF',
+    statsTitle: {
         fontSize: 16,
         fontWeight: '600',
+        color: colors.text,
+        marginBottom: 16,
     },
-    statsContainer: {
+    statsGrid: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    sessionsHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        marginBottom: 16,
+    },
+    sessionsTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: colors.text,
+    },
+    startButton: {
+        backgroundColor: colors.primary,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+    },
+    startButtonText: {
+        color: colors.white,
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    sessionCard: {
+        margin: 16,
+        marginTop: 0,
+        padding: 16,
+        backgroundColor: colors.white,
+        borderRadius: 8,
+        elevation: 2,
+    },
+    sessionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 16,
+    },
+    sessionDate: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: colors.text,
+    },
+    sessionTime: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        marginTop: 4,
+    },
+    statusBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+    },
+    statusText: {
+        color: colors.white,
+        fontSize: 12,
+        fontWeight: '500',
+        textTransform: 'capitalize',
+    },
+    attendanceStats: {
+        marginBottom: 16,
+    },
+    statRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 16,
-        marginLeft: 16,
-        marginRight: 16,
     },
-    statCard: {
-        flex: 1,
-        padding: 16,
-        backgroundColor: colors.card,
-        borderRadius: 8,
+    statItem: {
         alignItems: 'center',
     },
     statValue: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 20,
+        fontWeight: '600',
         color: colors.text,
-        marginBottom: 4,
     },
     statLabel: {
         fontSize: 12,
         color: colors.textSecondary,
+        marginTop: 4,
     },
-    sessionsList: {
-        marginBottom: 16,
-        marginLeft: 16,
-        marginRight: 16,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: colors.text,
-        marginBottom: 16,
-    },
-    sessionCard: {
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+    attendanceRate: {
         alignItems: 'center',
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: colors.border,
     },
-    sessionInfo: {
-        flexDirection: 'column',
+    rateValue: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: colors.primary,
     },
-    sessionDate: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: colors.text,
-        marginBottom: 4,
-    },
-    sessionStats: {
+    rateLabel: {
         fontSize: 14,
         color: colors.textSecondary,
+        marginTop: 4,
     },
-    arrow: {
-        fontSize: 16,
-        color: colors.textSecondary,
-    },
-    exportButton: {
-        margin: 16,
-        padding: 16,
-        backgroundColor: colors.primary,
+    viewButton: {
+        backgroundColor: colors.secondary,
+        padding: 12,
         borderRadius: 8,
         alignItems: 'center',
     },
-    exportButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
+    viewButtonText: {
+        color: colors.white,
+        fontSize: 14,
+        fontWeight: '500',
     },
 }); 
