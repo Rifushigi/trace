@@ -2,13 +2,13 @@ import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { observer } from 'mobx-react-lite';
-import { Input } from '../../../components/common/Input';
+import { Input } from '../../components/Input';
 import { colors } from '../../../shared/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useAuth } from '../../../presentation/hooks/useAuth';
-import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
-import { useNetworkStatus } from '../../../presentation/hooks/useNetworkStatus';
-import { useForm } from '../../../presentation/hooks/useForm';
+import { useAuth } from '../../hooks/useAuth';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+import { useForm } from '../../hooks/useForm';
 
 const { height } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 24;
