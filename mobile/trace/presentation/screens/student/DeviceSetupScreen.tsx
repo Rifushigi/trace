@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
@@ -21,9 +21,6 @@ export const DeviceSetupScreen = observer(() => {
     } = useBluetooth();
 
     const {
-        location,
-        error: locationError,
-        isLoading: isLocationLoading,
         permissionStatus: locationPermissionStatus,
         requestPermission: requestLocationPermission,
         getCurrentLocation,
