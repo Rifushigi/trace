@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '@/stores';
-import { Card } from '@/components/common/Card';
+import { Card } from '@/presentation/components/Card';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 import { format } from 'date-fns';
@@ -21,15 +21,10 @@ import { useApi } from '@/presentation/hooks';
 import { AttendanceMetrics } from '@/shared/types/attendance';
 import { features } from '@/config/features';
 import { getMockAttendanceMetrics } from '@/presentation/mocks/reportsMock';
+import { colors } from '@/shared/constants/theme';
 
 
-const BLUE = {
-    primary: '#1976D2',
-    light: '#E3F2FD',
-    dark: '#1565C0',
-    text: '#2196F3',
-    background: '#F5F9FF',
-};
+
 
 export const ReportsScreen = observer(() => {
     const { authStore } = useStores();
@@ -70,7 +65,7 @@ export const ReportsScreen = observer(() => {
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={BLUE.primary} />
+                <ActivityIndicator size="large" color={colors.primary} />
             </View>
         );
     }
@@ -78,7 +73,7 @@ export const ReportsScreen = observer(() => {
     if (error || !metrics) {
         return (
             <View style={styles.errorContainer}>
-                <MaterialIcons name="error-outline" size={48} color={BLUE.primary} />
+                <MaterialIcons name="error-outline" size={48} color={colors.primary} />
                 <Text style={styles.errorText}>Failed to load reports</Text>
             </View>
         );
@@ -108,22 +103,22 @@ export const ReportsScreen = observer(() => {
             {/* Overview Cards */}
             <View style={styles.overviewContainer}>
                 <Card style={styles.overviewCard}>
-                    <MaterialIcons name="people" size={24} color={BLUE.primary} />
+                    <MaterialIcons name="people" size={24} color={colors.primary} />
                     <Text style={styles.overviewValue}>{metrics.totalStudents}</Text>
                     <Text style={styles.overviewLabel}>Total Students</Text>
                 </Card>
                 <Card style={styles.overviewCard}>
-                    <MaterialIcons name="school" size={24} color={BLUE.primary} />
+                    <MaterialIcons name="school" size={24} color={colors.primary} />
                     <Text style={styles.overviewValue}>{metrics.totalLecturers}</Text>
                     <Text style={styles.overviewLabel}>Total Lecturers</Text>
                 </Card>
                 <Card style={styles.overviewCard}>
-                    <MaterialIcons name="event-available" size={24} color={BLUE.primary} />
+                    <MaterialIcons name="event-available" size={24} color={colors.primary} />
                     <Text style={styles.overviewValue}>{metrics.averageAttendanceRate}%</Text>
                     <Text style={styles.overviewLabel}>Avg. Attendance</Text>
                 </Card>
                 <Card style={styles.overviewCard}>
-                    <MaterialIcons name="class" size={24} color={BLUE.primary} />
+                    <MaterialIcons name="class" size={24} color={colors.primary} />
                     <Text style={styles.overviewValue}>{metrics.totalClasses}</Text>
                     <Text style={styles.overviewLabel}>Total Classes</Text>
                 </Card>
@@ -207,20 +202,20 @@ export const ReportsScreen = observer(() => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: BLUE.background,
+        backgroundColor: colors.background,
         padding: 16,
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: BLUE.background,
+        backgroundColor: colors.background,
     },
     errorContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: BLUE.background,
+        backgroundColor: colors.background,
     },
     errorText: {
         marginTop: 16,
@@ -287,7 +282,7 @@ const styles = StyleSheet.create({
     },
     statBarContainer: {
         height: 24,
-        backgroundColor: BLUE.light,
+        backgroundColor: colors.light,
         borderRadius: 12,
         overflow: 'hidden',
         position: 'relative',
@@ -297,7 +292,7 @@ const styles = StyleSheet.create({
         top: 0,
         left: 0,
         bottom: 0,
-        backgroundColor: BLUE.primary,
+        backgroundColor: colors.primary,
         borderRadius: 12,
     },
     statValue: {

@@ -13,14 +13,14 @@ import {
 } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../../stores';
-import { Card } from '../../../components/common/Card';
+import { Card } from '../../components/Card';
 import { MaterialIcons } from '@expo/vector-icons';
 import { User, Student, Lecturer } from '../../../domain/entities/User';
 import { formatDistanceToNow } from 'date-fns';
-import { useRefresh } from '../../../presentation/hooks/useRefresh';
-import { useErrorHandler } from '../../../presentation/hooks/useErrorHandler';
-import { useForm } from '../../../presentation/hooks/useForm';
-import { useUser } from '../../../presentation/hooks/useUser';
+import { useRefresh } from '../../hooks/useRefresh';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { useForm } from '../../hooks/useForm';
+import { useUser } from '../../hooks/useUser';
 import { features } from '../../../config/features';
 import { getMockUsers } from '../../../presentation/mocks/userManagementMock';
 

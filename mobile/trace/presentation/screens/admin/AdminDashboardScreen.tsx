@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Card } from '@/components/common/Card';
+import { Card } from '@/presentation/components/Card';
 import { colors } from '@/shared/constants/theme';
 import { router } from 'expo-router';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
