@@ -6,11 +6,11 @@ import { View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import StoreProvider from '../stores/StoreProvider';
 import { Container } from '@/di/container';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/presentation/components/ErrorBoundary';
 import { useAuthGuard } from '@/presentation/hooks/useAuthGuard';
 import { useRoleGuard } from '@/presentation/hooks/useRoleGuard';
 import * as SplashScreen from 'expo-splash-screen';
-import { CustomSplashScreen } from '@/components/SplashScreen';
+import { CustomSplashScreen } from '@/presentation/components/SplashScreen';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
