@@ -1,0 +1,54 @@
+```mermaid
+flowchart TD
+    %% Mobile App
+    Mobile[Mobile App (React Native)]
+
+    %% Backend Components
+    NodeJS[Node.js Server]
+    Python[Python Microservices]
+    ML[Facial Recognition Service]
+
+    %% Database
+    DB[MongoDB]
+
+    %% BLE Devices
+    BLE[BLE Devices]
+
+    %% API Endpoints
+    Auth[Auth API]
+    Attendance[Attendance API]
+    Insights[Insights API]
+
+    %% Mobile App Flow
+    Mobile -->|"Login/Signup"| Auth
+    Auth --> NodeJS
+    Mobile -->|"Check-in/Check-out"| Attendance
+    Attendance --> NodeJS
+    Mobile -->|"Get Insights"| Insights
+    Insights --> NodeJS
+
+    %% BLE Device Flow
+    BLE -->|"BLE Signal"| NodeJS
+    NodeJS -->|"Location Data"| DB
+
+    %% Facial Recognition Flow
+    Mobile -->|"Camera Feed"| ML
+    ML -->|"Face Detection"| Python
+    Python -->|"Face Recognition"| ML
+    ML -->|"Attendance Data"| NodeJS
+    NodeJS -->|"Store Attendance"| DB
+
+    %% Data Flow
+    NodeJS -->|"Store Data"| DB
+    NodeJS -->|"Fetch Data"| DB
+    NodeJS -->|"Send Data"| Mobile
+
+    %% Styling
+    classDef default fill:#fff,stroke:#000,stroke-width:2px
+
+    class Mobile default
+    class NodeJS,Python,ML default
+    class DB default
+    class BLE default
+    class Auth,Attendance,Insights default
+```
