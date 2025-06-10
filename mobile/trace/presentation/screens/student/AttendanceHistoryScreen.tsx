@@ -38,7 +38,7 @@ const generateMockAttendanceRecords = (): AttendanceRecord[] => {
                 // Generate random attendance status
                 const statuses: AttendanceStatus[] = ['present', 'late', 'absent'];
                 const status = statuses[Math.floor(Math.random() * statuses.length)];
-                const verificationMethods = ['Face Recognition', 'NFC', 'QR Code', 'Manual'];
+                const verificationMethods = ['Face Recognition', 'Manual'];
 
                 records.push({
                     id: `${schedule.id}-${date.toISOString()}`,
