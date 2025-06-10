@@ -5,7 +5,6 @@ import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
 import { useBluetooth } from '../../hooks/useBluetooth';
 import { useLocation } from '../../hooks/useLocation';
-import { useNFC } from '../../hooks/useNFC';
 import { useFaceRecognition } from '../../hooks/useFaceRecognition';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -27,12 +26,6 @@ export const DeviceSetupScreen = observer(() => {
     } = useLocation();
 
     const {
-        status: nfcStatus,
-        isAvailable: isNFCAvailable,
-        requestPermission: requestNfcPermissions,
-    } = useNFC();
-
-    const {
         status: faceRecognitionStatus,
         isAvailable: isFaceRecognitionAvailable,
         isEnrolled,
@@ -52,39 +45,14 @@ export const DeviceSetupScreen = observer(() => {
                     <View style={[styles.statusDot, bluetoothStatus === 'granted' ? styles.statusActive : styles.statusInactive]} />
                     <Text style={styles.statusText}>
                         {bluetoothStatus === 'checking' ? 'Checking...' :
-                         bluetoothStatus === 'granted' ? 'Bluetooth Access Granted' :
-                         'Bluetooth Access Required'}
+                            bluetoothStatus === 'granted' ? 'Bluetooth Access Granted' :
+                                'Bluetooth Access Required'}
                     </Text>
                 </View>
                 {bluetoothStatus === 'denied' && (
                     <TouchableOpacity
                         style={styles.actionButton}
                         onPress={requestBluetoothPermissions}
-                    >
-                        <Text style={styles.actionButtonText}>Grant Permission</Text>
-                    </TouchableOpacity>
-                )}
-            </Card>
-
-            {/* NFC Status */}
-            <Card style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <MaterialIcons name="nfc" size={24} color={colors.primary} />
-                    <Text style={styles.sectionTitle}>NFC Status</Text>
-                </View>
-                <View style={styles.statusContainer}>
-                    <View style={[styles.statusDot, nfcStatus === 'granted' ? styles.statusActive : styles.statusInactive]} />
-                    <Text style={styles.statusText}>
-                        {nfcStatus === 'checking' ? 'Checking...' :
-                         nfcStatus === 'granted' ? 'NFC Access Granted' :
-                         nfcStatus === 'unavailable' ? 'NFC Not Available' :
-                         'NFC Access Required'}
-                    </Text>
-                </View>
-                {nfcStatus === 'denied' && isNFCAvailable && (
-                    <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={requestNfcPermissions}
                     >
                         <Text style={styles.actionButtonText}>Grant Permission</Text>
                     </TouchableOpacity>
@@ -101,9 +69,9 @@ export const DeviceSetupScreen = observer(() => {
                     <View style={[styles.statusDot, faceRecognitionStatus === 'granted' ? styles.statusActive : styles.statusInactive]} />
                     <Text style={styles.statusText}>
                         {faceRecognitionStatus === 'checking' ? 'Checking...' :
-                         faceRecognitionStatus === 'granted' ? 'Face Recognition Access Granted' :
-                         faceRecognitionStatus === 'unavailable' ? 'Face Recognition Not Available' :
-                         'Face Recognition Access Required'}
+                            faceRecognitionStatus === 'granted' ? 'Face Recognition Access Granted' :
+                                faceRecognitionStatus === 'unavailable' ? 'Face Recognition Not Available' :
+                                    'Face Recognition Access Required'}
                     </Text>
                 </View>
                 {faceRecognitionStatus === 'denied' && isFaceRecognitionAvailable && (
@@ -134,8 +102,8 @@ export const DeviceSetupScreen = observer(() => {
                     <View style={[styles.statusDot, locationPermissionStatus === 'granted' ? styles.statusActive : styles.statusInactive]} />
                     <Text style={styles.statusText}>
                         {locationPermissionStatus === 'granted' ? 'Location Access Granted' :
-                         locationPermissionStatus === 'denied' ? 'Location Access Required' :
-                         'Checking Location Access...'}
+                            locationPermissionStatus === 'denied' ? 'Location Access Required' :
+                                'Checking Location Access...'}
                     </Text>
                 </View>
                 {locationPermissionStatus !== 'granted' && (
@@ -204,7 +172,7 @@ export const DeviceSetupScreen = observer(() => {
                     <Text style={styles.sectionTitle}>Instructions</Text>
                 </View>
                 <Text style={styles.instructionText}>
-                    1. Grant all required permissions (Bluetooth, NFC, Face Recognition, Location){'\n'}
+                    1. Grant all required permissions (Bluetooth, Location){'\n'}
                     2. Start scanning for nearby beacons{'\n'}
                     3. Select your classroom&apos;s beacon from the list{'\n'}
                     4. Wait for successful connection confirmation{'\n'}
