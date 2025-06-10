@@ -35,18 +35,6 @@ export const ClassesScreen = observer(() => {
         fetchClasses();
     }, []);
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'active':
-                return colors.success;
-            case 'upcoming':
-                return colors.warning;
-            case 'completed':
-                return colors.textSecondary;
-            default:
-                return colors.textSecondary;
-        }
-    };
 
     if (isLoading) {
         return (
@@ -97,33 +85,10 @@ export const ClassesScreen = observer(() => {
                                 <Text style={styles.className}>{classItem.course}</Text>
                                 <Text style={styles.classCode}>{classItem.code}</Text>
                             </View>
-                            <View style={[styles.statusBadge, { 
-                                backgroundColor: getStatusColor(classItem.status) + '15',
-                                borderColor: getStatusColor(classItem.status) + '30'
-                            }]}>
-                                <View style={[styles.statusDot, { 
-                                    backgroundColor: getStatusColor(classItem.status) 
-                                }]} />
-                                <Text style={[styles.statusText, { 
-                                    color: getStatusColor(classItem.status) 
-                                }]}>
-                                    {classItem.status}
-                                </Text>
-                            </View>
                         </View>
 
                         <View style={styles.classDetails}>
                             <View style={styles.detailRow}>
-                                <View style={styles.detailItem}>
-                                    <MaterialIcons name="schedule" size={16} color={colors.textSecondary} />
-                                    <Text style={styles.detailText}>
-                                        {classItem.schedule?.day || 'Not scheduled'} {classItem.schedule?.startTime || ''} - {classItem.schedule?.endTime || ''}
-                                    </Text>
-                                </View>
-                                <View style={styles.detailItem}>
-                                    <MaterialIcons name="room" size={16} color={colors.textSecondary} />
-                                    <Text style={styles.detailText}>{classItem.schedule?.room || 'No room assigned'}</Text>
-                                </View>
                             </View>
                             <View style={styles.detailRow}>
                                 <View style={styles.detailItem}>
