@@ -44,7 +44,7 @@ export const ReportsScreen = observer(() => {
             const mockData = getMockAttendanceMetrics();
             setMetrics(mockData);
             return mockData;
-            
+
         },
     });
 
@@ -129,7 +129,7 @@ export const ReportsScreen = observer(() => {
                 <Text style={styles.chartTitle}>Attendance Trend (Last 7 Days)</Text>
                 <LineChart
                     data={{
-                        labels: metrics.recentAttendanceRates.map((item: { date: Date }) => 
+                        labels: metrics.recentAttendanceRates.map((item: { date: Date }) =>
                             format(item.date, 'MM/dd')
                         ),
                         datasets: [{
@@ -156,11 +156,11 @@ export const ReportsScreen = observer(() => {
                             </Text>
                         </View>
                         <View style={styles.statBarContainer}>
-                            <View 
+                            <View
                                 style={[
-                                    styles.statBar, 
+                                    styles.statBar,
                                     { width: `${item.attendanceRate}%` }
-                                ]} 
+                                ]}
                             />
                             <Text style={styles.statValue}>
                                 {item.attendanceRate.toFixed(1)}%
@@ -182,11 +182,11 @@ export const ReportsScreen = observer(() => {
                             </Text>
                         </View>
                         <View style={styles.statBarContainer}>
-                            <View 
+                            <View
                                 style={[
-                                    styles.statBar, 
+                                    styles.statBar,
                                     { width: `${item.attendanceRate}%` }
-                                ]} 
+                                ]}
                             />
                             <Text style={styles.statValue}>
                                 {item.attendanceRate.toFixed(1)}%
