@@ -22,7 +22,7 @@ export const AttendanceStatusScreen = observer(() => {
                 setStatus({
                     faceRecognition: true,
                     ble: true,
-                    location: true,
+                    location: false,
                 });
             } catch (error) {
                 console.error('Error checking status:', error);
