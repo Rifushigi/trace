@@ -74,19 +74,19 @@ export const AdminDashboardScreen = observer(() => {
         if (numValue < 50) return colors.success;
         if (numValue > 60 && numValue < 80) return colors.warning;
         if (numValue > 80) return colors.error;
-        return colors.success; 
+        return colors.success;
     };
 
     const getUptimeColor = (value: string) => {
         const numValue = parseInt(value);
-            if (numValue <= 75) return colors.error;
-            if (numValue < 85 && numValue > 75) return colors.warning;
-            if (numValue > 85) return colors.success;
-        return colors.error; 
+        if (numValue <= 75) return colors.error;
+        if (numValue < 85 && numValue > 75) return colors.warning;
+        if (numValue > 85) return colors.success;
+        return colors.error;
     };
 
     return (
-        <ScrollView 
+        <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
                 paddingBottom: 16,
@@ -134,7 +134,7 @@ export const AdminDashboardScreen = observer(() => {
             <Card style={styles.section}>
                 <View style={styles.sectionHeader}>
                     <MaterialIcons name="people" size={24} color={colors.primary} />
-                <Text style={styles.sectionTitle}>User Statistics</Text>
+                    <Text style={styles.sectionTitle}>User Statistics</Text>
                 </View>
                 <View style={styles.statsGrid}>
                     <View style={styles.statItem}>
@@ -164,7 +164,7 @@ export const AdminDashboardScreen = observer(() => {
             <Card style={styles.section}>
                 <View style={styles.sectionHeader}>
                     <MaterialIcons name="flash-on" size={24} color={colors.primary} />
-                <Text style={styles.sectionTitle}>Quick Actions</Text>
+                    <Text style={styles.sectionTitle}>Quick Actions</Text>
                 </View>
                 <View style={styles.actionsGrid}>
                     <TouchableOpacity
@@ -202,7 +202,7 @@ export const AdminDashboardScreen = observer(() => {
             <Card style={styles.section}>
                 <View style={styles.sectionHeader}>
                     <MaterialIcons name="notifications" size={24} color={colors.primary} />
-                <Text style={styles.sectionTitle}>Recent Activities</Text>
+                    <Text style={styles.sectionTitle}>Recent Activities</Text>
                 </View>
                 {recentActivities.map((activity) => (
                     <View key={activity.id} style={styles.activityItem}>
@@ -210,10 +210,10 @@ export const AdminDashboardScreen = observer(() => {
                             <MaterialIcons name={activity.icon as any} size={20} color={activity.color} />
                         </View>
                         <View style={styles.activityContent}>
-                        <Text style={styles.activityDescription}>
-                            {activity.description}
-                        </Text>
-                        <Text style={styles.activityTimestamp}>{activity.timestamp}</Text>
+                            <Text style={styles.activityDescription}>
+                                {activity.description}
+                            </Text>
+                            <Text style={styles.activityTimestamp}>{activity.timestamp}</Text>
                         </View>
                     </View>
                 ))}
