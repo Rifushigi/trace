@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
 import { Card } from '../../components/Card';
 import { colors } from '../../../shared/constants/theme';
 import { router } from 'expo-router';
 
 export const AttendanceStatusScreen = observer(() => {
-    const { authStore } = useStores();
     const [isLoading, setIsLoading] = useState(true);
     const [status, setStatus] = useState({
         faceRecognition: false,
-        nfc: false,
         ble: false,
         location: false,
     });
@@ -24,7 +21,6 @@ export const AttendanceStatusScreen = observer(() => {
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 setStatus({
                     faceRecognition: true,
-                    nfc: false,
                     ble: true,
                     location: true,
                 });
@@ -53,11 +49,6 @@ export const AttendanceStatusScreen = observer(() => {
                 'Check if you have granted camera permissions',
                 'Try adjusting your position or lighting',
             ],
-            nfc: [
-                'Make sure NFC is enabled in your device settings',
-                'Hold your device closer to the NFC reader',
-                'Check if your device supports NFC',
-            ],
             ble: [
                 'Enable Bluetooth in your device settings',
                 'Move closer to the BLE beacon',
@@ -84,7 +75,6 @@ export const AttendanceStatusScreen = observer(() => {
     return (
         <ScrollView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>Attendance Status</Text>
                 <Text style={styles.subtitle}>Real-time verification status</Text>
             </View>
 
