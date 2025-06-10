@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../../shared/constants/theme';
 
 export type UserRole = 'student' | 'lecturer';
@@ -33,10 +34,11 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({
                             activeOpacity={0.8}
                         >
                             <View style={styles.roleIconContainer}>
-                                <View style={[
-                                    styles.roleIcon,
-                                    selectedRole === 'student' && styles.roleIconActive
-                                ]} />
+                                <MaterialCommunityIcons
+                                    name="school-outline" 
+                                    size={40} 
+                                    color={selectedRole === 'student' ? colors.white : colors.textSecondary} 
+                                />
                             </View>
                             <Text style={[
                                 styles.roleTitle,
@@ -61,11 +63,13 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({
                             activeOpacity={0.8}
                         >
                             <View style={styles.roleIconContainer}>
-                                <View style={[
-                                    styles.roleIcon,
-                                    styles.lecturerIcon,
-                                    selectedRole === 'lecturer' && styles.roleIconActive
-                                ]} />
+                                <View style={styles.roleIconContainer}>
+                                    <MaterialCommunityIcons 
+                                        name="account-tie" 
+                                        size={40} 
+                                        color={selectedRole === 'lecturer' ? colors.white : colors.textSecondary} 
+                                    />
+                                </View>
                             </View>
                             <Text style={[
                                 styles.roleTitle,
