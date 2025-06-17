@@ -61,7 +61,6 @@ export const ClassManagementScreen = observer(() => {
 
     const getClassStatus = (cls: Class) => {
         const now = new Date();
-        const day = cls.schedule.day;
         const [startHour, startMinute] = cls.schedule.startTime.split(':').map(Number);
         const [endHour, endMinute] = cls.schedule.endTime.split(':').map(Number);
 
@@ -82,10 +81,6 @@ export const ClassManagementScreen = observer(() => {
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
         >
-            <View style={styles.header}>
-                <Text style={styles.title}>Class Management</Text>
-            </View>
-
             {classes.map((cls) => {
                 const status = getClassStatus(cls);
                 return (
