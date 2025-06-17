@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../../stores';
 import { colors } from '../../../shared/constants/theme';
 
 export const ClassDetailsScreen = observer(() => {
     const { classId } = useLocalSearchParams<{ classId: string }>();
-    const { authStore } = useStores();
-    const [isLoading, setIsLoading] = useState(false);
 
     const handleStartSession = () => {
         router.push({
@@ -26,8 +22,8 @@ export const ClassDetailsScreen = observer(() => {
 
     return (
         <ScrollView style={styles.container}>
-            <Text style={styles.title}>Class Details</Text>
-            <Text style={styles.classId}>Class ID: {classId}</Text>
+
+            <Text style={styles.title}>Class ID: {classId}</Text>
 
             <View style={styles.infoCard}>
                 <Text style={styles.infoTitle}>Course Information</Text>
