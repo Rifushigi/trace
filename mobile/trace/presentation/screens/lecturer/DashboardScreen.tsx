@@ -55,7 +55,7 @@ export const DashboardScreen = observer(() => {
 
     const startPulseAnimation = useCallback(() => {
         if (clickCount >= 10) return;
-        
+
         Animated.loop(
             Animated.sequence([
                 Animated.timing(pulseAnim, {
@@ -149,7 +149,7 @@ export const DashboardScreen = observer(() => {
     }
 
     // Get mock data
-    const { todayClasses, activeSessions, recentActivities, classStatistics } = features.useMockApi 
+    const { todayClasses, activeSessions, recentActivities, classStatistics } = features.useMockApi
         ? getMockLecturerDashboard()
         : {
             todayClasses: [],
@@ -171,8 +171,8 @@ export const DashboardScreen = observer(() => {
                 paddingBottom: 16,
             }}
             refreshControl={
-                <RefreshControl 
-                    refreshing={refreshing} 
+                <RefreshControl
+                    refreshing={refreshing}
                     onRefresh={handleRefresh}
                     tintColor={colors.primary}
                     colors={[colors.primary]}
@@ -188,26 +188,26 @@ export const DashboardScreen = observer(() => {
                             <Text style={styles.nameText}>{user?.firstName}!</Text>
                         </Text>
                         <Text style={styles.dateText}>
-                            {new Date().toLocaleDateString('en-US', { 
-                                weekday: 'long', 
-                                month: 'long', 
+                            {new Date().toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                month: 'long',
                                 day: 'numeric'
                             })}
                         </Text>
                     </View>
                     <View style={styles.profileSection}>
-                        <Pressable 
+                        <Pressable
                             onPressIn={handlePressIn}
                             onPressOut={handlePressOut}
                             onPress={handlePress}
                         >
-                            <Animated.View 
+                            <Animated.View
                                 style={[
                                     styles.profilePicture,
-                                    { 
+                                    {
                                         transform: [
                                             { scale: scaleAnim }
-                                        ] 
+                                        ]
                                     }
                                 ]}
                             >
@@ -251,6 +251,9 @@ export const DashboardScreen = observer(() => {
                         >
                             <View style={styles.classInfo}>
                                 <Text style={styles.className}>{cls.course}</Text>
+                                <Text style={styles.classCode}>
+                                    {cls.code}
+                                </Text>
                                 <Text style={styles.classDetails}>
                                     {cls.time} • {cls.room}
                                 </Text>
@@ -297,11 +300,11 @@ export const DashboardScreen = observer(() => {
                                     {session.attendance}
                                 </Text>
                                 <View style={styles.progressBar}>
-                                    <View 
+                                    <View
                                         style={[
                                             styles.progressFill,
                                             { width: `${session.progress}%` }
-                                        ]} 
+                                        ]}
                                     />
                                 </View>
                                 {session.status === 'active' && (
@@ -365,9 +368,9 @@ export const DashboardScreen = observer(() => {
                             <Text style={styles.activityTime}>{activity.time}</Text>
                             <Text style={styles.activityDetails}>
                                 {activity.icon === 'play-circle-filled' ? 'Session started' :
-                                 activity.icon === 'stop-circle' ? 'Session ended' :
-                                 activity.icon === 'cloud-download' ? 'Attendance exported' :
-                                 'Manual attendance update'}
+                                    activity.icon === 'stop-circle' ? 'Session ended' :
+                                        activity.icon === 'cloud-download' ? 'Attendance exported' :
+                                            'Manual attendance update'}
                             </Text>
                         </View>
                         <TouchableOpacity
@@ -526,6 +529,12 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         color: colors.text,
         marginBottom: 4,
+    },
+    classCode: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        marginBottom: 2,
+        fontWeight: '600',
     },
     classDetails: {
         fontSize: 14,
