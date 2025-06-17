@@ -4,7 +4,7 @@ export const getMockSchedule = (): Schedule[] => {
     return [
         {
             id: '1',
-            code: 'CSC101',
+            code: 'CSC 101',
             course: 'Introduction to Computer Science',
             lecturer: {
                 id: 'L001',
@@ -75,7 +75,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '2',
-            code: 'CSC201',
+            code: 'CSC 201',
             course: 'Data Structures and Algorithms',
             lecturer: {
                 id: 'L002',
@@ -124,7 +124,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '3',
-            code: 'CSC301',
+            code: 'CSC 301',
             course: 'Database Systems',
             lecturer: {
                 id: 'L003',
@@ -173,7 +173,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '4',
-            code: 'CSC401',
+            code: 'CSC 401',
             course: 'Software Engineering',
             lecturer: {
                 id: 'L004',
@@ -222,7 +222,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '5',
-            code: 'CSC501',
+            code: 'CSC 501',
             course: 'Computer Networks',
             lecturer: {
                 id: 'L005',
@@ -271,7 +271,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '6',
-            code: 'CSC601',
+            code: 'CSC 601',
             course: 'Artificial Intelligence',
             lecturer: {
                 id: 'L006',
@@ -320,7 +320,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '7',
-            code: 'CSC701',
+            code: 'CSC 701',
             course: 'Operating Systems',
             lecturer: {
                 id: 'L007',
@@ -369,7 +369,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '8',
-            code: 'CSC801',
+            code: 'CSC 801',
             course: 'Web Development',
             lecturer: {
                 id: 'L008',
@@ -418,7 +418,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '9',
-            code: 'CSC901',
+            code: 'CSC 901',
             course: 'Mobile App Development',
             lecturer: {
                 id: 'L009',
@@ -467,7 +467,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '10',
-            code: 'CSC1001',
+            code: 'CSC 110',
             course: 'Cloud Computing',
             lecturer: {
                 id: 'L010',
@@ -516,7 +516,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '11',
-            code: 'CSC1101',
+            code: 'CSC 111',
             course: 'Cybersecurity',
             lecturer: {
                 id: 'L011',
@@ -565,7 +565,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '12',
-            code: 'CSC1201',
+            code: 'CSC 121',
             course: 'Machine Learning',
             lecturer: {
                 id: 'L012',
@@ -614,7 +614,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '13',
-            code: 'CSC1301',
+            code: 'CSC 130',
             course: 'Big Data Analytics',
             lecturer: {
                 id: 'L013',
@@ -663,7 +663,7 @@ export const getMockSchedule = (): Schedule[] => {
         },
         {
             id: '14',
-            code: 'CSC1401',
+            code: 'CSC 204',
             course: 'Blockchain Technology',
             lecturer: {
                 id: 'L014',
