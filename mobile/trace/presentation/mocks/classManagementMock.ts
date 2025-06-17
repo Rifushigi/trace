@@ -45,7 +45,7 @@ const createMockClass = (index: number): Class => {
 
     return {
         id: `class-${index}`,
-        code: `CSC${300 + index}`,
+        code: `CSC ${300 + index}`,
         name: courseNames[index % courseNames.length],
         schedule: {
             day,
