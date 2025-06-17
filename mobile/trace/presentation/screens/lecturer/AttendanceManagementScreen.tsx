@@ -102,8 +102,15 @@ export const AttendanceManagementScreen = observer(() => {
                     </View>
                     <View style={styles.statItem}>
                         <Text style={styles.statValue}>
-                            {Math.round(sessions.reduce((acc, session) => 
-                                acc + calculateAttendanceStats(session).attendanceRate, 0) / sessions.length)}%
+                            {sessions.length === 0
+                                ? '0%'
+                                : `${Math.round(
+                                    sessions.reduce(
+                                        (acc, session) => acc + calculateAttendanceStats(session).attendanceRate,
+                                        0
+                                    ) / sessions.length
+                                )}%`
+                            }
                         </Text>
                         <Text style={styles.statLabel}>Average Attendance</Text>
                     </View>
@@ -331,4 +338,4 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
     },
-}); 
+});
