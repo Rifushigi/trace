@@ -1,4 +1,3 @@
-import { colors } from '@/shared/constants/theme';
 import { getMockSchedule } from './scheduleMock';
 
 interface ActiveSession {
@@ -27,6 +26,7 @@ interface ClassStatistics {
 
 interface LecturerDashboard {
     todayClasses: {
+        code: string;
         id: string;
         course: string;
         time: string;
@@ -50,7 +50,8 @@ export const getMockLecturerDashboard = (): LecturerDashboard => {
         .filter(cls => cls.schedule.day.toLowerCase() === today)
         .map(cls => ({
             id: cls.id,
-            course: cls.name,
+            course: cls.course,
+            code: cls.code,
             time: `${cls.schedule.startTime} - ${cls.schedule.endTime}`,
             room: cls.schedule.room,
             status: 'upcoming' as 'upcoming' | 'active' | 'completed',
@@ -60,7 +61,6 @@ export const getMockLecturerDashboard = (): LecturerDashboard => {
     // Generate active sessions for classes that are currently ongoing
     const currentHour = new Date().getHours();
     const currentMinute = new Date().getMinutes();
-    const currentTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
 
     // Update active sessions
     mockActiveSessions = todayClasses
