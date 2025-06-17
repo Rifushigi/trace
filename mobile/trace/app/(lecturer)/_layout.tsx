@@ -37,61 +37,61 @@ const LecturerLayout = observer(() => {
 
     return (
         <Stack>
-            <Stack.Screen 
-                name="dashboard" 
-                
-                options={{ 
+            <Stack.Screen
+                name="dashboard"
+
+                options={{
                     title: 'Dashboard',
                     headerShown: true,
                     headerRight: () => (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={handleLogout}
                             style={{ marginRight: 16 }}
                         >
                             <MaterialIcons name="logout" size={24} color={colors.primary} />
                         </TouchableOpacity>
                     ),
-                }} 
+                }}
             />
-            <Stack.Screen 
-                name="class-management" 
-                options={{ 
+            <Stack.Screen
+                name="class-management"
+                options={{
                     headerTitle: 'Class Management',
-                }} 
+                }}
             />
-            <Stack.Screen 
-                name="class-details" 
-                options={{ 
+            <Stack.Screen
+                name="class-details"
+                options={{
                     title: 'Class Details',
-                    headerShown: false 
-                }} 
+                    headerShown: true
+                }}
             />
-            <Stack.Screen 
-                name="session-control" 
-                options={{ 
+            <Stack.Screen
+                name="session-control"
+                options={{
                     headerTitle: 'Session Control',
-                }} 
+                }}
             />
-            <Stack.Screen 
-                name="attendance-management" 
-                options={{ 
+            <Stack.Screen
+                name="attendance-management"
+                options={{
                     title: 'Attendance Management',
-                    headerShown: true 
-                }} 
+                    headerShown: true
+                }}
             />
-            <Stack.Screen 
-                name="reports" 
-                options={{ 
+            <Stack.Screen
+                name="reports"
+                options={{
                     title: 'Reports',
-                    headerShown: true 
-                }} 
+                    headerShown: true
+                }}
             />
-            <Stack.Screen 
-                name="session-details" 
-                options={{ 
+            <Stack.Screen
+                name="session-details"
+                options={{
                     title: 'Session Details',
-                    headerShown: true 
-                }} 
+                    headerShown: true
+                }}
             />
         </Stack>
     );
