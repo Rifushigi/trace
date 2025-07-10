@@ -19,6 +19,7 @@ import {
     getClassStatistics,
     searchClasses
 } from "../services/class_service.js";
+import { Class } from '../models/class_model.js';
 
 export const createNewClass = asyncErrorHandler(async (req: IAuthenticatedRequest, res: Response) => {
     const classData: IClassCreateDTO = {
@@ -149,4 +150,33 @@ export const search = asyncErrorHandler(async (req: Request, res: Response) => {
     };
 
     return res.status(200).json({ response });
-}); 
+});
+
+// Simulate: Get all classrooms with beacon IDs
+export const getAllClassroomsWithBeacons = async (req: Request, res: Response) => {
+    const classrooms = await Class.find({}, { className: 1, beaconIds: 1 });
+    res.json(classrooms);
+};
+
+// Simulate: Detect classroom by beacon IDs (geofencing logic)
+export const detectClassroomByBeacons = async (req: Request, res: Response) => {
+    const { beaconIds } = req.body;
+    if (!Array.isArray(beaconIds)) {
+        return res.status(400).json({ error: 'beaconIds array required' });
+    }
+    const classrooms = await Class.find({});
+    let bestMatch = null;
+    let maxDetected = 0;
+    for (const classroom of classrooms) {
+        const detected = classroom.beaconIds.filter((id: string) => beaconIds.includes(id));
+        if (detected.length > maxDetected && detected.length >= 3) { // threshold
+            bestMatch = classroom;
+            maxDetected = detected.length;
+        }
+    }
+    if (bestMatch) {
+        return res.json({ classroom: bestMatch, detectedCount: maxDetected });
+    } else {
+        return res.status(404).json({ error: 'No matching classroom found' });
+    }
+}; 
