@@ -77,11 +77,16 @@ async def verify_face(
         if not face_data or not location:
             raise ValidationError("Missing required data")
 
+        # Decode image and compute quality metrics
+        image = face_recognition.decode_base64_image(face_data)
+        metrics = face_recognition.compute_face_quality(image)
+
         result = await face_recognition.verify_face(face_data, location)
         return {
             "match": result["match"],
             "confidence": result["confidence"],
             "face_id": result["face_id"],
+            "metrics": metrics,
         }
     except Exception as e:
         if isinstance(
@@ -103,8 +108,24 @@ async def register_face(
         if not face_data or not user_id:
             raise ValidationError("Missing required data")
 
-        face_id = await face_recognition.register_face(face_data, user_id)
-        return {"face_id": face_id}
+        # Decode image and compute quality metrics
+        image = face_recognition.decode_base64_image(face_data)
+        metrics = face_recognition.compute_face_quality(image)
+        if metrics["score"] < 67:
+            return {
+                "success": False,
+                "message": "Face quality too low for registration.",
+                "metrics": metrics,
+            }
+
+        reg_result = await face_recognition.register_face(face_data, user_id)
+        return {
+            "success": reg_result["status"] in ["new", "updated"],
+            "status": reg_result["status"],
+            "user_id": reg_result["user_id"],
+            "message": reg_result["message"],
+            "metrics": metrics,
+        }
     except Exception as e:
         if isinstance(
             e, (ValidationError, NotFoundError, ConflictError, DatabaseError)
