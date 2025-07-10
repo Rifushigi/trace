@@ -7,7 +7,8 @@ const classSchema = new Schema<IClass>({
     courseCode: { type: String, required: true },
     lecturerId: { type: mongoose.Types.ObjectId, required: true },
     semester: { type: String, required: true },
-    year: { type: Number, required: true }
+    year: { type: Number, required: true },
+    beaconIds: [{ type: String, required: true }], // BLE beacon IDs for geofencing
 });
 
 export const Class = model<IClass>("Class", classSchema);
