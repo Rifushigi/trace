@@ -83,11 +83,11 @@ async def process_frame(frame):
             else:
                 # Use a dummy user_id (will be ignored in is_match logic)
                 result = await face_service.verify_face(face_base64, "dummy")
-                if result["match"]:
+        if result["match"]:
                     text = f"Match: {result['face_id']} ({result['confidence']:.2f})"
                     color = (0, 255, 0)
-                else:
-                    text = "No Match"
+        else:
+            text = "No Match"
                     color = (0, 0, 255)
         except Exception as e:
             print(f"Verification error: {e}")
@@ -491,4 +491,4 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "clear_db":
         clear_face_encodings()
     else:
-        asyncio.run(main())
+    asyncio.run(main())
