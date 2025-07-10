@@ -20,7 +20,10 @@ import {
     getSchedule,
     getStatistics,
     search,
+    getAllClassroomsWithBeacons,
+    detectClassroomByBeacons
 } from "../../controllers/class_controller.js";
+import { Class } from '../../models/class_model';
 
 const router = Router();
 
@@ -102,5 +105,11 @@ router.get("/search",
     validationErrorHandler,
     search
 );
+
+// Simulate: Get all classrooms with beacon IDs
+router.get('/beacons', getAllClassroomsWithBeacons);
+
+// Simulate: Detect classroom by beacon IDs (geofencing logic)
+router.post('/detect-by-beacons', detectClassroomByBeacons);
 
 export default router; 

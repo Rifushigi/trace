@@ -9,6 +9,7 @@ export interface IClass extends Document {
     lecturerId: ObjectId;
     semester: string;
     year: number;
+    beaconIds: string[]; // BLE beacon IDs for geofencing
 }
 
 export interface IClassCreateDTO {
@@ -18,9 +19,12 @@ export interface IClassCreateDTO {
     lecturerId: string;
     semester: string;
     year: number;
+    beaconIds: string[]; // BLE beacon IDs for geofencing
 }
 
-export interface IClassUpdateDTO extends Partial<IClassCreateDTO> { }
+export interface IClassUpdateDTO extends Partial<IClassCreateDTO> {
+    beaconIds?: string[];
+}
 
 export interface IClassSearchDTO {
     title?: string;
