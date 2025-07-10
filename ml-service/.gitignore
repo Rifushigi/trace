@@ -1,2 +1,5 @@
 venv
 mls
+frvenv
+__pycache__
+data
