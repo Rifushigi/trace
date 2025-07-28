@@ -20,11 +20,11 @@
 
 | Layer        | Technologies                                         |
 |-------------|------------------------------------------------------|
-| Frontend     | Flutter (mobile), React (web dashboard)    |
+| Frontend     | React Native (mobile)    |
 | Backend      | Express.js (REST APIs), Python (ML services), Node.js (IoT bridge) |
 | ML Models    | TensorFlow, scikit-learn, OpenCV                    |
 | Storage      | PostgreSQL, MongoDB                                 |
-| IoT Devices  | BLE Beacons, NFC Readers                            |
+| IoT Devices  | BLE Beacons                            |
 
 ---
 
