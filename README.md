@@ -1,6 +1,6 @@
 # TRACE — Tracking Real-time Attendance & Class Engagement
 
-**TRACE** is a smart, multimodal attendance management system designed for modern educational institutions. It combines biometric authentication, geofencing, BLE, NFC, and machine learning to provide a secure, real-time, and adaptive platform for tracking student attendance and engagement.
+**TRACE** is a smart, multimodal attendance management system designed for modern educational institutions. It combines biometric authentication, geofencing using BLE and machine learning to provide a secure, real-time, and adaptive platform for tracking student attendance and engagement.
 
 ---
 
