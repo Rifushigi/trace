@@ -32,7 +32,7 @@
 
 ```text
 .
-├── mobile/              # Flutter app for students and lecturers
+├── mobile/              # React Native app for students and lecturers
 ├── web-dashboard/       # Admin dashboard built with Vue or React
 ├── backend/             # Express.js backend with RESTful APIs
 ├── ml-service/          # Python-based ML microservice
@@ -71,11 +71,11 @@ npm install
 npm run dev
 ```
 
-### Run the Flutter mobile app
+### Run the Reac Native mobile app
 ```bash
 cd mobile
-flutter pub get
-flutter run
+npm i
+npm run start
 ```
 
 ---
@@ -84,8 +84,7 @@ flutter run
 
 - Express.js: `npm run test`
 - Python ML: `pytest`
-- Flutter: `flutter test`
-- Web: `npm run test`
+- React Native: `npm run test`
 
 ---
 
